@@ -95,6 +95,8 @@ namespace eCAL
     **/
     void Log(const std::string& msg_);
 
+    std::string GetLogFileName();
+
     /**
       * @brief Mark the start of the user core process.
       *

@@ -109,7 +109,7 @@ namespace eCAL
           m_logfile(nullptr),
           m_level(log_level_none),
           m_filter_mask_con(log_level_info | log_level_warning | log_level_error | log_level_fatal),
-          m_filter_mask_file(log_level_info | log_level_warning | log_level_error | log_level_fatal | log_level_debug1 | log_level_debug2),
+          m_filter_mask_file(log_level_info | log_level_warning | log_level_error | log_level_fatal | log_level_debug1 | log_level_debug2 | log_level_debug3 | log_level_debug4),
           m_filter_mask_udp(log_level_info | log_level_warning | log_level_error | log_level_fatal | log_level_debug1 | log_level_debug2),
           m_core_time_start(std::chrono::nanoseconds(0))
   {
@@ -355,5 +355,9 @@ namespace eCAL
       const std::lock_guard<std::mutex> lock(m_log_msglist_sync);
       m_log_msglist.emplace_back(log_msg_);
     }
+  }
+
+  std::string CLog::GetLogFileName() {
+    return m_logfile_name;
   }
 }

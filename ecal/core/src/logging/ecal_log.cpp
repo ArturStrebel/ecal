@@ -64,6 +64,12 @@ namespace eCAL
       if(g_log() != nullptr) g_log()->Log(msg_);
     }
 
+    std::string GetLogFileName()
+    {
+      if(g_log() != nullptr) return g_log()->GetLogFileName();
+      else return std::string();
+    }
+
     /**
      * @brief Mark the start of the user core process.
     **/

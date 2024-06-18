@@ -1,0 +1,15 @@
+{
+  "Version": "v0.0.1",
+  "Author": "Artur Strebel",
+  "Name": "Debug Info",
+  
+  "Priority": 3,
+  
+  "SupportedTopics": 
+    [
+      {
+      }
+    ],
+  
+  "OptionalTopics": []
+}
