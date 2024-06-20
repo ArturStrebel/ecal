@@ -67,8 +67,6 @@ namespace eCAL
       Log(msg_);
     }
 
-    ECAL_API std::string GetLogFileName();
-
     /**
      * @brief Mark the start of the user core process. 
      * @deprecated Will be removed in future eCAL versions.

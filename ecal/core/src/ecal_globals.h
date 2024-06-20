@@ -30,6 +30,7 @@
 #include "time/ecal_timegate.h"
 #include "logging/ecal_log_impl.h"
 #include "monitoring/ecal_monitoring_def.h"
+#include "processgraph/ecal_process_graph.h"
 #include "pubsub/ecal_pubgate.h"
 #include "pubsub/ecal_subgate.h"
 #include "service/ecal_servicegate.h"
@@ -69,6 +70,7 @@ namespace eCAL
     const std::unique_ptr<CRegistrationReceiver>&                         registration_receiver()  { return registration_receiver_instance; };
     const std::unique_ptr<CMemFileThreadPool>&                            memfile_pool()           { return memfile_pool_instance; };
     const std::unique_ptr<CMemFileMap>&                                   memfile_map()            { return memfile_map_instance; };
+    const std::unique_ptr<CProcessGraphDCEL>&                             process_graph_dcel()     { return process_graph_dcel_instance; };
 
   private:
     bool                                                                  initialized;
@@ -86,5 +88,6 @@ namespace eCAL
     std::unique_ptr<CRegistrationReceiver>                                registration_receiver_instance;
     std::unique_ptr<CMemFileThreadPool>                                   memfile_pool_instance;
     std::unique_ptr<CMemFileMap>                                          memfile_map_instance;
+    std::unique_ptr<CProcessGraphDCEL>                                    process_graph_dcel_instance;
   };
 }

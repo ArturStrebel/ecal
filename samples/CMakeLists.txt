@@ -136,6 +136,9 @@ if(HAS_QT)
   add_subdirectory(cpp/services/rec_server_service_gui)
 endif()
 
+# process graph
+add_subdirectory(cpp/process_graph/)
+
 # --------------------------------------------------------
 # python samples
 # --------------------------------------------------------

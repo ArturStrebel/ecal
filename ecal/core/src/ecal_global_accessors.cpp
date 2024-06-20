@@ -140,4 +140,10 @@ namespace eCAL
     if (g_globals() == nullptr) return(nullptr);
     return(g_globals()->memfile_map().get());
   }
+
+  CProcessGraphDCEL* g_processgraph_dcel()
+  {
+    if (g_globals() == nullptr) return(nullptr);
+    return(g_globals()->process_graph_dcel().get());
+  }
 }

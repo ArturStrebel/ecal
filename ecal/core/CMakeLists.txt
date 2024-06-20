@@ -318,6 +318,14 @@ set(ecal_util_src
 )
 
 ######################################
+# process graph
+######################################
+set(ecal_processgraph_src
+    src/processgraph/ecal_process_graph.cpp
+    src/processgraph/ecal_process_graph.h
+)
+
+######################################
 # common
 ######################################
 set(ecal_cmn_src
@@ -476,6 +484,7 @@ ecal_add_ecal_shared_library(${PROJECT_NAME}
     ${ecal_service_src}
     ${ecal_time_src}
     ${ecal_util_src}
+    ${ecal_processgraph_src}
     ${ecal_cmn_src}
     ${ecal_header_public}
     ${CMAKE_CURRENT_BINARY_DIR}/include/ecal/ecal_defs.h

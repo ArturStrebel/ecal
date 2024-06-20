@@ -196,6 +196,18 @@ namespace eCAL
     }
 
     /////////////////////
+    // PROCESS GRAPH
+    /////////////////////
+    if ((components_ & Init::Monitoring) != 0u) // TODO: Change Monitoring to own parameter
+    {
+      if (process_graph_dcel_instance == nullptr)
+      {
+        process_graph_dcel_instance = std::make_unique<CProcessGraphDCEL>();
+        new_initialization = true;
+      }
+    }
+
+    /////////////////////
     // LOGGING
     /////////////////////
     if ((components_ & Init::Logging) != 0u)
@@ -210,18 +222,19 @@ namespace eCAL
     /////////////////////
     // CREATE ALL
     /////////////////////
-    //if (config_instance)                                                config_instance->Create();
-    if (log_instance && ((components_ & Init::Logging) != 0u))            log_instance->Create();
-    if (registration_provider_instance)                                   registration_provider_instance->Create(true, true, (components_ & Init::ProcessReg) != 0x0);
-    if (descgate_instance)                                                descgate_instance->Create();
-    if (registration_receiver_instance)                                   registration_receiver_instance->Create();
-    if (memfile_pool_instance)                                            memfile_pool_instance->Create();
-    if (subgate_instance && ((components_ & Init::Subscriber) != 0u))     subgate_instance->Create();
-    if (pubgate_instance && ((components_ & Init::Publisher) != 0u))      pubgate_instance->Create();
-    if (servicegate_instance && ((components_ & Init::Service) != 0u))    servicegate_instance->Create();
-    if (clientgate_instance && ((components_ & Init::Service) != 0u))     clientgate_instance->Create();
-    if (timegate_instance && ((components_ & Init::TimeSync) != 0u))      timegate_instance->Create(CTimeGate::eTimeSyncMode::realtime);
-    if (monitoring_instance && ((components_ & Init::Monitoring) != 0u))  monitoring_instance->Create();
+    //if (config_instance)                                                        config_instance->Create();
+    if (log_instance && ((components_ & Init::Logging) != 0u))                    log_instance->Create();
+    if (registration_provider_instance)                                           registration_provider_instance->Create(true, true, (components_ & Init::ProcessReg) != 0x0);
+    if (descgate_instance)                                                        descgate_instance->Create();
+    if (registration_receiver_instance)                                           registration_receiver_instance->Create();
+    if (memfile_pool_instance)                                                    memfile_pool_instance->Create();
+    if (subgate_instance && ((components_ & Init::Subscriber) != 0u))             subgate_instance->Create();
+    if (pubgate_instance && ((components_ & Init::Publisher) != 0u))              pubgate_instance->Create();
+    if (servicegate_instance && ((components_ & Init::Service) != 0u))            servicegate_instance->Create();
+    if (clientgate_instance && ((components_ & Init::Service) != 0u))             clientgate_instance->Create();
+    if (timegate_instance && ((components_ & Init::TimeSync) != 0u))              timegate_instance->Create(CTimeGate::eTimeSyncMode::realtime);
+    if (monitoring_instance && ((components_ & Init::Monitoring) != 0u))          monitoring_instance->Create();
+    if (process_graph_dcel_instance && ((components_ & Init::Monitoring) != 0u))  process_graph_dcel_instance->Create();
 
     initialized =  true;
     components  |= components_;
