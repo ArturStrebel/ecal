@@ -40,6 +40,11 @@ int main(int argc, char **argv)
   edgeList.push_back({3, 4, 0.1, nullptr, nullptr});
   edgeList[0].publisherNext = &edgeList[1];
   edgeList[1].subscriberNext = &edgeList[2];
+  // graph should looks something like this:
+  //  (1) -> (2)
+  //      \   |
+  //       v  v 
+  //  (4)<-(3)
 
   // monitor for ever
   while(eCAL::Ok())
