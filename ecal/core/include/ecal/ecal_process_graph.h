@@ -30,6 +30,7 @@ namespace eCAL
     {
       int publisherID;
       int subscriberID;
+      std::string topicname;
       double bandwidth;
 
       SProcessGraphEdge* publisherNext = nullptr;

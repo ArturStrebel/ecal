@@ -34,10 +34,10 @@ int main(int argc, char **argv)
   std::vector<eCAL::ProcessGraph::SProcessGraphEdge> edgeList;
 
   // create some test entries by hand
-  edgeList.push_back({1, 2, 1.0, nullptr, nullptr});
-  edgeList.push_back({1, 3, 5.5, nullptr, nullptr});
-  edgeList.push_back({2, 3, 2.0, nullptr, nullptr});
-  edgeList.push_back({3, 4, 0.1, nullptr, nullptr});
+  edgeList.push_back({1, 2, "T1", 1.0, nullptr, nullptr});
+  edgeList.push_back({1, 3, "T1", 5.5, nullptr, nullptr});
+  edgeList.push_back({2, 3, "T2", 2.0, nullptr, nullptr});
+  edgeList.push_back({3, 4, "T3", 0.1, nullptr, nullptr});
   edgeList[0].publisherNext = &edgeList[1];
   edgeList[1].subscriberNext = &edgeList[2];
   // graph should looks something like this:
