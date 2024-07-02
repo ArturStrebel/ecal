@@ -38,22 +38,32 @@ namespace eCAL
   {
     public:
 
-      CProcessGraphDCEL() = default;
-      ~CProcessGraphDCEL() = default;
+      CProcessGraphDCEL();
+      ~CProcessGraphDCEL();
 
       void Create();
       void Destroy();
 
-      std::vector<eCAL::ProcessGraph::SProcessGraphEdge> GetEdgeList(const eCAL::Monitoring::SMonitoring& monitoring);
+      eCAL::ProcessGraph::SProcessGraph GetProcessGraph(const eCAL::Monitoring::SMonitoring& monitoring);
 
     private:
 
-      void UpdateEdgeList(const eCAL::Monitoring::SMonitoring&);
-      std::string CreateEdgeID(const int& pubID, const int& subID);
-      bool IsContainedInList(const std::string& edgeID);
-      void AddToEdgeList(const eCAL::ProcessGraph::SProcessGraphEdge&);
+      // General functions
+      std::string CreateEdgeID(const eCAL::Monitoring::STopicMon& pub_ , const eCAL::Monitoring::STopicMon& sub_, const int& graphType);
+      bool IsContainedInList(const std::string& edgeID, const int& graphType);
+      void UpdateProcessGraph(const eCAL::Monitoring::SMonitoring&);
+
+      // Functions for process view
+      void AddToProcessEdgeList(const eCAL::ProcessGraph::SProcessGraphEdge&);
+      eCAL::ProcessGraph::SProcessGraphEdge CreateProcessEdge(const eCAL::Monitoring::STopicMon& pub_ , const eCAL::Monitoring::STopicMon& sub_ );
+      
+      // Functions for host traffic view
+      void AddToHostEdgeList(const eCAL::ProcessGraph::SHostGraphEdge& newHost);
+      eCAL::ProcessGraph::SHostGraphEdge CreateHostEdge(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub);
+      void UpdateHostBandwidth(eCAL::ProcessGraph::SHostGraphEdge& hostEdge, double bandwidthUpdate);
+      eCAL::ProcessGraph::SHostGraphEdge FindHostEdge( const std::string& hostID );
 
       std::unordered_set<std::string> m_edgeHashTable; 
-      std::vector<eCAL::ProcessGraph::SProcessGraphEdge> m_edgeList;
+      eCAL::ProcessGraph::SProcessGraph m_process_graph;
   };
 }

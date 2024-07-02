@@ -31,20 +31,7 @@ int main(int argc, char **argv)
   // monitoring instance to store snapshot
   eCAL::Monitoring::SMonitoring monitoring;
 
-  std::vector<eCAL::ProcessGraph::SProcessGraphEdge> edgeList;
-
-  // create some test entries by hand
-  edgeList.push_back({1, 2, "T1", 1.0, nullptr, nullptr});
-  edgeList.push_back({1, 3, "T1", 5.5, nullptr, nullptr});
-  edgeList.push_back({2, 3, "T2", 2.0, nullptr, nullptr});
-  edgeList.push_back({3, 4, "T3", 0.1, nullptr, nullptr});
-  edgeList[0].publisherNext = &edgeList[1];
-  edgeList[1].subscriberNext = &edgeList[2];
-  // graph should looks something like this:
-  //  (1) -> (2)
-  //      \   |
-  //       v  v 
-  //  (4)<-(3)
+  eCAL::ProcessGraph::SProcessGraph processgraph;
 
   // monitor for ever
   while(eCAL::Ok())
@@ -52,9 +39,9 @@ int main(int argc, char **argv)
     // take snapshot :-)
     eCAL::Monitoring::GetMonitoring(monitoring, eCAL::Monitoring::Entity::All);
 
-    edgeList = eCAL::ProcessGraph::GetEdgeList(monitoring);
+    processgraph = eCAL::ProcessGraph::GetProcessGraph(monitoring);
 
-    // do stuff with edge list
+    // do stuff with process graph
 
     // sleep few milliseconds
     eCAL::Process::SleepMS(g_mon_timing);

@@ -26,17 +26,41 @@ namespace eCAL
 {
   namespace ProcessGraph
   {
+    namespace GraphType
+    {
+      constexpr unsigned int ProcessGraph  = 0x001;
+      constexpr unsigned int HostTraffic   = 0x002;
+      constexpr unsigned int TopicTree     = 0x004;
+    }
+
     struct SProcessGraphEdge
     {
-      int publisherID;
-      int subscriberID;
-      std::string topicname;
+      std::string edgeID;
+      std::string publisherName;
+      std::string subscriberName;
+      std::string topicName;
       double bandwidth;
 
       SProcessGraphEdge* publisherNext = nullptr;
       SProcessGraphEdge* subscriberNext = nullptr;
     };
 
-    ECAL_API std::vector<SProcessGraphEdge> GetEdgeList(const eCAL::Monitoring::SMonitoring&);
+    struct SHostGraphEdge
+    {
+      std::string edgeID;
+      std::string outgoingHostName;
+      std::string incomingHostName;
+      double bandwidth;
+    };
+
+    struct SProcessGraph
+    {
+      std::vector<SProcessGraphEdge> processEdgeList;
+      std::vector<SHostGraphEdge> hostEdgeList;
+      // TODO: Topic tree
+    };
+
+    ECAL_API SProcessGraph GetProcessGraph(const eCAL::Monitoring::SMonitoring&);
+    
   }
 }

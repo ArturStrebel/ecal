@@ -23,6 +23,16 @@
 namespace eCAL
 {
 
+  CProcessGraphDCEL::CProcessGraphDCEL() 
+  {
+    Create(); 
+  }
+
+  CProcessGraphDCEL::~CProcessGraphDCEL() 
+  {
+    Destroy(); 
+  }
+
   void CProcessGraphDCEL::Create()
   {
 
@@ -33,55 +43,135 @@ namespace eCAL
 
   }
 
-  void CProcessGraphDCEL::UpdateEdgeList(const eCAL::Monitoring::SMonitoring& monitoring)
+  void CProcessGraphDCEL::UpdateProcessGraph(const eCAL::Monitoring::SMonitoring& monitoring)
   {
     std::string edgeID;
-    for(auto pub : monitoring.publisher) 
+    for( auto pub : monitoring.publisher ) 
     {
-      for(auto sub : monitoring.subscriber)
+      for( auto sub : monitoring.subscriber )
       {
-        if( sub.tname != pub.tname ) continue;
+        if( pub.tname != sub.tname ) continue;
 
-        edgeID = CProcessGraphDCEL::CreateEdgeID(pub.pid, sub.pid);
-        if( IsContainedInList(edgeID) ) continue;
+        // process graph
+        edgeID = CreateEdgeID( pub, sub, eCAL::ProcessGraph::GraphType::ProcessGraph );
+        if( !IsContainedInList( edgeID, eCAL::ProcessGraph::GraphType::ProcessGraph) )
+          AddToProcessEdgeList( CreateProcessEdge( pub, sub ) );
 
-        std::cout << "Found an edge" << std::endl;
+        // host traffic
+        edgeID = CreateEdgeID( pub, sub, eCAL::ProcessGraph::GraphType::HostTraffic );
+        if( IsContainedInList( edgeID, eCAL::ProcessGraph::GraphType::HostTraffic) )
+        {
+          auto hostEdge = FindHostEdge(edgeID); // This should always return a valid edge due to above if
+          UpdateHostBandwidth(hostEdge, 0.0 );
+        } 
+        else
+        {
+          AddToHostEdgeList(CreateHostEdge(pub, sub));
+        }
+
+        // topic tree
+        // Check if topic is already in topic tree view
+        // if yes, add pub and/or sub to tree
+        // if no, add topic + pub/sub to tree
       }
     }
   }
 
-  std::string CProcessGraphDCEL::CreateEdgeID(const int& pubID, const int& subID) 
+  std::string CProcessGraphDCEL::CreateEdgeID(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub, const int& graphType) 
   {
-    return std::to_string(pubID) + "_" + std::to_string(subID);
+    if( graphType == eCAL::ProcessGraph::GraphType::HostTraffic ) 
+      return pub.hname + "_" + sub.hname;
+    return std::to_string(pub.pid) + "_" + std::to_string(sub.pid);
   }
 
-  bool CProcessGraphDCEL::IsContainedInList(const std::string& edgeID) 
+  bool CProcessGraphDCEL::IsContainedInList(const std::string& edgeID, const int& graphType) 
   {
-    if( edgeID == "123" )
+    if( graphType == eCAL::ProcessGraph::GraphType::ProcessGraph )
+    {
+      if( m_edgeHashTable.find(edgeID) == m_edgeHashTable.end())
+        return false;
       return true;
+    }
+
+    if( graphType == eCAL::ProcessGraph::GraphType::HostTraffic )
+    {
+      auto hostEdge = FindHostEdge(edgeID); // returns an empty struct if edge not in list
+      if ( hostEdge.edgeID == "" )
+        return false;
+      return true;
+    }
+
     return false;
+    
   }
 
-  void CProcessGraphDCEL::AddToEdgeList(const eCAL::ProcessGraph::SProcessGraphEdge&) 
+  void CProcessGraphDCEL::AddToProcessEdgeList(const eCAL::ProcessGraph::SProcessGraphEdge& newEdge) 
   {
-
+    // This method assumes that edge is not already in the list
+    m_process_graph.processEdgeList.push_back(newEdge);
+    m_edgeHashTable.insert( newEdge.edgeID );
   }
 
-  std::vector<eCAL::ProcessGraph::SProcessGraphEdge> CProcessGraphDCEL::GetEdgeList(const eCAL::Monitoring::SMonitoring& monitoring) 
+  eCAL::ProcessGraph::SProcessGraphEdge CProcessGraphDCEL::CreateProcessEdge(const eCAL::Monitoring::STopicMon& pub , const eCAL::Monitoring::STopicMon& sub )
   {
-    UpdateEdgeList(monitoring);
-    return m_edgeList;
+    std::string edgeID = CreateEdgeID( pub, sub, eCAL::ProcessGraph::GraphType::ProcessGraph );
+    return 
+    {
+      edgeID,
+      pub.uname, 
+      sub.uname, 
+      pub.tname,
+      0.0, //TODO: How to get bandwidth? 
+      nullptr,
+      nullptr
+      };
+  }
+
+  eCAL::ProcessGraph::SProcessGraph CProcessGraphDCEL::GetProcessGraph(const eCAL::Monitoring::SMonitoring& monitoring) 
+  {
+    UpdateProcessGraph(monitoring);
+    return m_process_graph;
+  }
+
+  void CProcessGraphDCEL::AddToHostEdgeList(const eCAL::ProcessGraph::SHostGraphEdge& newHost )
+  {
+    m_process_graph.hostEdgeList.push_back(newHost);
+  }
+
+  eCAL::ProcessGraph::SHostGraphEdge CProcessGraphDCEL::CreateHostEdge(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub)
+  {
+    std::string edgeID_ = CreateEdgeID(pub, sub, eCAL::ProcessGraph::GraphType::HostTraffic );
+    return 
+    {
+      edgeID_,
+      pub.hname,
+      sub.hname,
+      0.0
+    };
+  }
+
+  void CProcessGraphDCEL::UpdateHostBandwidth( eCAL::ProcessGraph::SHostGraphEdge& hostEdge, double bandwidthUpdate)
+  {
+    hostEdge.bandwidth += bandwidthUpdate;
+  }
+
+  eCAL::ProcessGraph::SHostGraphEdge CProcessGraphDCEL::FindHostEdge( const std::string& edgeID_ )
+  {
+    for( auto hostIt : m_process_graph.hostEdgeList)
+      if( edgeID_ == hostIt.edgeID )
+        return hostIt;
+    return eCAL::ProcessGraph::SHostGraphEdge();
   }
 
   namespace ProcessGraph
   {
-    std::vector<SProcessGraphEdge> GetEdgeList(const eCAL::Monitoring::SMonitoring& monitoring)
+    SProcessGraph GetProcessGraph(const eCAL::Monitoring::SMonitoring& monitoring)
     {
       if (g_processgraph_dcel() != nullptr)
       {
-        return g_processgraph_dcel()->GetEdgeList(monitoring);
+        return g_processgraph_dcel()->GetProcessGraph(monitoring);
       }
-      return(std::vector<SProcessGraphEdge>());
+      return(SProcessGraph());
     }
   }
 }
