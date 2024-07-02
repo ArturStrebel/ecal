@@ -23,27 +23,27 @@
 namespace eCAL
 {
 
-  CProcessGraphDCEL::CProcessGraphDCEL() 
+  CProcessGraph::CProcessGraph() 
   {
     Create(); 
   }
 
-  CProcessGraphDCEL::~CProcessGraphDCEL() 
+  CProcessGraph::~CProcessGraph() 
   {
     Destroy(); 
   }
 
-  void CProcessGraphDCEL::Create()
+  void CProcessGraph::Create()
   {
 
   }
 
-  void CProcessGraphDCEL::Destroy()
+  void CProcessGraph::Destroy()
   {
 
   }
 
-  void CProcessGraphDCEL::UpdateProcessGraph(const eCAL::Monitoring::SMonitoring& monitoring)
+  void CProcessGraph::UpdateProcessGraph(const eCAL::Monitoring::SMonitoring& monitoring)
   {
     std::string edgeID;
     for( auto pub : monitoring.publisher ) 
@@ -77,14 +77,14 @@ namespace eCAL
     }
   }
 
-  std::string CProcessGraphDCEL::CreateEdgeID(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub, const int& graphType) 
+  std::string CProcessGraph::CreateEdgeID(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub, const int& graphType) 
   {
     if( graphType == eCAL::ProcessGraph::GraphType::HostTraffic ) 
       return pub.hname + "_" + sub.hname;
     return std::to_string(pub.pid) + "_" + std::to_string(sub.pid);
   }
 
-  bool CProcessGraphDCEL::IsContainedInList(const std::string& edgeID, const int& graphType) 
+  bool CProcessGraph::IsContainedInList(const std::string& edgeID, const int& graphType) 
   {
     if( graphType == eCAL::ProcessGraph::GraphType::ProcessGraph )
     {
@@ -105,14 +105,14 @@ namespace eCAL
     
   }
 
-  void CProcessGraphDCEL::AddToProcessEdgeList(const eCAL::ProcessGraph::SProcessGraphEdge& newEdge) 
+  void CProcessGraph::AddToProcessEdgeList(const eCAL::ProcessGraph::SProcessGraphEdge& newEdge) 
   {
     // This method assumes that edge is not already in the list
     m_process_graph.processEdgeList.push_back(newEdge);
     m_edgeHashTable.insert( newEdge.edgeID );
   }
 
-  eCAL::ProcessGraph::SProcessGraphEdge CProcessGraphDCEL::CreateProcessEdge(const eCAL::Monitoring::STopicMon& pub , const eCAL::Monitoring::STopicMon& sub )
+  eCAL::ProcessGraph::SProcessGraphEdge CProcessGraph::CreateProcessEdge(const eCAL::Monitoring::STopicMon& pub , const eCAL::Monitoring::STopicMon& sub )
   {
     std::string edgeID = CreateEdgeID( pub, sub, eCAL::ProcessGraph::GraphType::ProcessGraph );
     return 
@@ -127,18 +127,18 @@ namespace eCAL
       };
   }
 
-  eCAL::ProcessGraph::SProcessGraph CProcessGraphDCEL::GetProcessGraph(const eCAL::Monitoring::SMonitoring& monitoring) 
+  eCAL::ProcessGraph::SProcessGraph CProcessGraph::GetProcessGraph(const eCAL::Monitoring::SMonitoring& monitoring) 
   {
     UpdateProcessGraph(monitoring);
     return m_process_graph;
   }
 
-  void CProcessGraphDCEL::AddToHostEdgeList(const eCAL::ProcessGraph::SHostGraphEdge& newHost )
+  void CProcessGraph::AddToHostEdgeList(const eCAL::ProcessGraph::SHostGraphEdge& newHost )
   {
     m_process_graph.hostEdgeList.push_back(newHost);
   }
 
-  eCAL::ProcessGraph::SHostGraphEdge CProcessGraphDCEL::CreateHostEdge(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub)
+  eCAL::ProcessGraph::SHostGraphEdge CProcessGraph::CreateHostEdge(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub)
   {
     std::string edgeID_ = CreateEdgeID(pub, sub, eCAL::ProcessGraph::GraphType::HostTraffic );
     return 
@@ -150,12 +150,12 @@ namespace eCAL
     };
   }
 
-  void CProcessGraphDCEL::UpdateHostBandwidth( eCAL::ProcessGraph::SHostGraphEdge& hostEdge, double bandwidthUpdate)
+  void CProcessGraph::UpdateHostBandwidth( eCAL::ProcessGraph::SHostGraphEdge& hostEdge, double bandwidthUpdate)
   {
     hostEdge.bandwidth += bandwidthUpdate;
   }
 
-  eCAL::ProcessGraph::SHostGraphEdge CProcessGraphDCEL::FindHostEdge( const std::string& edgeID_ )
+  eCAL::ProcessGraph::SHostGraphEdge CProcessGraph::FindHostEdge( const std::string& edgeID_ )
   {
     for( auto hostIt : m_process_graph.hostEdgeList)
       if( edgeID_ == hostIt.edgeID )
@@ -167,9 +167,9 @@ namespace eCAL
   {
     SProcessGraph GetProcessGraph(const eCAL::Monitoring::SMonitoring& monitoring)
     {
-      if (g_processgraph_dcel() != nullptr)
+      if (g_processgraph() != nullptr)
       {
-        return g_processgraph_dcel()->GetProcessGraph(monitoring);
+        return g_processgraph()->GetProcessGraph(monitoring);
       }
       return(SProcessGraph());
     }

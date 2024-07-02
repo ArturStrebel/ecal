@@ -34,12 +34,12 @@
 namespace eCAL
 {
 
-  class CProcessGraphDCEL
+  class CProcessGraph
   {
     public:
 
-      CProcessGraphDCEL();
-      ~CProcessGraphDCEL();
+      CProcessGraph();
+      ~CProcessGraph();
 
       void Create();
       void Destroy();

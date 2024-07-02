@@ -200,9 +200,9 @@ namespace eCAL
     /////////////////////
     if ((components_ & Init::Monitoring) != 0u) // TODO: Change Monitoring to own parameter
     {
-      if (process_graph_dcel_instance == nullptr)
+      if (process_graph_instance == nullptr)
       {
-        process_graph_dcel_instance = std::make_unique<CProcessGraphDCEL>();
+        process_graph_instance = std::make_unique<CProcessGraph>();
         new_initialization = true;
       }
     }
@@ -234,7 +234,7 @@ namespace eCAL
     if (clientgate_instance && ((components_ & Init::Service) != 0u))             clientgate_instance->Create();
     if (timegate_instance && ((components_ & Init::TimeSync) != 0u))              timegate_instance->Create(CTimeGate::eTimeSyncMode::realtime);
     if (monitoring_instance && ((components_ & Init::Monitoring) != 0u))          monitoring_instance->Create();
-    if (process_graph_dcel_instance && ((components_ & Init::Monitoring) != 0u))  process_graph_dcel_instance->Create();
+    if (process_graph_instance && ((components_ & Init::Monitoring) != 0u))  process_graph_instance->Create();
 
     initialized =  true;
     components  |= components_;
