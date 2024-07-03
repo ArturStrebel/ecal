@@ -53,11 +53,20 @@ namespace eCAL
       double bandwidth;
     };
 
+    struct STopicTreeItem
+    {
+      int processID;
+      std::string topicName;
+      std::string direction; //Subscriber or Publisher
+      std::string processName;
+      std::string description;
+    };
+
     struct SProcessGraph
     {
-      std::vector<SProcessGraphEdge> processEdgeList;
-      std::vector<SHostGraphEdge> hostEdgeList;
-      // TODO: Topic tree
+      std::vector<SProcessGraphEdge> processEdges;
+      std::vector<SHostGraphEdge> hostEdges;
+      std::vector<STopicTreeItem> topicTreeItems;
     };
 
     ECAL_API SProcessGraph GetProcessGraph(const eCAL::Monitoring::SMonitoring&);

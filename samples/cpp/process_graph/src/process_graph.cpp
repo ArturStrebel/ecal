@@ -30,7 +30,6 @@ int main(int argc, char **argv)
 
   // monitoring instance to store snapshot
   eCAL::Monitoring::SMonitoring monitoring;
-
   eCAL::ProcessGraph::SProcessGraph processgraph;
 
   // monitor for ever
@@ -40,18 +39,6 @@ int main(int argc, char **argv)
     eCAL::Monitoring::GetMonitoring(monitoring, eCAL::Monitoring::Entity::All);
 
     processgraph = eCAL::ProcessGraph::GetProcessGraph(monitoring);
-
-<<<<<<< Updated upstream
-    // do stuff with process graph
-=======
-    // do stuff with edge list
-    std::cout << "Beginn der Ausgabe" << std::endl;
-
-    for (const auto &element : edgeList) {
-        std::cout << element.topicname << ' ' ;
-    }
-    std::cout << std::endl;
->>>>>>> Stashed changes
 
     // sleep few milliseconds
     eCAL::Process::SleepMS(g_mon_timing);

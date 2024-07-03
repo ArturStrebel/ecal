@@ -49,21 +49,27 @@ namespace eCAL
     private:
 
       // General functions
-      std::string CreateEdgeID(const eCAL::Monitoring::STopicMon& pub_ , const eCAL::Monitoring::STopicMon& sub_, const int& graphType);
-      bool IsContainedInList(const std::string& edgeID, const int& graphType);
+      std::string CreateEdgeID(const eCAL::Monitoring::STopicMon& pub , const eCAL::Monitoring::STopicMon& sub, const int& graphType);
+      bool IsContainedIn(const std::string& edgeID, const int& graphType);
+      bool IsContainedIn(const int& edgeID, const int& graphType);
       void UpdateProcessGraph(const eCAL::Monitoring::SMonitoring&);
 
       // Functions for process view
-      void AddToProcessEdgeList(const eCAL::ProcessGraph::SProcessGraphEdge&);
-      eCAL::ProcessGraph::SProcessGraphEdge CreateProcessEdge(const eCAL::Monitoring::STopicMon& pub_ , const eCAL::Monitoring::STopicMon& sub_ );
+      void AddToProcessEdges(const eCAL::ProcessGraph::SProcessGraphEdge&);
+      eCAL::ProcessGraph::SProcessGraphEdge CreateProcessEdge(const eCAL::Monitoring::STopicMon& pub , const eCAL::Monitoring::STopicMon& sub, std::string edgeID );
       
       // Functions for host traffic view
-      void AddToHostEdgeList(const eCAL::ProcessGraph::SHostGraphEdge& newHost);
-      eCAL::ProcessGraph::SHostGraphEdge CreateHostEdge(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub);
+      void AddToHostEdges(const eCAL::ProcessGraph::SHostGraphEdge& newHost);
+      eCAL::ProcessGraph::SHostGraphEdge CreateHostEdge(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub, std::string edgeID);
       void UpdateHostBandwidth(eCAL::ProcessGraph::SHostGraphEdge& hostEdge, double bandwidthUpdate);
       eCAL::ProcessGraph::SHostGraphEdge FindHostEdge( const std::string& hostID );
 
+      // Functions for topic tree
+      eCAL::ProcessGraph::STopicTreeItem FindProcess( const int& processID );
+      void CProcessGraph::AddToTopicTree (const eCAL::ProcessGraph::STopicTreeItem& newProcess );
+      eCAL::ProcessGraph::STopicTreeItem CProcessGraph::CreateTopicTreeItem(const eCAL::Monitoring::STopicMon& process );
+
       std::unordered_set<std::string> m_edgeHashTable; 
-      eCAL::ProcessGraph::SProcessGraph m_process_graph;
+      eCAL::ProcessGraph::SProcessGraph m_process_graph; 
   };
 }
