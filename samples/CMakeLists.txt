@@ -138,6 +138,7 @@ endif()
 
 # process graph
 add_subdirectory(cpp/process_graph/)
+add_subdirectory(cpp/process_graph_api/)
 
 # --------------------------------------------------------
 # python samples
