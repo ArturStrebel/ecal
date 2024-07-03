@@ -19,6 +19,7 @@
 
 #include "ecal_process_graph.h"
 #include "ecal_global_accessors.h"
+#include <algorithm>
 
 namespace eCAL
 {
@@ -81,6 +82,12 @@ namespace eCAL
           AddToTopicTree(CreateTopicTreeItem(pub));
         }
     }
+    std::sort(m_process_graph.topicTreeItems.begin(), m_process_graph.topicTreeItems.end(),
+               [] (const eCAL::ProcessGraph::STopicTreeItem& lhs, const eCAL::ProcessGraph::STopicTreeItem& rhs) 
+               {
+                return (lhs.topicName == rhs.topicName ? (lhs.direction < rhs.direction) : (lhs.topicName < rhs.topicName) );
+               }
+      );
   }
 
   std::string CProcessGraph::CreateEdgeID(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub, const int& graphType) 
