@@ -51,7 +51,7 @@ namespace eCAL
       // General functions
       std::string CreateEdgeID(const eCAL::Monitoring::STopicMon& pub , const eCAL::Monitoring::STopicMon& sub, const int& graphType);
       void UpdateProcessGraph(const eCAL::Monitoring::SMonitoring& monitoring);
-      double GetBandwidth(const int& processID);
+        double CProcessGraph::GetBandwidth(const int& processID, const std::vector<eCAL::Monitoring::SProcessMon> processList);
 
       // Functions for process view
       void AddToProcessEdges(const eCAL::ProcessGraph::SProcessGraphEdge& newEdge);

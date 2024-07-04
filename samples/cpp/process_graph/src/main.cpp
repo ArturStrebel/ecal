@@ -24,32 +24,32 @@ int main(int argc, char **argv)
 
 
     // host graph
-    QList<eCAL::ProcessGraph::SHostGraphEdge*> host_edges = {
-        new eCAL::ProcessGraph::SHostGraphEdge(true, "TEST_EDGE_1", "HPC 1", "EDGE 1", 24.34),
-        new eCAL::ProcessGraph::SHostGraphEdge(true, "TEST_EDGE_1", "EDGE 1", "HPC 1", 5.0),
-        new eCAL::ProcessGraph::SHostGraphEdge(true, "TEST_EDGE_1", "HPC 1", "HPC 1", 1.34)};
+    QList<eCAL::ProcessGraph::SHostGraphEdge> host_edges = {
+        {true, "TEST_EDGE_1", "HPC 1", "EDGE 1", 24.34},
+        {true, "TEST_EDGE_1", "EDGE 1", "HPC 1", 5.0},
+        {true, "TEST_EDGE_1", "HPC 1", "HPC 1", 1.34}};
 
     std::map<std::string, Node*> host_map;
     QList<Edge*> ui_edges;
 
     for (auto edge : host_edges) {
-        bool outHostExists = host_map.find(edge->outgoingHostName) != host_map.end();
-        bool inHostExists = host_map.find(edge->incomingHostName) != host_map.end();
+        bool outHostExists = host_map.find(edge.outgoingHostName) != host_map.end();
+        bool inHostExists = host_map.find(edge.incomingHostName) != host_map.end();
         if (!inHostExists) {
-            host_map[edge->incomingHostName] = new Node(Node::Host, edge->incomingHostName);
+            host_map[edge.incomingHostName] = new Node(Node::Host, QString::fromStdString(edge.incomingHostName));
         }
         if (!outHostExists) {
-            host_map[edge->outgoingHostName] = new Node(Node::Host, edge->outgoingHostName);
+            host_map[edge.outgoingHostName] = new Node(Node::Host, QString::fromStdString(edge.outgoingHostName));
         }
-        if (edge->outgoingHostName == edge->incomingHostName) {
-            host_map[edge->outgoingHostName]->setInternalBandwidthMbits(edge->bandwidth);
+        if (edge.outgoingHostName == edge.incomingHostName) {
+            host_map[edge.outgoingHostName]->setInternalBandwidthMbits(edge.bandwidth);
         }
-        ui_edges.append(new Edge(host_map[edge->outgoingHostName], host_map[edge->incomingHostName], true, false, "", edge->bandwidth));
+        ui_edges.append(new Edge(host_map[edge.outgoingHostName], host_map[edge.incomingHostName], true, false, "", edge.bandwidth));
     }
     
     QList<Node*> host_nodes;
     for (auto const& pair: host_map) {
-        liste.append(pair.second);
+        host_nodes.append(pair.second);
     }
 
     GraphWidget *widget1 = new GraphWidget(nullptr, host_nodes, ui_edges, "Host Network traffic");

@@ -147,15 +147,16 @@ namespace eCAL
 
   double CProcessGraph::GetBandwidth(const int& processID, const std::vector<eCAL::Monitoring::SProcessMon> processList) 
   {
-    std::vector<eCAL::ProcessGraph::STopicTreeItem>::iterator it = std::find_if(m_process_graph.topicTreeItems.begin(), m_process_graph.topicTreeItems.end(), 
-      [processID] ( eCAL::ProcessGraph::STopicTreeItem it) 
-      {
-       return it.processID == processID;
-      });
+    // std::vector<eCAL::ProcessGraph::STopicTreeItem>::iterator it = std::find_if(m_process_graph.topicTreeItems.begin(), m_process_graph.topicTreeItems.end(), 
+    //   [processID] ( eCAL::ProcessGraph::STopicTreeItem it) 
+    //   {
+    //    return it.processID == processID;
+    //   });
         
-    if ( it != m_process_graph.topicTreeItems.end() )
-      return &*it;
-    return nullptr;
+    // if ( it != m_process_graph.topicTreeItems.end() )
+    //   return &*it;
+    // return nullptr;
+    return 0.0;
   }
 
   std::string CProcessGraph::CreateEdgeID(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub, const int& graphType) 

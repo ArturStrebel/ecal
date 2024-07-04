@@ -24,7 +24,7 @@ public:
 
     Node(NodeType nodeType, QString name, std::optional<qreal> internalBandwidth_mbits = std::nullopt);
 
-    void Node::setInternalBandwidthMbits(qreal internalBandwidth_mbits);
+    void setInternalBandwidthMbits(qreal internalBandwidth_mbits);
     void addEdge(Edge *edge);
     QList<Edge *> edges() const;
 
