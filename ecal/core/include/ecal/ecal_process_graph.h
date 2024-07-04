@@ -35,6 +35,7 @@ namespace eCAL
 
     struct SProcessGraphEdge
     {
+      bool isAlive;
       std::string edgeID;
       std::string publisherName;
       std::string subscriberName;
@@ -47,6 +48,7 @@ namespace eCAL
 
     struct SHostGraphEdge
     {
+      bool isAlive;
       std::string edgeID;
       std::string outgoingHostName;
       std::string incomingHostName;
@@ -55,6 +57,7 @@ namespace eCAL
 
     struct STopicTreeItem
     {
+      bool isAlive;
       int processID;
       std::string topicName;
       std::string direction; //Subscriber or Publisher
