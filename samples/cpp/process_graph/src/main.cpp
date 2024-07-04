@@ -3,9 +3,11 @@
 
 #include "graphwidget.h"
 #include "mainwindow.h"
-#include "node.h"
 #include "edge.h"
-
+#include "node.h"
+#include <ecal/ecal.h>
+#include <iostream>
+#include <map>
 
 #include <QApplication>
 #include <QTime>
@@ -22,26 +24,35 @@ int main(int argc, char **argv)
 
 
     // host graph
-    Node *host1 = new Node(Node::Host, "HPC 1", 0.0);
-    Node *host2 = new Node(Node::Host, "EDGE 1", 1.3);
-    Node *host3 = new Node(Node::Host, "ZONE REAR", 100.7);
-    Node *host4 = new Node(Node::Host, "EDG 2", 32.8);
+    QList<eCAL::ProcessGraph::SHostGraphEdge*> host_edges = {
+        new eCAL::ProcessGraph::SHostGraphEdge(true, "TEST_EDGE_1", "HPC 1", "EDGE 1", 24.34),
+        new eCAL::ProcessGraph::SHostGraphEdge(true, "TEST_EDGE_1", "EDGE 1", "HPC 1", 5.0),
+        new eCAL::ProcessGraph::SHostGraphEdge(true, "TEST_EDGE_1", "HPC 1", "HPC 1", 1.34)};
 
-    QList<Node*> host_nodes = {host1, host2, host3, host4};
+    std::map<std::string, Node*> host_map;
+    QList<Edge*> ui_edges;
 
-    QList<Edge*> host_edges = {
-        new Edge(host1, host2, false, true, "", 5.0),
-        new Edge(host2, host1, false, true, "", 5.0),
-        new Edge(host1, host3, false, true, "", 3.2),
-        new Edge(host3, host1, false, true, "", 2.3),
-        new Edge(host1, host4, false, true, "", 0.01),
-        new Edge(host4, host1, false, true, "", 0.9),
-        new Edge(host3, host4, false, true, "", 9.8),
-        new Edge(host4, host3, false, true, "", 0.1),
-        new Edge(host2, host3, false, true, "", 9.8),
-        new Edge(host3, host2, false, true, "", 6.5)};
+    for (auto edge : host_edges) {
+        bool outHostExists = host_map.find(edge->outgoingHostName) != host_map.end();
+        bool inHostExists = host_map.find(edge->incomingHostName) != host_map.end();
+        if (!inHostExists) {
+            host_map[edge->incomingHostName] = new Node(Node::Host, edge->incomingHostName);
+        }
+        if (!outHostExists) {
+            host_map[edge->outgoingHostName] = new Node(Node::Host, edge->outgoingHostName);
+        }
+        if (edge->outgoingHostName == edge->incomingHostName) {
+            host_map[edge->outgoingHostName]->setInternalBandwidthMbits(edge->bandwidth);
+        }
+        ui_edges.append(new Edge(host_map[edge->outgoingHostName], host_map[edge->incomingHostName], true, false, "", edge->bandwidth));
+    }
+    
+    QList<Node*> host_nodes;
+    for (auto const& pair: host_map) {
+        liste.append(pair.second);
+    }
 
-    GraphWidget *widget1 = new GraphWidget(nullptr, host_nodes, host_edges, "Host Network traffic");
+    GraphWidget *widget1 = new GraphWidget(nullptr, host_nodes, ui_edges, "Host Network traffic");
 
     // Topic View
     MainWindow *widget2 = new MainWindow;

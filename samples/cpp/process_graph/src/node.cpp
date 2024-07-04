@@ -11,7 +11,7 @@
 #include <QStyleOption>
 
 Node::Node(NodeType nodeType, QString name, std::optional<qreal> internalBandwidth_mbits)
-    : nodeType(nodeType)
+    : nodeType(nodeType), name(name), internalBandwidth_mbits(internalBandwidth_mbits)
 {
     setFlag(ItemIsMovable);
     setFlag(ItemSendsGeometryChanges);
@@ -27,6 +27,12 @@ Node::Node(NodeType nodeType, QString name, std::optional<qreal> internalBandwid
     label = new QGraphicsTextItem(this);
     label->setPlainText(text_label);
     label->setPos(5, -30); // Position relativ zum Knoten
+}
+
+void Node::setInternalBandwidthMbits(qreal internalBandwidth_mbits) {
+    QString text_label = name;
+    text_label += "\n  🗘" + QString::number(internalBandwidth_mbits) + " MBit/s";
+    label->setPlainText(text_label);
 }
 
 void Node::addEdge(Edge *edge)
