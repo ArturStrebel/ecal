@@ -24,6 +24,7 @@ public:
 
     Node(NodeType nodeType, QString name, std::optional<qreal> internalBandwidth_mbits = std::nullopt);
 
+    void Node::setInternalBandwidthMbits(qreal internalBandwidth_mbits);
     void addEdge(Edge *edge);
     QList<Edge *> edges() const;
 
@@ -49,6 +50,8 @@ private:
     QPointF newPos;
     GraphWidget *graph;
     QGraphicsTextItem *label;
+    std::optional<qreal> internalBandwidth_mbits = std::nullopt;
+    QString name;
 };
 //! [0]
 
