@@ -145,6 +145,19 @@ namespace eCAL
       );
   }
 
+  double CProcessGraph::GetBandwidth(const int& processID, const std::vector<eCAL::Monitoring::SProcessMon> processList) 
+  {
+    std::vector<eCAL::ProcessGraph::STopicTreeItem>::iterator it = std::find_if(m_process_graph.topicTreeItems.begin(), m_process_graph.topicTreeItems.end(), 
+      [processID] ( eCAL::ProcessGraph::STopicTreeItem it) 
+      {
+       return it.processID == processID;
+      });
+        
+    if ( it != m_process_graph.topicTreeItems.end() )
+      return &*it;
+    return nullptr;
+  }
+
   std::string CProcessGraph::CreateEdgeID(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub, const int& graphType) 
   {
     if( graphType == eCAL::ProcessGraph::GraphType::HostTraffic ) 
@@ -159,7 +172,7 @@ namespace eCAL
     m_edgeHashTable.insert( newEdge.edgeID );
   }
 
-  eCAL::ProcessGraph::SProcessGraphEdge CProcessGraph::CreateProcessEdge(const eCAL::Monitoring::STopicMon& pub , const eCAL::Monitoring::STopicMon& sub, std::string edgeID )
+  eCAL::ProcessGraph::SProcessGraphEdge CProcessGraph::CreateProcessEdge(const eCAL::Monitoring::STopicMon& pub , const eCAL::Monitoring::STopicMon& sub, const std::string& edgeID )
   {
     return 
     {
@@ -192,7 +205,7 @@ namespace eCAL
     m_process_graph.hostEdges.push_back(newHost);
   }
 
-  eCAL::ProcessGraph::SHostGraphEdge CProcessGraph::CreateHostEdge(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub, std::string edgeID)
+  eCAL::ProcessGraph::SHostGraphEdge CProcessGraph::CreateHostEdge(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub, const std::string& edgeID)
   {
     return 
     {
@@ -204,7 +217,7 @@ namespace eCAL
     };
   }
 
-  void CProcessGraph::UpdateHostBandwidth( eCAL::ProcessGraph::SHostGraphEdge& hostEdge, double bandwidthUpdate)
+  void CProcessGraph::UpdateHostBandwidth( eCAL::ProcessGraph::SHostGraphEdge& hostEdge, const double& bandwidthUpdate)
   {
     hostEdge.bandwidth += bandwidthUpdate;
   }
