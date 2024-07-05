@@ -54,6 +54,7 @@ namespace eCAL
   void CProcessGraph::UpdateProcessGraph(const eCAL::Monitoring::SMonitoring& monitoring)
   {
     std::string edgeID;
+    long long publisherBandwidth;
 
     // remove inactive processes from each graph
     for (auto it = m_process_graph.processEdges.begin(); it != m_process_graph.processEdges.end();)
@@ -78,7 +79,7 @@ namespace eCAL
         it = m_process_graph.hostEdges.erase(it);
       else 
       {
-        it->bandwidth = 0.0; // recompute current bandwidth in every cycle
+        it->bandwidth = 0; // recompute current bandwidth in every cycle
         it->isAlive = false;
         ++it;
       }
@@ -97,6 +98,9 @@ namespace eCAL
 
     for( const auto pub : monitoring.publisher ) 
     {
+
+      publisherBandwidth = GetBandwidth(pub.pid, monitoring.process);
+
       for( const auto sub : monitoring.subscriber )
       {
         // topic tree for subscriber
@@ -112,7 +116,7 @@ namespace eCAL
         edgeID = CreateEdgeID( pub, sub, eCAL::ProcessGraph::GraphType::ProcessGraph );
         auto processEdge = FindProcessEdge(edgeID);
         if( processEdge == nullptr)
-          AddToProcessEdges( CreateProcessEdge( pub, sub, edgeID ) );
+          AddToProcessEdges( CreateProcessEdge( pub, sub, edgeID, publisherBandwidth ) );
         else
           processEdge->isAlive = true;
         
@@ -120,11 +124,11 @@ namespace eCAL
         edgeID = CreateEdgeID( pub, sub, eCAL::ProcessGraph::GraphType::HostTraffic );
         auto hostEdge = FindHostEdge(edgeID);
         if( hostEdge == nullptr )
-          AddToHostEdges(CreateHostEdge(pub, sub, edgeID));
+          AddToHostEdges(CreateHostEdge(pub, sub, edgeID, publisherBandwidth));
         else
         {
           hostEdge->isAlive = true;
-          UpdateHostBandwidth(*hostEdge, std::rand() / RAND_MAX); // Add BW of this connection
+          UpdateHostBandwidth(*hostEdge, publisherBandwidth);
         }
       }
 
@@ -145,18 +149,17 @@ namespace eCAL
       );
   }
 
-  double CProcessGraph::GetBandwidth(const int& processID, const std::vector<eCAL::Monitoring::SProcessMon> processList) 
+  long long CProcessGraph::GetBandwidth(const int& processID, const std::vector<eCAL::Monitoring::SProcessMon> processList) 
   {
-    // std::vector<eCAL::ProcessGraph::STopicTreeItem>::iterator it = std::find_if(m_process_graph.topicTreeItems.begin(), m_process_graph.topicTreeItems.end(), 
-    //   [processID] ( eCAL::ProcessGraph::STopicTreeItem it) 
-    //   {
-    //    return it.processID == processID;
-    //   });
+    auto it = std::find_if(processList.begin(), processList.end(), 
+      [processID] ( const eCAL::Monitoring::SProcessMon& it) 
+      {
+       return it.pid == processID;
+      });
         
-    // if ( it != m_process_graph.topicTreeItems.end() )
-    //   return &*it;
-    // return nullptr;
-    return 0.0;
+    if ( it != processList.end() )
+      return it->datawrite;
+    return 0;
   }
 
   std::string CProcessGraph::CreateEdgeID(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub, const int& graphType) 
@@ -173,7 +176,7 @@ namespace eCAL
     m_edgeHashTable.insert( newEdge.edgeID );
   }
 
-  eCAL::ProcessGraph::SProcessGraphEdge CProcessGraph::CreateProcessEdge(const eCAL::Monitoring::STopicMon& pub , const eCAL::Monitoring::STopicMon& sub, const std::string& edgeID )
+  eCAL::ProcessGraph::SProcessGraphEdge CProcessGraph::CreateProcessEdge(const eCAL::Monitoring::STopicMon& pub , const eCAL::Monitoring::STopicMon& sub, const std::string& edgeID, const long long& hostedge )
   {
     return 
     {
@@ -182,7 +185,7 @@ namespace eCAL
       pub.uname, 
       sub.uname, 
       pub.tname,
-      std::rand() / (double) RAND_MAX, //TODO: How to get bandwidth? 
+      hostedge,
       nullptr,
       nullptr
       };
@@ -190,8 +193,8 @@ namespace eCAL
 
   eCAL::ProcessGraph::SProcessGraphEdge* CProcessGraph::FindProcessEdge(const std::string& edgeID)
   {
-    std::vector<eCAL::ProcessGraph::SProcessGraphEdge>::iterator it = std::find_if(m_process_graph.processEdges.begin(), m_process_graph.processEdges.end(), 
-      [edgeID] ( eCAL::ProcessGraph::SProcessGraphEdge it) 
+    auto it = std::find_if(m_process_graph.processEdges.begin(), m_process_graph.processEdges.end(), 
+      [edgeID] ( const eCAL::ProcessGraph::SProcessGraphEdge& it) 
       {
        return it.edgeID == edgeID;
       });
@@ -206,7 +209,7 @@ namespace eCAL
     m_process_graph.hostEdges.push_back(newHost);
   }
 
-  eCAL::ProcessGraph::SHostGraphEdge CProcessGraph::CreateHostEdge(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub, const std::string& edgeID)
+  eCAL::ProcessGraph::SHostGraphEdge CProcessGraph::CreateHostEdge(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub, const std::string& edgeID, const long long& bandwidth)
   {
     return 
     {
@@ -214,19 +217,19 @@ namespace eCAL
       edgeID,
       pub.hname,
       sub.hname,
-      std::rand() / (double) RAND_MAX
+      bandwidth
     };
   }
 
-  void CProcessGraph::UpdateHostBandwidth( eCAL::ProcessGraph::SHostGraphEdge& hostEdge, const double& bandwidthUpdate)
+  void CProcessGraph::UpdateHostBandwidth( eCAL::ProcessGraph::SHostGraphEdge& hostEdge, const long long& bandwidthUpdate)
   {
     hostEdge.bandwidth += bandwidthUpdate;
   }
 
   eCAL::ProcessGraph::SHostGraphEdge* CProcessGraph::FindHostEdge( const std::string& edgeID )
   {
-    std::vector<eCAL::ProcessGraph::SHostGraphEdge>::iterator it = std::find_if(m_process_graph.hostEdges.begin(), m_process_graph.hostEdges.end(), 
-      [edgeID] ( eCAL::ProcessGraph::SHostGraphEdge it) 
+    auto it = std::find_if(m_process_graph.hostEdges.begin(), m_process_graph.hostEdges.end(), 
+      [edgeID] ( const eCAL::ProcessGraph::SHostGraphEdge& it) 
       {
        return it.edgeID == edgeID;
       });
@@ -238,8 +241,8 @@ namespace eCAL
 
   eCAL::ProcessGraph::STopicTreeItem* CProcessGraph::FindProcess( const int& processID )
   {
-    std::vector<eCAL::ProcessGraph::STopicTreeItem>::iterator it = std::find_if(m_process_graph.topicTreeItems.begin(), m_process_graph.topicTreeItems.end(), 
-      [processID] ( eCAL::ProcessGraph::STopicTreeItem it) 
+    auto it = std::find_if(m_process_graph.topicTreeItems.begin(), m_process_graph.topicTreeItems.end(), 
+      [processID] ( const eCAL::ProcessGraph::STopicTreeItem& it) 
       {
        return it.processID == processID;
       });
