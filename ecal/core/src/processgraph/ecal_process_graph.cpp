@@ -149,7 +149,7 @@ namespace eCAL
       );
   }
 
-  long long CProcessGraph::GetBandwidth(const int& processID, const std::vector<eCAL::Monitoring::SProcessMon> processList) 
+  double CProcessGraph::GetBandwidth(const int& processID, const std::vector<eCAL::Monitoring::SProcessMon> processList) 
   {
     auto it = std::find_if(processList.begin(), processList.end(), 
       [processID] ( const eCAL::Monitoring::SProcessMon& it) 
@@ -158,7 +158,7 @@ namespace eCAL
       });
         
     if ( it != processList.end() )
-      return it->datawrite;
+      return it->datawrite * 1024 * 1024 / 8; // Scale from Byte/s to Mbit/s
     return 0;
   }
 
@@ -176,7 +176,7 @@ namespace eCAL
     m_edgeHashTable.insert( newEdge.edgeID );
   }
 
-  eCAL::ProcessGraph::SProcessGraphEdge CProcessGraph::CreateProcessEdge(const eCAL::Monitoring::STopicMon& pub , const eCAL::Monitoring::STopicMon& sub, const std::string& edgeID, const long long& hostedge )
+  eCAL::ProcessGraph::SProcessGraphEdge CProcessGraph::CreateProcessEdge(const eCAL::Monitoring::STopicMon& pub , const eCAL::Monitoring::STopicMon& sub, const std::string& edgeID, const  double& hostedge )
   {
     return 
     {
@@ -209,7 +209,7 @@ namespace eCAL
     m_process_graph.hostEdges.push_back(newHost);
   }
 
-  eCAL::ProcessGraph::SHostGraphEdge CProcessGraph::CreateHostEdge(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub, const std::string& edgeID, const long long& bandwidth)
+  eCAL::ProcessGraph::SHostGraphEdge CProcessGraph::CreateHostEdge(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub, const std::string& edgeID, const double& bandwidth)
   {
     return 
     {
@@ -221,7 +221,7 @@ namespace eCAL
     };
   }
 
-  void CProcessGraph::UpdateHostBandwidth( eCAL::ProcessGraph::SHostGraphEdge& hostEdge, const long long& bandwidthUpdate)
+  void CProcessGraph::UpdateHostBandwidth( eCAL::ProcessGraph::SHostGraphEdge& hostEdge, const double& bandwidthUpdate)
   {
     hostEdge.bandwidth += bandwidthUpdate;
   }

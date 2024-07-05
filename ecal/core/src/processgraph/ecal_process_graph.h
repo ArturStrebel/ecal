@@ -51,17 +51,17 @@ namespace eCAL
       // General functions
       std::string CreateEdgeID(const eCAL::Monitoring::STopicMon& pub , const eCAL::Monitoring::STopicMon& sub, const int& graphType);
       void UpdateProcessGraph(const eCAL::Monitoring::SMonitoring& monitoring);
-      long long CProcessGraph::GetBandwidth(const int& processID, const std::vector<eCAL::Monitoring::SProcessMon> processList);
+      double CProcessGraph::GetBandwidth(const int& processID, const std::vector<eCAL::Monitoring::SProcessMon> processList);
 
       // Functions for process view
       void AddToProcessEdges(const eCAL::ProcessGraph::SProcessGraphEdge& newEdge);
-      eCAL::ProcessGraph::SProcessGraphEdge CreateProcessEdge(const eCAL::Monitoring::STopicMon& pub , const eCAL::Monitoring::STopicMon& sub, const std::string& edgeID, const long long& publisherBandwidth );
+      eCAL::ProcessGraph::SProcessGraphEdge CreateProcessEdge(const eCAL::Monitoring::STopicMon& pub , const eCAL::Monitoring::STopicMon& sub, const std::string& edgeID, const double& publisherBandwidth );
       eCAL::ProcessGraph::SProcessGraphEdge* FindProcessEdge(const std::string& edgeID);
       
       // Functions for host traffic view
       void AddToHostEdges(const eCAL::ProcessGraph::SHostGraphEdge& newHost);
-      eCAL::ProcessGraph::SHostGraphEdge CreateHostEdge(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub, const std::string& edgeID, const long long& publisherBandwidth);
-      void UpdateHostBandwidth(eCAL::ProcessGraph::SHostGraphEdge& hostEdge, const long long& bandwidthUpdate);
+      eCAL::ProcessGraph::SHostGraphEdge CreateHostEdge(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub, const std::string& edgeID, const double& publisherBandwidth);
+      void UpdateHostBandwidth(eCAL::ProcessGraph::SHostGraphEdge& hostEdge, const double& bandwidthUpdate);
       eCAL::ProcessGraph::SHostGraphEdge* FindHostEdge( const std::string& hostID );
 
       // Functions for topic tree

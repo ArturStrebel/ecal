@@ -40,7 +40,7 @@ namespace eCAL
       std::string publisherName;
       std::string subscriberName;
       std::string topicName;
-      long long bandwidth;
+      double bandwidth;  // stored in Mbit/s
 
       SProcessGraphEdge* publisherNext = nullptr;
       SProcessGraphEdge* subscriberNext = nullptr;
@@ -52,7 +52,7 @@ namespace eCAL
       std::string edgeID;
       std::string outgoingHostName;
       std::string incomingHostName;
-      long long bandwidth;
+      double bandwidth;  // stored in Mbit/s
     };
 
     struct STopicTreeItem
