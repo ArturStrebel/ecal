@@ -97,6 +97,25 @@ namespace eCAL
 
     for( const auto pub : monitoring.publisher ) 
     {
+      long long publisherConnections = pub.connections_loc + pub.connections_ext;
+      long long currentPublisherConnections = 0;
+
+      // create "empty" edge if no active subs for current pub
+      if (publisherConnections == 0) 
+      {
+        edgeID = std::to_string(pub.pid) + "_" + pub.tname;
+        auto processEdge = FindProcessEdge(edgeID);
+        if( proc == nullptr)
+        {
+          eCAL::Monitoring::STopicMon sub; // NOTE: Creating a temp sub here seems overkill.  
+          sub.uname = "void";              // Maybe overload CreateProcessEdge(pub,edgeID)
+          AddToProcessEdges(CreateProcessEdge(pub, sub, edgeID)); //TODO: What happens with host?
+        }
+        else           
+          proc->isAlive = true;
+      }
+
+      // check all subscribers
       for( const auto sub : monitoring.subscriber )
       {
         // topic tree for subscriber
@@ -126,6 +145,8 @@ namespace eCAL
           hostEdge->isAlive = true;
           UpdateHostBandwidth(*hostEdge, GetBandwidth(pub));
         }
+
+        if (++currentPublisherConnections == publisherConnections) break;
       }
 
       // topic tree for publisher
