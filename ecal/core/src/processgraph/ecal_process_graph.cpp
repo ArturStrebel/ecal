@@ -54,7 +54,6 @@ namespace eCAL
   void CProcessGraph::UpdateProcessGraph(const eCAL::Monitoring::SMonitoring& monitoring)
   {
     std::string edgeID;
-    long long publisherBandwidth;
 
     // remove inactive processes from each graph
     for (auto it = m_process_graph.processEdges.begin(); it != m_process_graph.processEdges.end();)
@@ -98,9 +97,6 @@ namespace eCAL
 
     for( const auto pub : monitoring.publisher ) 
     {
-
-      publisherBandwidth = GetBandwidth(pub.pid, monitoring.process);
-
       for( const auto sub : monitoring.subscriber )
       {
         // topic tree for subscriber
@@ -116,7 +112,7 @@ namespace eCAL
         edgeID = CreateEdgeID( pub, sub, eCAL::ProcessGraph::GraphType::ProcessGraph );
         auto processEdge = FindProcessEdge(edgeID);
         if( processEdge == nullptr)
-          AddToProcessEdges( CreateProcessEdge( pub, sub, edgeID, publisherBandwidth ) );
+          AddToProcessEdges( CreateProcessEdge( pub, sub, edgeID ) );
         else
           processEdge->isAlive = true;
         
@@ -124,11 +120,11 @@ namespace eCAL
         edgeID = CreateEdgeID( pub, sub, eCAL::ProcessGraph::GraphType::HostTraffic );
         auto hostEdge = FindHostEdge(edgeID);
         if( hostEdge == nullptr )
-          AddToHostEdges(CreateHostEdge(pub, sub, edgeID, publisherBandwidth));
+          AddToHostEdges(CreateHostEdge(pub, sub, edgeID));
         else
         {
           hostEdge->isAlive = true;
-          UpdateHostBandwidth(*hostEdge, publisherBandwidth);
+          UpdateHostBandwidth(*hostEdge, GetBandwidth(pub));
         }
       }
 
@@ -149,17 +145,9 @@ namespace eCAL
       );
   }
 
-  double CProcessGraph::GetBandwidth(const int& processID, const std::vector<eCAL::Monitoring::SProcessMon> processList) 
+  double CProcessGraph::GetBandwidth(const eCAL::Monitoring::STopicMon& pub) 
   {
-    auto it = std::find_if(processList.begin(), processList.end(), 
-      [processID] ( const eCAL::Monitoring::SProcessMon& it) 
-      {
-       return it.pid == processID;
-      });
-        
-    if ( it != processList.end() )
-      return it->datawrite * 1024 * 1024 / 8; // Scale from Byte/s to Mbit/s
-    return 0;
+      return (pub.tsize * 8.0 / (1024.0 * 1024.0) * (pub.dfreq / 1000.0)) ; // Scale from (Byte * mHz) to (Mbit / s)
   }
 
   std::string CProcessGraph::CreateEdgeID(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub, const int& graphType) 
@@ -176,7 +164,7 @@ namespace eCAL
     m_edgeHashTable.insert( newEdge.edgeID );
   }
 
-  eCAL::ProcessGraph::SProcessGraphEdge CProcessGraph::CreateProcessEdge(const eCAL::Monitoring::STopicMon& pub , const eCAL::Monitoring::STopicMon& sub, const std::string& edgeID, const  double& hostedge )
+  eCAL::ProcessGraph::SProcessGraphEdge CProcessGraph::CreateProcessEdge(const eCAL::Monitoring::STopicMon& pub , const eCAL::Monitoring::STopicMon& sub, const std::string& edgeID )
   {
     return 
     {
@@ -185,7 +173,7 @@ namespace eCAL
       pub.uname, 
       sub.uname, 
       pub.tname,
-      hostedge,
+      GetBandwidth(pub),
       nullptr,
       nullptr
       };
@@ -209,7 +197,7 @@ namespace eCAL
     m_process_graph.hostEdges.push_back(newHost);
   }
 
-  eCAL::ProcessGraph::SHostGraphEdge CProcessGraph::CreateHostEdge(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub, const std::string& edgeID, const double& bandwidth)
+  eCAL::ProcessGraph::SHostGraphEdge CProcessGraph::CreateHostEdge(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub, const std::string& edgeID)
   {
     return 
     {
@@ -217,7 +205,7 @@ namespace eCAL
       edgeID,
       pub.hname,
       sub.hname,
-      bandwidth
+      GetBandwidth(pub)
     };
   }
 
