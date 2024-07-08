@@ -147,7 +147,7 @@ namespace eCAL
 
   double CProcessGraph::GetBandwidth(const eCAL::Monitoring::STopicMon& pub) 
   {
-      return (pub.tsize * 8.0 / (1024.0 * 1024.0) * (pub.dfreq / 1000.0)) ; // Scale from (Byte * mHz) to (Mbit / s)
+      return (pub.tsize * 8.0 * (pub.dfreq / 1000.0)) ; // Scale from (Byte * mHz) to (Bit / s)
   }
 
   std::string CProcessGraph::CreateEdgeID(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub, const int& graphType) 
