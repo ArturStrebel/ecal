@@ -7,7 +7,7 @@
 using namespace Qt::StringLiterals;
 
 //! [0]
-TreeModel::TreeModel(const QStringList &headers, const QString &data, QObject *parent)
+TreeModel::TreeModel(const QStringList &headers, std::vector<eCAL::ProcessGraph::STopicTreeItem>& treeData, QObject *parent)
     : QAbstractItemModel(parent)
 {
     QVariantList rootData;
@@ -15,7 +15,7 @@ TreeModel::TreeModel(const QStringList &headers, const QString &data, QObject *p
         rootData << header;
 
     rootItem = std::make_unique<TreeItem>(rootData);
-    setupModelData(QStringView{data}.split(u'\n'));
+    setupModelData(treeData);
 }
 //! [0]
 
@@ -193,46 +193,42 @@ bool TreeModel::setHeaderData(int section, Qt::Orientation orientation,
     return result;
 }
 
-void TreeModel::setupModelData(const QList<QStringView> &lines)
+void TreeModel::setupModelData(const std::vector<eCAL::ProcessGraph::STopicTreeItem>& treeData)
 {
-    struct ParentIndentation
+    for ( size_t i = 0; i < treeData.size(); ) 
     {
-        TreeItem *parent;
-        qsizetype indentation;
-    };
+        rootItem->insertChildren(rootItem->childCount(), 1, rootItem->columnCount());
 
-    QList<ParentIndentation> state{{rootItem.get(), 0}};
+        auto topicItem = rootItem->child(rootItem->childCount()-1);
+        std::string currentTopic = treeData[i].topicName;
 
-    for (const auto &line : lines) {
-        qsizetype position = 0;
-        for ( ; position < line.length() && line.at(position).isSpace(); ++position) {
+        topicItem->setData(0, QString::fromStdString(currentTopic));
+        topicItem->insertChildren(0, 2, rootItem->columnCount());
+
+        while(treeData[i].topicName == currentTopic && treeData[i].direction == "Publisher")
+        {
+            auto dirItem = topicItem->child(0);
+            dirItem->setData(0, "Publisher");
+            dirItem->insertChildren(dirItem->childCount(), 1, rootItem->columnCount());
+            auto processItem = dirItem->child(dirItem->childCount() -1);
+            processItem->setData(0, QString::fromStdString(treeData[i].processName));
+            processItem->setData(1, QString::fromStdString(treeData[i].description));
+            if (++i == treeData.size())
+                break; 
         }
 
-        const QStringView lineData = line.sliced(position).trimmed();
-        if (!lineData.isEmpty()) {
-            // Read the column data from the rest of the line.
-            const auto columnStrings = lineData.split(u'\t', Qt::SkipEmptyParts);
-            QVariantList columnData;
-            columnData.reserve(columnStrings.count());
-            for (const auto &columnString : columnStrings)
-                columnData << columnString.toString();
+        if (i == treeData.size())
+            break;
 
-            if (position > state.constLast().indentation) {
-                // The last child of the current parent is now the new parent
-                // unless the current parent has no children.
-                auto *lastParent = state.constLast().parent;
-                if (lastParent->childCount() > 0)
-                    state.append({lastParent->child(lastParent->childCount() - 1), position});
-            } else {
-                while (position < state.constLast().indentation && !state.isEmpty())
-                    state.removeLast();
-            }
-
-            // Append a new item to the current parent's list of children.
-            auto *parent = state.constLast().parent;
-            parent->insertChildren(parent->childCount(), 1, rootItem->columnCount());
-            for (int column = 0; column < columnData.size(); ++column)
-                parent->child(parent->childCount() - 1)->setData(column, columnData.at(column));
-        }
-    }
+        while(treeData[i].topicName == currentTopic && treeData[i].direction == "Subscriber")
+        {
+            auto dirItem = topicItem->child(1);
+            dirItem->setData(0, "Subscriber");
+            dirItem->insertChildren(dirItem->childCount(), 1, rootItem->columnCount());
+            auto processItem = dirItem->child(dirItem->childCount() -1);
+            processItem->setData(0, QString::fromStdString(treeData[i].processName));
+            processItem->setData(1, QString::fromStdString(treeData[i].description));
+            if (++i == treeData.size())
+                break;     
+        }           
 }

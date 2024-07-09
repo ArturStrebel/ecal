@@ -34,6 +34,13 @@ int main(int argc, char **argv)
         {true, "publisher_process", "Camera", "ACU Process", "Rear_Camera", 9.8, nullptr, nullptr}
     };
 
+    process_graph.topicTreeItems = {
+        {true, 1, "T1", "Publisher", "pub1", "Hi"},
+        {true, 2, "T1", "Publisher", "pub2", "my"},
+        {true, 3, "T1", "Subscriber", "sub1", "name"},
+        {true, 4, "T2", "Publisher", "pub1", "is"}
+    };
+
     QWidget *centralWidget = new QWidget;
     QHBoxLayout *layout = new QHBoxLayout(centralWidget);
 
@@ -65,7 +72,7 @@ int main(int argc, char **argv)
     GraphWidget *widget1 = new GraphWidget(nullptr, host_nodes, host_edges, "Host Network traffic");
 
     // Topic View
-    MainWindow *widget2 = new MainWindow;
+    MainWindow *widget2 = new MainWindow(process_graph.topicTreeItems);
 
     std::map<std::string, Node*> process_map;
     QList<Edge*> process_edges;

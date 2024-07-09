@@ -7,6 +7,7 @@
 #include <QAbstractItemModel>
 #include <QModelIndex>
 #include <QVariant>
+#include <ecal/ecal.h>
 
 class TreeItem;
 
@@ -18,7 +19,7 @@ class TreeModel : public QAbstractItemModel
 public:
     Q_DISABLE_COPY_MOVE(TreeModel)
 
-    TreeModel(const QStringList &headers, const QString &data,
+    TreeModel(const QStringList &headers, std::vector<eCAL::ProcessGraph::STopicTreeItem>& treeData,
               QObject *parent = nullptr);
     ~TreeModel() override;
 //! [0] //! [1]
@@ -52,7 +53,7 @@ public:
                     const QModelIndex &parent = {}) override;
 
 private:
-    void setupModelData(const QList<QStringView> &lines);
+    void setupModelData(const std::vector<eCAL::ProcessGraph::STopicTreeItem>& treeData);
     TreeItem *getItem(const QModelIndex &index) const;
 
     std::unique_ptr<TreeItem> rootItem;

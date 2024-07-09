@@ -8,7 +8,7 @@
 
 using namespace Qt::StringLiterals;
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(std::vector<eCAL::ProcessGraph::STopicTreeItem>& treeItems, QWidget *parent)
     : QMainWindow(parent)
 {
     setupUi(this);
@@ -16,15 +16,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     const QStringList headers({tr("Topic"), tr("Description")});
 
-    QFile file(":/default.txt"_L1);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        // Handle error here
-        qDebug() << file.errorString();
-    }
-
-    auto *model = new TreeModel(headers, QString::fromUtf8(file.readAll()), this);
-    file.close();
-
+    auto *model = new TreeModel(headers, treeItems, this);
     view->setModel(model);
     for (int column = 0; column < model->columnCount(); ++column)
         view->resizeColumnToContents(column);
