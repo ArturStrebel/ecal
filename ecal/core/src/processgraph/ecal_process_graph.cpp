@@ -105,14 +105,14 @@ namespace eCAL
       {
         edgeID = std::to_string(pub.pid) + "_" + pub.tname;
         auto processEdge = FindProcessEdge(edgeID);
-        if( proc == nullptr)
+        if( processEdge == nullptr)
         {
           eCAL::Monitoring::STopicMon sub; // NOTE: Creating a temp sub here seems overkill.  
           sub.uname = "void";              // Maybe overload CreateProcessEdge(pub,edgeID)
           AddToProcessEdges(CreateProcessEdge(pub, sub, edgeID)); //TODO: What happens with host?
         }
         else           
-          proc->isAlive = true;
+          processEdge->isAlive = true;
       }
 
       // check all subscribers

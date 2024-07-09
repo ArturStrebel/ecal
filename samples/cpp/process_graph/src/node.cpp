@@ -29,9 +29,9 @@ Node::Node(NodeType nodeType, QString name, std::optional<qreal> internalBandwid
     label->setPos(5, -30); // Position relativ zum Knoten
 }
 
-void Node::setInternalBandwidthMbits(qreal internalBandwidth_mbits) {
+void Node::setInternalBandwidthMbits(qreal internalBandwidth_mbits_) {
     QString text_label = name;
-    text_label += "\n  🗘" + QString::number(internalBandwidth_mbits) + " MBit/s";
+    text_label += "\n  🗘" + QString::number(internalBandwidth_mbits_) + " MBit/s";
     label->setPlainText(text_label);
 }
 
