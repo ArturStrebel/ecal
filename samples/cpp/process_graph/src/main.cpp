@@ -57,16 +57,16 @@ int main(int argc, char **argv)
     QWidget *centralWidget = new QWidget;
     QHBoxLayout *layout = new QHBoxLayout(centralWidget);
 
-    std::map<std::string, Node*> host_map;
+    std::map<int, Node*> host_map;
     QList<Edge*> host_edges;
 
     for (auto edge : process_graph.hostEdges) {
-        host_map.insert(std::pair<std::string, Node*>(edge.incomingHostName, new Node(Node::Host, QString::fromStdString(edge.incomingHostName))));
-        host_map.insert(std::pair<std::string, Node*>(edge.outgoingHostName, new Node(Node::Host, QString::fromStdString(edge.outgoingHostName))));
+        host_map.insert(std::make_pair(edge.edgeID.first, new Node(Node::Host, QString::fromStdString(edge.outgoingHostName))));
+        host_map.insert(std::make_pair(edge.edgeID.second, new Node(Node::Host, QString::fromStdString(edge.incomingHostName))));
         if (edge.outgoingHostName == edge.incomingHostName) {
-            host_map[edge.outgoingHostName]->setInternalBandwidthMbits(edge.bandwidth);
+            host_map[edge.edgeID.first]->setInternalBandwidthMbits(edge.bandwidth);
         }
-        host_edges.append(new Edge(host_map[edge.outgoingHostName], host_map[edge.incomingHostName], true, false, "", edge.bandwidth));
+        host_edges.append(new Edge(host_map[edge.edgeID.first], host_map[edge.edgeID.second], true, false, "", edge.bandwidth));
     }
     
     QList<Node*> host_nodes;
@@ -79,13 +79,13 @@ int main(int argc, char **argv)
     // Topic View
     MainWindow *widget2 = new MainWindow(process_graph.topicTreeItems);
 
-    std::map<std::string, Node*> process_map;
+    std::map<int, Node*> process_map;
     QList<Edge*> process_edges;
 
     for (auto edge : process_graph.processEdges) {
-        process_map.insert(std::pair<std::string, Node*>(edge.publisherName, new Node(Node::Process, QString::fromStdString(edge.publisherName))));
-        process_map.insert(std::pair<std::string, Node*>(edge.subscriberName, new Node(Node::Process, QString::fromStdString(edge.subscriberName))));
-        process_edges.append(new Edge(process_map[edge.publisherName], process_map[edge.subscriberName], true, false, "", edge.bandwidth));
+        process_map.insert(std::make_pair(edge.edgeID.first, new Node(Node::Process, QString::fromStdString(edge.publisherName))));
+        process_map.insert(std::make_pair(edge.edgeID.second, new Node(Node::Process, QString::fromStdString(edge.subscriberName))));
+        process_edges.append(new Edge(process_map[edge.edgeID.first], process_map[edge.edgeID.second], true, false, "", edge.bandwidth));
     }
     
     QList<Node*> process_nodes;

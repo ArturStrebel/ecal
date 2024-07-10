@@ -53,14 +53,13 @@ namespace eCAL
 
   void CProcessGraph::UpdateProcessGraph(const eCAL::Monitoring::SMonitoring& monitoring)
   {
-    std::string edgeID;
+    std::pair<int,int> edgeID;
 
     // remove inactive processes from each graph
     for (auto it = m_process_graph.processEdges.begin(); it != m_process_graph.processEdges.end();)
     {
       if (!it->isAlive) 
       {
-        m_edgeHashTable.erase(it->edgeID);
         it = m_process_graph.processEdges.erase(it);
       }
        
@@ -103,7 +102,7 @@ namespace eCAL
       // create "empty" edge if no active subs for current pub
       if (publisherConnections == 0) 
       {
-        edgeID = std::to_string(pub.pid) + "_" + pub.tname;
+        edgeID = std::make_pair(pub.pid, 1000 * pub.pid ); // TODO: Find a truly unique solution?
         auto processEdge = FindProcessEdge(edgeID);
         if( processEdge == nullptr)
         {
@@ -171,21 +170,20 @@ namespace eCAL
       return (pub.tsize * 8.0 * (pub.dfreq / 1000.0)) ; // Scale from (Byte * mHz) to (Bit / s)
   }
 
-  std::string CProcessGraph::CreateEdgeID(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub, const int& graphType) 
+  std::pair<int,int> CProcessGraph::CreateEdgeID(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub, const int& graphType) 
   {
     if( graphType == eCAL::ProcessGraph::GraphType::HostTraffic ) 
-      return pub.hname + "_" + sub.hname;
-    return std::to_string(pub.pid) + "_" + std::to_string(sub.pid);
+      return std::pair<int,int>(pub.hid, sub.hid);
+    return std::pair<int,int>(pub.pid, sub.pid);
   }
 
     void CProcessGraph::AddToProcessEdges(const eCAL::ProcessGraph::SProcessGraphEdge& newEdge) 
   {
     // This method assumes that edge is not already in the list
     m_process_graph.processEdges.push_back(newEdge);
-    m_edgeHashTable.insert( newEdge.edgeID );
   }
 
-  eCAL::ProcessGraph::SProcessGraphEdge CProcessGraph::CreateProcessEdge(const eCAL::Monitoring::STopicMon& pub , const eCAL::Monitoring::STopicMon& sub, const std::string& edgeID )
+  eCAL::ProcessGraph::SProcessGraphEdge CProcessGraph::CreateProcessEdge(const eCAL::Monitoring::STopicMon& pub , const eCAL::Monitoring::STopicMon& sub, const std::pair<int,int>& edgeID )
   {
     return 
     {
@@ -200,7 +198,7 @@ namespace eCAL
       };
   }
 
-  eCAL::ProcessGraph::SProcessGraphEdge* CProcessGraph::FindProcessEdge(const std::string& edgeID)
+  eCAL::ProcessGraph::SProcessGraphEdge* CProcessGraph::FindProcessEdge(const std::pair<int,int>& edgeID)
   {
     auto it = std::find_if(m_process_graph.processEdges.begin(), m_process_graph.processEdges.end(), 
       [edgeID] ( const eCAL::ProcessGraph::SProcessGraphEdge& it) 
@@ -218,7 +216,7 @@ namespace eCAL
     m_process_graph.hostEdges.push_back(newHost);
   }
 
-  eCAL::ProcessGraph::SHostGraphEdge CProcessGraph::CreateHostEdge(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub, const std::string& edgeID)
+  eCAL::ProcessGraph::SHostGraphEdge CProcessGraph::CreateHostEdge(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub, const std::pair<int,int>& edgeID)
   {
     return 
     {
@@ -235,7 +233,7 @@ namespace eCAL
     hostEdge.bandwidth += bandwidthUpdate;
   }
 
-  eCAL::ProcessGraph::SHostGraphEdge* CProcessGraph::FindHostEdge( const std::string& edgeID )
+  eCAL::ProcessGraph::SHostGraphEdge* CProcessGraph::FindHostEdge( const std::pair<int,int>& edgeID )
   {
     auto it = std::find_if(m_process_graph.hostEdges.begin(), m_process_graph.hostEdges.end(), 
       [edgeID] ( const eCAL::ProcessGraph::SHostGraphEdge& it) 
@@ -273,7 +271,7 @@ namespace eCAL
       true,
       process.pid,
       process.tname,
-      process.direction, //Subscriber or Publisher
+      process.direction, // subscriber or publisher
       process.uname,
       "test"
     };
