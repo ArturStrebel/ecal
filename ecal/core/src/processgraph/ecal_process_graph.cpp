@@ -96,10 +96,9 @@ namespace eCAL
 
     for( const auto pub : monitoring.publisher ) 
     {
-      long long publisherConnections = pub.connections_loc + pub.connections_ext;
-      long long currentPublisherConnections = 0;
-
       // create "empty" edge if no active subs for current pub
+      int publisherConnections = pub.connections_loc + pub.connections_ext;
+      int currentPublisherConnections = 0;
       if (publisherConnections == 0) 
       {
         edgeID = std::make_pair(pub.pid, 1000 * pub.pid ); // TODO: Find a truly unique solution?
@@ -117,16 +116,34 @@ namespace eCAL
       // check all subscribers
       for( const auto sub : monitoring.subscriber )
       {
-        // topic tree for subscriber
+        // topic tree item for subscriber
         auto proc = FindProcess( sub.pid );
         if( proc == nullptr)
           AddToTopicTree(CreateTopicTreeItem(sub));
         else           
           proc->isAlive = true;
 
+        // create "empty" edge if no active pubs for current sub
+        int subscriberConnections = sub.connections_loc + sub.connections_ext;
+        if (subscriberConnections == 0) 
+        {
+          edgeID = std::make_pair(sub.pid, 1000 * sub.pid ); // TODO: Find a truly unique solution?
+          auto processEdge = FindProcessEdge(edgeID);
+          if( processEdge == nullptr)
+          {
+            eCAL::Monitoring::STopicMon tmpPub; // NOTE: Creating a temp sub here seems overkill.  
+            tmpPub.uname = "void";              // Maybe overload CreateProcessEdge(pub,edgeID)
+            AddToProcessEdges(CreateProcessEdge(tmpPub, sub, edgeID)); //TODO: What happens with host?
+          }
+          else           
+            processEdge->isAlive = true;
+        }
+
+        // things that have to happen for EVERY sub, must come before this point
+        // after this, only pub/sub pairs in same topic are handled
         if( pub.tname != sub.tname ) continue;
 
-        // process graph
+        // process graph edge
         edgeID = CreateEdgeID( pub, sub, eCAL::ProcessGraph::GraphType::ProcessGraph );
         auto processEdge = FindProcessEdge(edgeID);
         if( processEdge == nullptr)
@@ -134,7 +151,7 @@ namespace eCAL
         else
           processEdge->isAlive = true;
         
-        // host traffic
+        // host traffic edge
         edgeID = CreateEdgeID( pub, sub, eCAL::ProcessGraph::GraphType::HostTraffic );
         auto hostEdge = FindHostEdge(edgeID);
         if( hostEdge == nullptr )
@@ -145,10 +162,11 @@ namespace eCAL
           UpdateHostBandwidth(*hostEdge, GetBandwidth(pub));
         }
 
+        // early exit out of sub loop if current pub found all its subs
         if (++currentPublisherConnections == publisherConnections) break;
       }
 
-      // topic tree for publisher
+      // topic tree item for publisher
       auto proc = FindProcess( pub.pid );
       if( proc == nullptr)
         AddToTopicTree(CreateTopicTreeItem(pub));
