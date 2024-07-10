@@ -205,7 +205,7 @@ void TreeModel::setupModelData(const std::vector<eCAL::ProcessGraph::STopicTreeI
         topicItem->setData(0, QString::fromStdString(currentTopic));
         topicItem->insertChildren(0, 2, rootItem->columnCount());
 
-        while(treeData[i].topicName == currentTopic && treeData[i].direction == "Publisher")
+        while(treeData[i].topicName == currentTopic && treeData[i].direction == "publisher")
         {
             auto dirItem = topicItem->child(0);
             dirItem->setData(0, "Publisher");
@@ -220,7 +220,7 @@ void TreeModel::setupModelData(const std::vector<eCAL::ProcessGraph::STopicTreeI
         if (i == treeData.size())
             break;
 
-        while(treeData[i].topicName == currentTopic && treeData[i].direction == "Subscriber")
+        while(treeData[i].topicName == currentTopic && treeData[i].direction == "subscriber")
         {
             auto dirItem = topicItem->child(1);
             dirItem->setData(0, "Subscriber");

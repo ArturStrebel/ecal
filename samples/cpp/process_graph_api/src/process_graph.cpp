@@ -26,7 +26,7 @@ static int g_mon_timing = 1000;
 int main(int argc, char **argv)
 {
   // initialize eCAL core API
-  eCAL::Initialize(argc, argv, "monitoring", eCAL::Init::All);
+  eCAL::Initialize(argc, argv, "process_graph_api", eCAL::Init::All);
 
   // monitoring instance to store snapshot
   eCAL::Monitoring::SMonitoring monitoring;

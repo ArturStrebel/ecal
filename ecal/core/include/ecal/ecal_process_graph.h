@@ -60,7 +60,7 @@ namespace eCAL
       bool isAlive;
       int processID;
       std::string topicName;
-      std::string direction; //Subscriber or Publisher
+      std::string direction; // subscriber or publisher
       std::string processName;
       std::string description;
     };
