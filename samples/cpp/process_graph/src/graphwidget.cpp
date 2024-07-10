@@ -23,7 +23,7 @@ GraphWidget::GraphWidget(QWidget *parent, const QList<Node*>& nodes, const QList
     setTransformationAnchor(AnchorUnderMouse);
     scale(qreal(0.95), qreal(0.95));
     setMinimumSize(600, 600);
-    setWindowTitle(tr("Elastic Nodes"));
+    setWindowTitle(tr("eCAL Process Graph"));
 
     for(const auto& node: nodes) {
         scene->addItem(node);

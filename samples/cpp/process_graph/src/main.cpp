@@ -18,8 +18,12 @@ static int g_mon_timing = 1000;
 
 int main(int argc, char **argv)
 {
+    QApplication app(argc, argv);
+    QMainWindow mainWindow;
+    mainWindow.setWindowTitle("eCAL Process Graph");
+
     // initialize eCAL core API
-    eCAL::Initialize(argc, argv, "process_graph_api", eCAL::Init::All);
+    eCAL::Initialize(argc, argv, "process_graph", eCAL::Init::All);
 
     // monitoring instance to store snapshot
     eCAL::Monitoring::SMonitoring monitoring;
@@ -31,8 +35,6 @@ int main(int argc, char **argv)
     // take snapshot :-)
     eCAL::Monitoring::GetMonitoring(monitoring, eCAL::Monitoring::Entity::All);
     process_graph = eCAL::ProcessGraph::GetProcessGraph(monitoring);
-    
-    QApplication app(argc, argv);
 
     // process_graph.hostEdges = {
     //     {true, "TEST_EDGE_1", "HPC 1", "EDGE 1", 24.34},
@@ -74,17 +76,17 @@ int main(int argc, char **argv)
         host_nodes.append(pair.second);
     }
 
-    GraphWidget *widget1 = new GraphWidget(nullptr, host_nodes, host_edges, "Host Network traffic");
+    GraphWidget *HostNetworkWindow = new GraphWidget(nullptr, host_nodes, host_edges, "Host Network traffic");
 
     // Topic View
-    MainWindow *widget2 = new MainWindow(process_graph.topicTreeItems);
+    MainWindow *topicTreeWindow = new MainWindow(process_graph.topicTreeItems);
 
     std::map<int, Node*> process_map;
     QList<Edge*> process_edges;
 
     for (auto edge : process_graph.processEdges) {
-        process_map.insert(std::make_pair(edge.edgeID.first, new Node(Node::Process, QString::fromStdString(edge.publisherName))));
-        process_map.insert(std::make_pair(edge.edgeID.second, new Node(Node::Process, QString::fromStdString(edge.subscriberName))));
+        process_map.insert(std::make_pair(edge.edgeID.first, new Node(Node::Publisher, QString::fromStdString(edge.publisherName))));
+        process_map.insert(std::make_pair(edge.edgeID.second, new Node(Node::Subscriber, QString::fromStdString(edge.subscriberName))));
         process_edges.append(new Edge(process_map[edge.edgeID.first], process_map[edge.edgeID.second], true, false, "", edge.bandwidth));
     }
     
@@ -93,15 +95,13 @@ int main(int argc, char **argv)
         process_nodes.append(pair.second);
     }
 
-    GraphWidget *widget3 = new GraphWidget(nullptr, process_nodes, process_edges, "Process Graph");
+    GraphWidget *ProcessGraphWindow = new GraphWidget(nullptr, process_nodes, process_edges, "Process Graph");
 
-    layout->addWidget(widget1);
-    layout->addWidget(widget2);
-    layout->addWidget(widget3);
+    layout->addWidget(HostNetworkWindow);
+    layout->addWidget(topicTreeWindow);
+    layout->addWidget(ProcessGraphWindow);
 
-    QMainWindow mainWindow;
     mainWindow.setCentralWidget(centralWidget);
-
     mainWindow.show();
     return app.exec();
 }

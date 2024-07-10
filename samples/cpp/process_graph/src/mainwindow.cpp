@@ -12,7 +12,7 @@ MainWindow::MainWindow(std::vector<eCAL::ProcessGraph::STopicTreeItem>& treeItem
     : QMainWindow(parent)
 {
     setupUi(this);
-    this->setMinimumSize(QSize(450, 600));
+    this->setMinimumSize(QSize(250, 600));
 
     const QStringList headers({tr("Topic"), tr("Description")});
 

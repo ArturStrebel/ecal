@@ -57,10 +57,6 @@ set(source_files
     src/treemodel.h
 )
 
-set(qt_resource_files
-    src/editabletreemodel.qrc
-)
-
 set(ui_files
     src/mainwindow.ui
 )
@@ -87,7 +83,6 @@ ecal_add_app_qt(${PROJECT_NAME}
 target_link_libraries (${PROJECT_NAME}
     eCAL::core
     eCAL::core_pb
-    eCAL::mon_plugin_lib
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Widgets
@@ -177,4 +172,4 @@ source_group( autogen FILES
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER samples/cpp)
 
-ecal_install_app(${PROJECT_NAME} START_MENU_NAME "eCAL Network Monitor")
+ecal_install_app(${PROJECT_NAME} START_MENU_NAME "eCAL Process Graph")

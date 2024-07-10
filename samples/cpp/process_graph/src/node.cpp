@@ -134,12 +134,12 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     switch (nodeType)
     {
         case Node::Publisher:
-            light = new QColor(Qt::gray);
-            dark = new QColor(Qt::darkGray);
-            break;
-        case Node::Process:
             light = new QColor(Qt::blue);
             dark = new QColor(Qt::darkBlue);
+            break;
+        case Node::Process:
+            light = new QColor(Qt::gray);
+            dark = new QColor(Qt::darkGray);
             break;
         case Node::Subscriber:
             light = new QColor(Qt::yellow);
@@ -150,6 +150,8 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
             dark = new QColor(Qt::darkGreen);
             break;
         default:
+            light = new QColor(Qt::gray);
+            dark = new QColor(Qt::darkGray);
             break;
     }
 
