@@ -76,7 +76,7 @@ int main(int argc, char **argv)
         host_nodes.append(pair.second);
     }
 
-    GraphWidget *HostNetworkWindow = new GraphWidget(nullptr, host_nodes, host_edges, "Host Network traffic");
+    GraphWidget *HostNetworkWindow = new GraphWidget(nullptr, host_nodes, host_edges, "Host Network Traffic");
 
     // Topic View
     MainWindow *topicTreeWindow = new MainWindow(process_graph.topicTreeItems);
