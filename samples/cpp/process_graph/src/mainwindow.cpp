@@ -19,7 +19,7 @@ MainWindow::MainWindow(std::vector<eCAL::ProcessGraph::STopicTreeItem>& treeItem
     auto *model = new TreeModel(headers, treeItems, this);
     view->setModel(model);
     for (int column = 0; column < model->columnCount(); ++column)
-        view->resizeColumnToContents(column);
+        view->header()->setSectionResizeMode(column, QHeaderView::ResizeToContents);
     view->expandAll();
 
     connect(exitAction, &QAction::triggered, qApp, &QCoreApplication::quit);

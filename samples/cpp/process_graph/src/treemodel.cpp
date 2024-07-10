@@ -230,5 +230,6 @@ void TreeModel::setupModelData(const std::vector<eCAL::ProcessGraph::STopicTreeI
             processItem->setData(1, QString::fromStdString(treeData[i].description));
             if (++i == treeData.size())
                 break;     
-        }           
+        }
+    }           
 }

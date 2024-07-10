@@ -19,7 +19,14 @@ int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
 
+    // initialize eCAL core API
+    eCAL::Initialize(argc, argv, "monitoring", eCAL::Init::All);
+
+    // eCAL::Monitoring::SMonitoring monitoring;
     eCAL::ProcessGraph::SProcessGraph process_graph;
+
+//     eCAL::Monitoring::GetMonitoring(monitoring, eCAL::Monitoring::Entity::All);
+//     process_graph = eCAL::ProcessGraph::GetProcessGraph(monitoring);
 
     process_graph.hostEdges = {
         {true, "TEST_EDGE_1", "HPC 1", "EDGE 1", 24.34},
@@ -35,10 +42,10 @@ int main(int argc, char **argv)
     };
 
     process_graph.topicTreeItems = {
-        {true, 1, "T1", "Publisher", "pub1", "Hi"},
-        {true, 2, "T1", "Publisher", "pub2", "my"},
-        {true, 3, "T1", "Subscriber", "sub1", "name"},
-        {true, 4, "T2", "Publisher", "pub1", "is"}
+        {true, 1, "T1", "Publisher", "pub1", "Important"},
+        {true, 2, "T1", "Publisher", "pub2", "stuff"},
+        {true, 3, "T1", "Subscriber", "sub1", "goes"},
+        {true, 4, "T2", "Publisher", "pub1", "here"}
     };
 
     QWidget *centralWidget = new QWidget;
@@ -48,16 +55,8 @@ int main(int argc, char **argv)
     QList<Edge*> host_edges;
 
     for (auto edge : process_graph.hostEdges) {
-        // host_map.try_emplace(edge.outgoingHostName, new Node(Node::Host, QString::fromStdString(edge.outgoingHostName)));
-        // host_map.try_emplace(edge.outgoingHostName, new Node(Node::Host, QString::fromStdString(edge.outgoingHostName)));
-        bool outHostExists = host_map.find(edge.outgoingHostName) != host_map.end();
-        bool inHostExists = host_map.find(edge.incomingHostName) != host_map.end();
-        if (!inHostExists) {
-            host_map[edge.incomingHostName] = new Node(Node::Host, QString::fromStdString(edge.incomingHostName));
-        }
-        if (!outHostExists) {
-            host_map[edge.outgoingHostName] = new Node(Node::Host, QString::fromStdString(edge.outgoingHostName));
-        }
+        host_map.insert(std::pair<std::string, Node*>(edge.incomingHostName, new Node(Node::Host, QString::fromStdString(edge.incomingHostName))));
+        host_map.insert(std::pair<std::string, Node*>(edge.outgoingHostName, new Node(Node::Host, QString::fromStdString(edge.outgoingHostName))));
         if (edge.outgoingHostName == edge.incomingHostName) {
             host_map[edge.outgoingHostName]->setInternalBandwidthMbits(edge.bandwidth);
         }
@@ -78,14 +77,8 @@ int main(int argc, char **argv)
     QList<Edge*> process_edges;
 
     for (auto edge : process_graph.processEdges) {
-        bool publisherExists = process_map.find(edge.publisherName) != process_map.end();
-        bool subscriberExists = process_map.find(edge.subscriberName) != process_map.end();
-        if (!publisherExists) {
-            process_map[edge.publisherName] = new Node(Node::Process, QString::fromStdString(edge.publisherName));
-        }
-        if (!subscriberExists) {
-            process_map[edge.subscriberName] = new Node(Node::Process, QString::fromStdString(edge.subscriberName));
-        }
+        process_map.insert(std::pair<std::string, Node*>(edge.publisherName, new Node(Node::Process, QString::fromStdString(edge.publisherName))));
+        process_map.insert(std::pair<std::string, Node*>(edge.subscriberName, new Node(Node::Process, QString::fromStdString(edge.subscriberName))));
         process_edges.append(new Edge(process_map[edge.publisherName], process_map[edge.subscriberName], true, false, "", edge.bandwidth));
     }
     
@@ -93,21 +86,6 @@ int main(int argc, char **argv)
     for (auto const& pair: process_map) {
         process_nodes.append(pair.second);
     }
-
-    // // Process Graph
-    // Node *process = new Node(Node::Process, "ACU Process");
-    // Node *sub1 = new Node(Node::Subscriber, "Sub1");
-    // Node *sub2 = new Node(Node::Subscriber, "Sub2");
-    // Node *sub3 = new Node(Node::Subscriber, "Sub3");
-    // Node *publisher = new Node(Node::Publisher, "Camera");
-
-    // QList<Node*> nodes = {process, sub1, sub2, sub3, publisher };
-
-    // QList<Edge*> edges = {
-    //     new Edge(process, sub1, true, false, "Topic2", 5.0),
-    //     new Edge(process, sub2, true, false, "Topic 3", 3.2),
-    //     new Edge(process, sub3, true, false, "Topic 4", 0.01),
-    //     new Edge(publisher, process, true, false, "Rear_Camera", 9.8)};
 
     GraphWidget *widget3 = new GraphWidget(nullptr, process_nodes, process_edges, "Process Graph");
 
