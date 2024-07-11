@@ -7,7 +7,8 @@ HEADERS     += \
             graphwidget.h \
             treeitem.h \
             treemodel.h \
-            mainwindow.h
+            mainwindow.h \
+            monitoring.h
 RESOURCES   = editabletreemodel.qrc
 SOURCES     += \
             edge.cpp \
@@ -16,7 +17,8 @@ SOURCES     += \
             graphwidget.cpp \
             treeitem.cpp \
             treemodel.cpp \
-            mainwindow.cpp
+            mainwindow.cpp \
+            monitoring.cpp
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/graphicsview/elasticnodes

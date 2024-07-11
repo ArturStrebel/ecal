@@ -6,6 +6,8 @@
 
 #include "ui_mainwindow.h"
 #include <ecal/ecal.h>
+#include "monitoring.h"
+#include <QTimer>
 
 #include <QMainWindow>
 
@@ -14,10 +16,11 @@ class MainWindow : public QMainWindow, private Ui::MainWindow
     Q_OBJECT
 
 public:
-    MainWindow(std::vector<eCAL::ProcessGraph::STopicTreeItem>& treeItems, QWidget *parent = nullptr);
+    MainWindow(Monitoring* monitor, QWidget *parent = nullptr);
 
 public slots:
     void updateActions();
+    void updateProcessGraph();
 
 private slots:
     void insertChild();
@@ -25,6 +28,10 @@ private slots:
     void insertRow();
     bool removeColumn();
     void removeRow();
+
+private:
+    Monitoring* monitor;
+    QTimer *timer;
 };
 
 #endif // MAINWINDOW_H

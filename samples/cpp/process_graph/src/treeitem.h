@@ -7,7 +7,6 @@
 #include <QVariant>
 #include <QList>
 
-//! [0]
 class TreeItem
 {
 public:
@@ -30,6 +29,5 @@ private:
     QVariantList itemData;
     TreeItem *m_parentItem;
 };
-//! [0]
 
 #endif // TREEITEM_H

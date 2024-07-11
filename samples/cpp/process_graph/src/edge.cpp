@@ -16,6 +16,14 @@ Edge::Edge(Node *sourceNode, Node *destNode, bool singleArrow, bool curvedArrow,
     adjust();
 }
 
+Edge::~Edge()
+{
+    source->removeEdge(this);
+    dest->removeEdge(this);
+    source = nullptr;
+    dest = nullptr;
+}
+
 Node *Edge::sourceNode() const
 {
     return source;

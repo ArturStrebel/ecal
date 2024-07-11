@@ -26,6 +26,7 @@ public:
 
     void setInternalBandwidthMbits(qreal internalBandwidth_mbits);
     void addEdge(Edge *edge);
+    void removeEdge(Edge *edge);
     QList<Edge *> edges() const;
 
     enum { Type = UserType + 1 };

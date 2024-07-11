@@ -55,6 +55,9 @@ set(source_files
 
     src/treemodel.cpp
     src/treemodel.h
+
+    src/monitoring.cpp
+    src/monitoring.h
 )
 
 set(qt_resource_files

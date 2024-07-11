@@ -5,6 +5,9 @@
 #define GRAPHWIDGET_H
 
 #include <QGraphicsView>
+#include <ecal/ecal.h>
+#include "monitoring.h"
+#include <QTimer>
 
 class Node;
 class Edge;
@@ -14,7 +17,13 @@ class GraphWidget : public QGraphicsView
     Q_OBJECT
 
 public:
-    GraphWidget(QWidget *parent = nullptr, const QList<Node*>& nodes = {}, const QList<Edge*>& edges = {}, QString title = "Nodes and Edges");
+
+    enum ViewType {
+        HostView,
+        ProcessView
+    };
+
+    GraphWidget(Monitoring* monitor, GraphWidget::ViewType view_type, QWidget *parent = nullptr, QString title = "Nodes and Edges");
 
     void itemMoved();
     int random(int from, int to);
@@ -23,6 +32,7 @@ public slots:
     void shuffle();
     void zoomIn();
     void zoomOut();
+    void updateProcessGraph();
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
@@ -35,8 +45,15 @@ protected:
     void scaleView(qreal scaleFactor);
 
 private:
+    Monitoring* monitor;
+    QTimer *timer;
     int timerId = 0;
+    std::map<std::string, Node*> node_map;
+    std::map<std::string, Edge*> edge_map;
+    QGraphicsScene *graphicsScene;
+    ViewType view_type;
     QString title;
+    int counter = 0;
 };
 
 #endif // GRAPHWIDGET_H
