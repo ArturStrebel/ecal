@@ -59,27 +59,19 @@ namespace eCAL
     for (auto it = m_process_graph.processEdges.begin(); it != m_process_graph.processEdges.end();)
     {
       if (!it->isAlive) 
-      {
         it = m_process_graph.processEdges.erase(it);
-      }
-       
       else 
-      {
-        it->isAlive = false;
-        ++it;
-      }
+        (it++)->isAlive = false;
     }
 
     for (auto it = m_process_graph.hostEdges.begin(); it != m_process_graph.hostEdges.end();)
     {
       if (!it->isAlive)
-
         it = m_process_graph.hostEdges.erase(it);
       else 
       {
         it->bandwidth = 0; // recompute current bandwidth in every cycle
-        it->isAlive = false;
-        ++it;
+        (it++)->isAlive = false;
       }
     }
 
@@ -88,10 +80,7 @@ namespace eCAL
       if (!it->isAlive)
         it = m_process_graph.topicTreeItems.erase(it);
       else 
-      {
-        it->isAlive = false;
-        ++it;
-      }
+        (it++)->isAlive = false;
     }
 
     for( const auto pub : monitoring.publisher ) 
@@ -108,6 +97,7 @@ namespace eCAL
           eCAL::Monitoring::STopicMon sub; // NOTE: Creating a temp sub here seems overkill.  
           sub.uname = "void";              // Maybe overload CreateProcessEdge(pub,edgeID)
           AddToProcessEdges(CreateProcessEdge(pub, sub, edgeID)); //TODO: What happens with host?
+          m_process_graph.processEdges.insert(std::make_pair(edgeID, CreateProcessEdge(pub, sub, edgeID));
         }
         else           
           processEdge->isAlive = true;
