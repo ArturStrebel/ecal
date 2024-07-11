@@ -14,7 +14,7 @@ class Edge : public QGraphicsItem
 public:
     Edge(Node *sourceNode, Node *destNode, bool singleArrow, bool curvedArrow,
          QString label, qreal bandwith_mbits);
-
+    ~Edge();
     Node *sourceNode() const;
     Node *destNode() const;
 

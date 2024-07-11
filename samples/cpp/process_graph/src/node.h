@@ -27,6 +27,7 @@ public:
     QString printHumanReadableBandwidth(qreal& internalBandwidth_);
     void setInternalBandwidth(qreal internalBandwidth);
     void addEdge(Edge *edge);
+    void removeEdge(Edge *edge);
     QList<Edge *> edges() const;
 
     enum { Type = UserType + 1 };

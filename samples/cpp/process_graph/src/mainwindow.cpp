@@ -8,19 +8,26 @@
 
 using namespace Qt::StringLiterals;
 
-MainWindow::MainWindow(std::vector<eCAL::ProcessGraph::STopicTreeItem>& treeItems, QWidget *parent)
-    : QMainWindow(parent)
+MainWindow::MainWindow(Monitoring* monitor, QWidget *parent)
+    : QMainWindow(parent), monitor(monitor)
 {
     setupUi(this);
     this->setMinimumSize(QSize(250, 600));
 
+    // Initial set of model
     const QStringList headers({tr("Topic"), tr("Description")});
 
-    auto *model = new TreeModel(headers, treeItems, this);
+    std::vector<eCAL::ProcessGraph::STopicTreeItem> topicTreeItems = {};
+    auto *model = new TreeModel(headers, topicTreeItems, this);
     view->setModel(model);
     for (int column = 0; column < model->columnCount(); ++column)
         view->header()->setSectionResizeMode(column, QHeaderView::ResizeToContents);
     view->expandAll();
+
+    // set timer
+    timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, this, &MainWindow::updateProcessGraph);
+    timer->start(500);
 
     connect(exitAction, &QAction::triggered, qApp, &QCoreApplication::quit);
 
@@ -35,6 +42,18 @@ MainWindow::MainWindow(std::vector<eCAL::ProcessGraph::STopicTreeItem>& treeItem
     connect(insertChildAction, &QAction::triggered, this, &MainWindow::insertChild);
 
     updateActions();
+}
+
+void MainWindow::updateProcessGraph() {
+    eCAL::ProcessGraph::SProcessGraph process_graph = monitor->getProcessGraph();
+
+    const QStringList headers({tr("Topic"), tr("Description")});
+
+    auto *model = new TreeModel(headers, process_graph.topicTreeItems, this);
+    view->setModel(model);
+    for (int column = 0; column < model->columnCount(); ++column)
+        view->header()->setSectionResizeMode(column, QHeaderView::ResizeToContents);
+    view->expandAll();
 }
 
 void MainWindow::insertChild()

@@ -60,6 +60,11 @@ QList<Edge *> Node::edges() const
     return edgeList;
 }
 
+void Node::removeEdge(Edge *edge)
+{
+    edgeList.removeOne(edge);
+}
+
 void Node::calculateForces()
 {
     if (!scene() || scene()->mouseGrabberItem() == this) {

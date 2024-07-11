@@ -6,7 +6,6 @@
 
 using namespace Qt::StringLiterals;
 
-//! [0]
 TreeModel::TreeModel(const QStringList &headers, std::vector<eCAL::ProcessGraph::STopicTreeItem>& treeData, QObject *parent)
     : QAbstractItemModel(parent)
 {
@@ -17,19 +16,14 @@ TreeModel::TreeModel(const QStringList &headers, std::vector<eCAL::ProcessGraph:
     rootItem = std::make_unique<TreeItem>(rootData);
     setupModelData(treeData);
 }
-//! [0]
 
-//! [1]
 TreeModel::~TreeModel() = default;
-//! [1]
 
-//! [2]
 int TreeModel::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
     return rootItem->columnCount();
 }
-//! [2]
 
 QVariant TreeModel::data(const QModelIndex &index, int role) const
 {
@@ -44,7 +38,6 @@ QVariant TreeModel::data(const QModelIndex &index, int role) const
     return item->data(index.column());
 }
 
-//! [3]
 Qt::ItemFlags TreeModel::flags(const QModelIndex &index) const
 {
     if (!index.isValid())
@@ -52,9 +45,7 @@ Qt::ItemFlags TreeModel::flags(const QModelIndex &index) const
 
     return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
 }
-//! [3]
 
-//! [4]
 TreeItem *TreeModel::getItem(const QModelIndex &index) const
 {
     if (index.isValid()) {
@@ -63,7 +54,6 @@ TreeItem *TreeModel::getItem(const QModelIndex &index) const
     }
     return rootItem.get();
 }
-//! [4]
 
 QVariant TreeModel::headerData(int section, Qt::Orientation orientation,
                                int role) const
@@ -72,14 +62,11 @@ QVariant TreeModel::headerData(int section, Qt::Orientation orientation,
         ? rootItem->data(section) : QVariant{};
 }
 
-//! [5]
 QModelIndex TreeModel::index(int row, int column, const QModelIndex &parent) const
 {
     if (parent.isValid() && parent.column() != 0)
         return {};
-//! [5]
 
-//! [6]
     TreeItem *parentItem = getItem(parent);
     if (!parentItem)
         return {};
@@ -88,7 +75,6 @@ QModelIndex TreeModel::index(int row, int column, const QModelIndex &parent) con
         return createIndex(row, column, childItem);
     return {};
 }
-//! [6]
 
 bool TreeModel::insertColumns(int position, int columns, const QModelIndex &parent)
 {
@@ -114,7 +100,6 @@ bool TreeModel::insertRows(int position, int rows, const QModelIndex &parent)
     return success;
 }
 
-//! [7]
 QModelIndex TreeModel::parent(const QModelIndex &index) const
 {
     if (!index.isValid())
@@ -126,7 +111,6 @@ QModelIndex TreeModel::parent(const QModelIndex &index) const
     return (parentItem != rootItem.get() && parentItem != nullptr)
         ? createIndex(parentItem->row(), 0, parentItem) : QModelIndex{};
 }
-//! [7]
 
 bool TreeModel::removeColumns(int position, int columns, const QModelIndex &parent)
 {
@@ -153,7 +137,6 @@ bool TreeModel::removeRows(int position, int rows, const QModelIndex &parent)
     return success;
 }
 
-//! [8]
 int TreeModel::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid() && parent.column() > 0)
@@ -163,7 +146,6 @@ int TreeModel::rowCount(const QModelIndex &parent) const
 
     return parentItem ? parentItem->childCount() : 0;
 }
-//! [8]
 
 bool TreeModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
