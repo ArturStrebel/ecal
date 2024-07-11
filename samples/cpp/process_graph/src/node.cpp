@@ -10,8 +10,8 @@
 #include <QPainter>
 #include <QStyleOption>
 
-Node::Node(NodeType nodeType, QString name, std::optional<qreal> internalBandwidth_mbits)
-    : nodeType(nodeType), name(name), internalBandwidth_mbits(internalBandwidth_mbits)
+Node::Node(NodeType nodeType, QString name, std::optional<qreal> internalBandwidth_)
+    : nodeType(nodeType), name(name), internalBandwidth(internalBandwidth_)
 {
     setFlag(ItemIsMovable);
     setFlag(ItemSendsGeometryChanges);
@@ -19,8 +19,8 @@ Node::Node(NodeType nodeType, QString name, std::optional<qreal> internalBandwid
     setZValue(-1);
 
     QString text_label = name;
-    if (internalBandwidth_mbits.has_value()) {
-        text_label += "\n  🗘" + QString::number(internalBandwidth_mbits.value()) + " MBit/s";
+    if (internalBandwidth.has_value()) {
+        text_label += "\n  🗘" + printHumanReadableBandwidth(internalBandwidth.value());
     }
 
     // Erstellen des label-Widgets und Einstellen des Textes
@@ -29,10 +29,24 @@ Node::Node(NodeType nodeType, QString name, std::optional<qreal> internalBandwid
     label->setPos(5, -30); // Position relativ zum Knoten
 }
 
-void Node::setInternalBandwidthMbits(qreal internalBandwidth_mbits_) {
-    QString text_label = name;
-    text_label += "\n  🗘" + QString::number(internalBandwidth_mbits_) + " MBit/s";
-    label->setPlainText(text_label);
+// TODO:: Same function as in Edge, implement more elegant solution
+QString Node::printHumanReadableBandwidth(qreal& internalBandwidth_) {
+    int bandwidthDimension = 0;
+    while( internalBandwidth_ > 1024 && bandwidthDimension < 4) {
+        internalBandwidth_ /= 1024;
+        bandwidthDimension++;
+    }      
+
+    switch(bandwidthDimension) {
+        case 1: return QString::number(internalBandwidth_) + " Kbit/s";
+        case 2: return QString::number(internalBandwidth_) + " Mbit/s";
+        case 3: return QString::number(internalBandwidth_) + " Gbit/s";
+        default: return QString::number(internalBandwidth_) + " Bit/s";
+    }
+}
+
+void Node::setInternalBandwidth(qreal internalBandwidth_) {
+    label->setPlainText(name + "\n  🗘" + printHumanReadableBandwidth(internalBandwidth_));
 }
 
 void Node::addEdge(Edge *edge)

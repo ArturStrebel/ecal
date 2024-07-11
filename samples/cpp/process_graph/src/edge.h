@@ -19,7 +19,7 @@ public:
     Node *destNode() const;
 
     QString label;
-    qreal bandwith_mbits;
+    qreal bandwidth;
 
     void adjust();
 
@@ -29,7 +29,7 @@ public:
 protected:
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
-
+    QString printHumanReadableBandwidth(qreal& internalBandwidth_);
 private:
     Node *source, *dest;
 

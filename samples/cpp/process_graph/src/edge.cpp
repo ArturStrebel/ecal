@@ -7,8 +7,8 @@
 #include <QPainter>
 #include <QtMath>
 
-Edge::Edge(Node *sourceNode, Node *destNode, bool singleArrow, bool curvedArrow, QString label, qreal bandwith_mbits)
-    : source(sourceNode), dest(destNode), singleArrow(singleArrow), curvedArrow(curvedArrow), label(label), bandwith_mbits(bandwith_mbits)
+Edge::Edge(Node *sourceNode, Node *destNode, bool singleArrow, bool curvedArrow, QString label, qreal bandwidth_)
+    : source(sourceNode), dest(destNode), singleArrow(singleArrow), curvedArrow(curvedArrow), label(label), bandwidth(bandwidth_)
 {
     setAcceptedMouseButtons(Qt::NoButton);
     source->addEdge(this);
@@ -132,9 +132,24 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 
     // Draw the label
     painter->setPen(labelColor);
-    painter->drawText(QRectF(- width / 2, - height / 2 - excentricity, width, height), Qt::AlignCenter, label + "\n" + QString::number(bandwith_mbits) + " Mbit/s");
+    painter->drawText(QRectF(- width / 2, - height / 2 - excentricity, width, height), Qt::AlignCenter, label + "\n" + printHumanReadableBandwidth(bandwidth));
 
     // Restore the painter's coordinate system
     painter->restore();
 
+}
+// TODO:: Same function as in Node, implement more elegant solution
+QString Edge::printHumanReadableBandwidth(qreal& internalBandwidth_) {
+    int bandwidthDimension = 0;
+    while( internalBandwidth_ > 1024 && bandwidthDimension < 4) {
+        internalBandwidth_ /= 1024;
+        bandwidthDimension++;
+    }      
+
+    switch(bandwidthDimension) {
+        case 1: return QString::number(internalBandwidth_) + " Kbit/s";
+        case 2: return QString::number(internalBandwidth_) + " Mbit/s";
+        case 3: return QString::number(internalBandwidth_) + " Gbit/s";
+        default: return QString::number(internalBandwidth_) + " Bit/s";
+    }
 }
