@@ -69,26 +69,26 @@ void GraphWidget::updateProcessGraph() {
 
                 // Finally add the edge
                 if (edge.outgoingHostName == edge.incomingHostName) {
-                    node_map[edge.outgoingHostName]->setInternalBandwidthMbits(edge.bandwidth);
-                    edge_map.insert(std::pair<std::string, Edge*>(edge.edgeID, nullptr));
+                    node_map[edge.outgoingHostName]->setInternalBandwidth(edge.bandwidth);
+                    edge_map.insert(std::make_pair(edge.edgeID, nullptr));
                 } else {
                     Edge* newEdge = new Edge(node_map[edge.outgoingHostName], node_map[edge.incomingHostName], true, true, "", edge.bandwidth);
-                    edge_map.insert(std::pair<std::string, Edge*>(edge.edgeID, newEdge));
+                    edge_map.insert(std::make_pair(edge.edgeID, newEdge));
                     graphicsScene->addItem(newEdge);
                 }
             } else {
                 if (edge.outgoingHostName == edge.incomingHostName) {
-                    node_map[edge.outgoingHostName]->setInternalBandwidthMbits(edge.bandwidth);
+                    node_map[edge.outgoingHostName]->setInternalBandwidth(edge.bandwidth);
                 } else {
-                    edge_map[edge.edgeID]->bandwith_mbits = edge.bandwidth; 
+                    edge_map[edge.edgeID]->bandwidth = edge.bandwidth; 
                 }
             }
         }
 
         // Delete Edges that do not exist anymore
-        QList<std::string> edgesToDrop;
+        QList<std::pair<int,int>> edgesToDrop;
         for (const auto& pair: edge_map) {
-            std::string edgeToCheck = pair.first;
+            std::pair<int,int> edgeToCheck = pair.first;
             bool edgeDeleted = true;
             for (auto edge : process_graph.hostEdges) {
                 if (edge.edgeID == edgeToCheck) {
@@ -154,19 +154,19 @@ void GraphWidget::updateProcessGraph() {
 
                 // Finally add the edge
                 Edge* newEdge = new Edge(node_map[edge.publisherName], node_map[edge.subscriberName], true, false, QString::fromStdString(edge.topicName), edge.bandwidth);
-                edge_map.insert(std::pair<std::string, Edge*>(edge.edgeID, newEdge));
+                edge_map.insert(std::pair<std::pair<int,int>, Edge*>(edge.edgeID, newEdge));
                 graphicsScene->addItem(newEdge);
             } else {
-                edge_map[edge.edgeID]->bandwith_mbits = edge.bandwidth; 
+                edge_map[edge.edgeID]->bandwidth = edge.bandwidth; 
                 edge_map[edge.edgeID]->label = QString::fromStdString(edge.topicName); 
             }
         
         }
         
         // Delete Edges that do not exist anymore
-        QList<std::string> edgesToDrop;
+        QList<std::pair<int,int>> edgesToDrop;
         for (const auto& pair: edge_map) {
-            std::string edgeToCheck = pair.first;
+            std::pair<int,int> edgeToCheck = pair.first;
             bool edgeDeleted = true;
             for (auto edge : process_graph.processEdges) {
                 if (edge.edgeID == edgeToCheck) {

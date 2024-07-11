@@ -49,7 +49,7 @@ private:
     QTimer *timer;
     int timerId = 0;
     std::map<std::string, Node*> node_map;
-    std::map<std::string, Edge*> edge_map;
+    std::map<std::pair<int, int>, Edge*> edge_map;
     QGraphicsScene *graphicsScene;
     ViewType view_type;
     QString title;
