@@ -78,7 +78,7 @@ namespace eCAL
 
   void CProcessGraph::TryInsertHostEdge(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub ) 
   {
-    auto edgeID = std::make_pair(pub.pid, sub.pid);
+    auto edgeID = std::make_pair(pub.hid, sub.hid);
     auto processPtr = FindHostEdge(edgeID);
     if( processPtr == nullptr)
       m_process_graph.hostEdges.push_back(CreateHostEdge(pub, sub));
@@ -207,7 +207,7 @@ void CProcessGraph::TryInsertTopicTreeItem(const eCAL::Monitoring::STopicMon& pr
     return 
     {
       true,
-      std::make_pair(pub.pid, sub.pid),
+      std::make_pair(pub.hid, sub.hid),
       pub.hname,
       sub.hname,
       GetBandwidth(pub)
