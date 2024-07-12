@@ -25,28 +25,20 @@ namespace eCAL
 {
   namespace ProcessGraph
   {
-    namespace GraphType
-    {
-      constexpr unsigned int ProcessGraph  = 0x001;
-      constexpr unsigned int HostTraffic   = 0x002;
-      constexpr unsigned int TopicTree     = 0x004;
-    }
-
     struct SProcessGraphEdge
     {
       bool isAlive;
+      std::pair<int,int> edgeID;
       std::string publisherName;
       std::string subscriberName;
       std::string topicName;
       double bandwidth;  // stored in Bit/s
-
-      SProcessGraphEdge* publisherNext = nullptr;
-      SProcessGraphEdge* subscriberNext = nullptr;
     };
 
     struct SHostGraphEdge
     {
       bool isAlive;
+      std::pair<int,int> edgeID;
       std::string outgoingHostName;
       std::string incomingHostName;
       double bandwidth;  // stored in Bit/s
@@ -55,6 +47,7 @@ namespace eCAL
     struct STopicTreeItem
     {
       bool isAlive;
+      int topicID;
       std::string topicName;
       std::string direction; // subscriber or publisher
       std::string processName;
@@ -63,12 +56,11 @@ namespace eCAL
 
     struct SProcessGraph
     {
-      std::map<std::pair<int,int>, SProcessGraphEdge> processEdges;
-      std::map<std::pair<int,int>, SHostGraphEdge> hostEdges;
-      std::map<int, STopicTreeItem> topicTreeItems;
+      std::vector<SProcessGraphEdge> processEdges;
+      std::vector<SHostGraphEdge> hostEdges;
+      std::vector<STopicTreeItem> topicTreeItems;
     };
 
-    ECAL_API SProcessGraph GetProcessGraph(const eCAL::Monitoring::SMonitoring&);
-    
+    ECAL_API SProcessGraph GetProcessGraph(const eCAL::Monitoring::SMonitoring&);    
   }
 }

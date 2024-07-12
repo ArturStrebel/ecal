@@ -34,27 +34,27 @@ int main(int argc, char **argv)
 
     // take snapshot :-)
     eCAL::Monitoring::GetMonitoring(monitoring, eCAL::Monitoring::Entity::All);
-    process_graph = eCAL::ProcessGraph::GetProcessGraph(monitoring);
+    // process_graph = eCAL::ProcessGraph::GetProcessGraph(monitoring);
 
-    // process_graph.hostEdges = {
-    //     {true, "TEST_EDGE_1", "HPC 1", "EDGE 1", 24.34},
-    //     {true, "TEST_EDGE_2", "EDGE 1", "HPC 1", 5.0},
-    //     {true, "TEST_EDGE_3", "HPC 1", "HPC 1", 1.34}
-    // };
+    process_graph.hostEdges = {
+        {true, std::make_pair(1,1), "HPC 1", "EDGE 1", 24.34},
+        {true, std::make_pair(2,1), "EDGE 1", "HPC 1", 5.0},
+        {true, std::make_pair(3,1), "HPC 1", "HPC 1", 1.34}
+    };
 
-    // process_graph.processEdges = {
-    //     {true, "process_sub1", "ACU Process", "sub1", "Topic 2", 5.0, nullptr, nullptr},
-    //     {true, "process_sub2", "ACU Process", "sub2", "Topic 3", 3.2, nullptr, nullptr},
-    //     {true, "process_sub3", "ACU Process", "sub3", "Topic 4", 0.01, nullptr, nullptr},
-    //     {true, "publisher_process", "Camera", "ACU Process", "Rear_Camera", 9.8, nullptr, nullptr}
-    // };
+    process_graph.processEdges = {
+        {true, std::make_pair(1,1), "ACU Process", "sub1", "Topic 2", 5.0},
+        {true, std::make_pair(2,1), "ACU Process", "sub2", "Topic 3", 3.2},
+        {true, std::make_pair(3,1), "ACU Process", "sub3", "Topic 4", 0.01},
+        {true, std::make_pair(4,1), "Camera", "ACU Process", "Rear_Camera", 9.8}
+    };
 
-    // process_graph.topicTreeItems = {
-    //     {true, 1, "T1", "Publisher", "pub1", "Important"},
-    //     {true, 2, "T1", "Publisher", "pub2", "stuff"},
-    //     {true, 3, "T1", "Subscriber", "sub1", "goes"},
-    //     {true, 4, "T2", "Publisher", "pub1", "here"}
-    // };
+    process_graph.topicTreeItems = {
+        {true, 1, "T1", "Publisher", "pub1", "Important"},
+        {true, 2, "T1", "Publisher", "pub2", "stuff"},
+        {true, 3, "T1", "Subscriber", "sub1", "goes"},
+        {true, 4, "T2", "Publisher", "pub1", "here"}
+    };
 
     QWidget *centralWidget = new QWidget;
     QHBoxLayout *layout = new QHBoxLayout(centralWidget);
