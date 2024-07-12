@@ -24,8 +24,6 @@
 
 #pragma once
 
-#include <string>
-#include <unordered_set>
 #include <ecal/types/monitoring.h>
 #include <ecal/ecal.h>
 

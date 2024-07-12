@@ -22,11 +22,11 @@ void Monitoring::updateProcessGraph()
     };
 
     process_graph.processEdges = {
-        {true, std::make_pair(1,1), "ACU Process", "sub1", "Topic 2", 5.0, nullptr, nullptr},
-        {true, std::make_pair(2,1), "ACU Process", "sub2", "Topic 3", 3.2, nullptr, nullptr},
-        {true, std::make_pair(3,1), "ACU Process", "sub3", "Topic 4", 0.01, nullptr, nullptr},
-        {true, std::make_pair(4,1), "ACU Process", "sub4", "Topic 4", 0.01, nullptr, nullptr},
-        {true, std::make_pair(5,1), "Camera", "ACU Process", "Rear_Camera", 9.8, nullptr, nullptr}
+        {true, std::make_pair(1,1), "ACU Process", "sub1", "Topic 2", 5.0},
+        {true, std::make_pair(2,1), "ACU Process", "sub2", "Topic 3", 3.2},
+        {true, std::make_pair(3,1), "ACU Process", "sub3", "Topic 4", 0.01},
+        {true, std::make_pair(4,1), "ACU Process", "sub4", "Topic 4", 0.01},
+        {true, std::make_pair(5,1), "Camera", "ACU Process", "Rear_Camera", 9.8}
     };
 
     process_graph.topicTreeItems = {
