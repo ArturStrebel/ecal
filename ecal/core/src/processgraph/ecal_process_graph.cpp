@@ -108,7 +108,7 @@ namespace eCAL
       if (!it->isAlive) 
         it = m_process_graph.processEdges.erase(it);
       else 
-        it++->isAlive = false;
+        (it++)->isAlive = false;
     }
 
     for (auto it = m_process_graph.hostEdges.begin(); it != m_process_graph.hostEdges.end();)
@@ -118,7 +118,7 @@ namespace eCAL
       else 
       {
         it->bandwidth = 0; // recompute current bandwidth in every cycle
-        it++->isAlive = false;
+        (it++)->isAlive = false;
       }
     }
 
@@ -127,52 +127,53 @@ namespace eCAL
       if (!it->isAlive)
         it = m_process_graph.topicTreeItems.erase(it);
       else 
-        it++->isAlive = false;
+        (it++)->isAlive = false;
     }
 
     for( const auto pub : monitoring.publisher ) 
     {
+      // create "empty" edge if no active subs for current pub
       int publisherConnections = pub.connections_loc + pub.connections_ext;
       int currentPublisherConnections = 0;
-
-      // create "empty" edge if no active subs for current pub
       if (publisherConnections == 0) 
       {
         eCAL::Monitoring::STopicMon sub;
         sub.uname = "void";
-        sub.pid = -pub.pid;
+        sub.pid = -pub.pid; // "void" nodes have a negative process ID to mark them as such
         TryInsertProcessEdge(pub, sub);
       }
 
       // check all subscribers
       for( const auto sub : monitoring.subscriber )
       {
-        int subscriberConnections = sub.connections_loc + sub.connections_ext;
+        // topic tree item for subscriber
+        TryInsertTopicTreeItem(sub);
 
         // create "empty" edge if no active pubs for current sub
+        int subscriberConnections = sub.connections_loc + sub.connections_ext;
         if (subscriberConnections == 0) 
         {
           eCAL::Monitoring::STopicMon tmpPub;
           tmpPub.uname = "void";
-          tmpPub.pid = -sub.pid;
+          tmpPub.pid = -sub.pid; // "void" nodes have a negative process ID to mark them as such
           TryInsertProcessEdge(tmpPub, sub);
         }
 
-        // topic tree for subscriber
-        TryInsertTopicTreeItem(sub);
-
+        // things that have to happen for EVERY sub, must come before this point
+        // after this, only pub/sub pairs in same topic are handled
         if( pub.tname != sub.tname ) continue;
 
-        // process graph
+        // process graph edge
         TryInsertProcessEdge(pub, sub);
         
-        // host traffic
+        // host traffic edge
         TryInsertHostEdge(pub, sub);
 
+        // early exit out of sub loop if current pub found all its subs
         if (++currentPublisherConnections == publisherConnections) break;
       }
 
-      // topic tree for publisher
+      // topic tree item for publisher
       TryInsertTopicTreeItem(pub);
     }
 
@@ -188,13 +189,6 @@ namespace eCAL
   double CProcessGraph::GetBandwidth(const eCAL::Monitoring::STopicMon& pub) 
   {
       return (pub.tsize * 8.0 * (pub.dfreq / 1000.0)) ; // Scale from (Byte * mHz) to (Bit / s)
-  }
-
-  std::string CProcessGraph::CreateEdgeID(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub, const int& graphType) 
-  {
-    if( graphType == eCAL::ProcessGraph::GraphType::HostTraffic ) 
-      return pub.hname + "_" + sub.hname;
-    return std::to_string(pub.pid) + "_" + std::to_string(sub.pid);
   }
 
   eCAL::ProcessGraph::SProcessGraphEdge CProcessGraph::CreateProcessEdge(const eCAL::Monitoring::STopicMon& pub , const eCAL::Monitoring::STopicMon& sub )
@@ -229,7 +223,7 @@ namespace eCAL
       true,
       process.pid,
       process.tname,
-      process.direction, //Subscriber or Publisher
+      process.direction, // subscriber or publisher
       process.uname,
       "test"
     };

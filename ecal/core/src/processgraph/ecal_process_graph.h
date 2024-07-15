@@ -44,7 +44,6 @@ namespace eCAL
     private:
 
       // General functions
-      std::string CreateEdgeID(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub, const int& graphType);
       void UpdateProcessGraph(const eCAL::Monitoring::SMonitoring& monitoring);
       double GetBandwidth(const eCAL::Monitoring::STopicMon& pub);
 
@@ -62,7 +61,7 @@ namespace eCAL
       eCAL::ProcessGraph::STopicTreeItem* FindTopicTreeItem(int topicID); 
       eCAL::ProcessGraph::STopicTreeItem CreateTopicTreeItem(const eCAL::Monitoring::STopicMon& process );
       void TryInsertTopicTreeItem(const eCAL::Monitoring::STopicMon& proc);
-
+      
       eCAL::ProcessGraph::SProcessGraph m_process_graph; 
   };
 }

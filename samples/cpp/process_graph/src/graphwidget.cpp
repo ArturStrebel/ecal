@@ -69,7 +69,7 @@ void GraphWidget::updateProcessGraph() {
 
                 // Finally add the edge
                 if (edge.outgoingHostName == edge.incomingHostName) {
-                    node_map[edge.outgoingHostName]->setInternalBandwidthMbits(edge.bandwidth);
+                    node_map[edge.outgoingHostName]->setInternalBandwidth(edge.bandwidth);
                     edge_map.insert(std::pair<std::string, Edge*>(edge.edgeID, nullptr));
                 } else {
                     Edge* newEdge = new Edge(node_map[edge.outgoingHostName], node_map[edge.incomingHostName], true, true, "", edge.bandwidth);
@@ -78,7 +78,7 @@ void GraphWidget::updateProcessGraph() {
                 }
             } else {
                 if (edge.outgoingHostName == edge.incomingHostName) {
-                    node_map[edge.outgoingHostName]->setInternalBandwidthMbits(edge.bandwidth);
+                    node_map[edge.outgoingHostName]->setInternalBandwidth(edge.bandwidth);
                 } else {
                     edge_map[edge.edgeID]->bandwidth = edge.bandwidth; 
                 }

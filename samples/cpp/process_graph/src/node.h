@@ -24,7 +24,7 @@ public:
 
     Node(NodeType nodeType, QString name, std::optional<qreal> internalBandwidth = std::nullopt);
 
-    void setInternalBandwidthMbits(qreal internalBandwidth);
+    void setInternalBandwidth(qreal internalBandwidth);
     void addEdge(Edge *edge);
     void removeEdge(Edge *edge);
     QList<Edge *> edges() const;
@@ -39,7 +39,8 @@ public:
     QRectF boundingRect() const override;
     QPainterPath shape() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
-
+    QString printHumanReadableBandwidth(qreal& internalBandwidth_);
+    
 protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
 

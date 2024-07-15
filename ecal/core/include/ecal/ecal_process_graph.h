@@ -25,13 +25,6 @@ namespace eCAL
 {
   namespace ProcessGraph
   {
-    namespace GraphType
-    {
-      constexpr unsigned int ProcessGraph  = 0x001;
-      constexpr unsigned int HostTraffic   = 0x002;
-      constexpr unsigned int TopicTree     = 0x004;
-    }
-
     struct SProcessGraphEdge
     {
       bool isAlive;
@@ -68,7 +61,6 @@ namespace eCAL
       std::vector<STopicTreeItem> topicTreeItems;
     };
 
-    ECAL_API SProcessGraph GetProcessGraph(const eCAL::Monitoring::SMonitoring&);
-    
+    ECAL_API SProcessGraph GetProcessGraph(const eCAL::Monitoring::SMonitoring&);    
   }
 }

@@ -140,9 +140,25 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 
     // Draw the label
     painter->setPen(labelColor);
-    painter->drawText(QRectF(- width / 2, - height / 2 - excentricity, width, height), Qt::AlignCenter, label + "\n" + QString::number(bandwidth) + " Mbit/s");
+    painter->drawText(QRectF(- width / 2, - height / 2 - excentricity, width, height), Qt::AlignCenter, label + "\n" + printHumanReadableBandwidth(bandwidth));
 
     // Restore the painter's coordinate system
     painter->restore();
 
+}
+
+// TODO:: Same function as in Node, implement more elegant solution
+QString Edge::printHumanReadableBandwidth(qreal& internalBandwidth_) {
+    int bandwidthDimension = 0;
+    while( internalBandwidth_ > 1024 && bandwidthDimension < 4) {
+        internalBandwidth_ /= 1024;
+        bandwidthDimension++;
+    }      
+
+    switch(bandwidthDimension) {
+        case 1: return QString::number(internalBandwidth_) + " Kbit/s";
+        case 2: return QString::number(internalBandwidth_) + " Mbit/s";
+        case 3: return QString::number(internalBandwidth_) + " Gbit/s";
+        default: return QString::number(internalBandwidth_) + " Bit/s";
+    }
 }

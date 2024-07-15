@@ -20,7 +20,7 @@ Node::Node(NodeType nodeType, QString name, std::optional<qreal> internalBandwid
 
     QString text_label = name;
     if (internalBandwidth.has_value()) {
-        text_label += "\n  🗘" + QString::number(internalBandwidth.value()) + " MBit/s";
+        text_label += "\n  🗘" + printHumanReadableBandwidth(internalBandwidth.value());
     }
 
     // Erstellen des label-Widgets und Einstellen des Textes
@@ -29,7 +29,7 @@ Node::Node(NodeType nodeType, QString name, std::optional<qreal> internalBandwid
     label->setPos(5, -30); // Position relativ zum Knoten
 }
 
-void Node::setInternalBandwidthMbits(qreal internalBandwidth_) {
+void Node::setInternalBandwidth(qreal internalBandwidth_) {
     QString text_label = name;
     text_label += "\n  🗘" + QString::number(internalBandwidth_) + " MBit/s";
     label->setPlainText(text_label);
@@ -201,4 +201,20 @@ void Node::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     update();
     QGraphicsItem::mouseReleaseEvent(event);
+}
+
+// TODO:: Same function as in Node, implement more elegant solution
+QString Node::printHumanReadableBandwidth(qreal& internalBandwidth_) {
+    int bandwidthDimension = 0;
+    while( internalBandwidth_ > 1024 && bandwidthDimension < 4) {
+        internalBandwidth_ /= 1024;
+        bandwidthDimension++;
+    }      
+
+    switch(bandwidthDimension) {
+        case 1: return QString::number(internalBandwidth_) + " Kbit/s";
+        case 2: return QString::number(internalBandwidth_) + " Mbit/s";
+        case 3: return QString::number(internalBandwidth_) + " Gbit/s";
+        default: return QString::number(internalBandwidth_) + " Bit/s";
+    }
 }
