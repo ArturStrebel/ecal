@@ -19,7 +19,6 @@
 
 #pragma once
 
-#include <vector>
 #include <ecal/ecal_os.h>
 
 namespace eCAL
@@ -57,7 +56,7 @@ namespace eCAL
       bool isAlive;
       int topicID;
       std::string topicName;
-      std::string direction; //Subscriber or Publisher
+      std::string direction; // subscriber or publisher
       std::string processName;
       std::string description;
     };
