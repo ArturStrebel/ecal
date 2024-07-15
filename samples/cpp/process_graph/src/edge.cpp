@@ -7,8 +7,8 @@
 #include <QPainter>
 #include <QtMath>
 
-Edge::Edge(Node *sourceNode, Node *destNode, bool singleArrow, bool curvedArrow, QString label, qreal bandwith_mbits)
-    : source(sourceNode), dest(destNode), singleArrow(singleArrow), curvedArrow(curvedArrow), label(label), bandwith_mbits(bandwith_mbits)
+Edge::Edge(Node *sourceNode, Node *destNode, bool singleArrow, bool curvedArrow, QString label, qreal bandwidth_)
+    : source(sourceNode), dest(destNode), singleArrow(singleArrow), curvedArrow(curvedArrow), label(label), bandwidth(bandwidth_)
 {
     setAcceptedMouseButtons(Qt::NoButton);
     source->addEdge(this);
@@ -140,7 +140,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 
     // Draw the label
     painter->setPen(labelColor);
-    painter->drawText(QRectF(- width / 2, - height / 2 - excentricity, width, height), Qt::AlignCenter, label + "\n" + QString::number(bandwith_mbits) + " Mbit/s");
+    painter->drawText(QRectF(- width / 2, - height / 2 - excentricity, width, height), Qt::AlignCenter, label + "\n" + QString::number(bandwidth) + " Mbit/s");
 
     // Restore the painter's coordinate system
     painter->restore();

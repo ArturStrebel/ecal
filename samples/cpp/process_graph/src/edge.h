@@ -13,13 +13,13 @@ class Edge : public QGraphicsItem
 {
 public:
     Edge(Node *sourceNode, Node *destNode, bool singleArrow, bool curvedArrow,
-         QString label, qreal bandwith_mbits);
+         QString label, qreal bandwidth);
     ~Edge();
     Node *sourceNode() const;
     Node *destNode() const;
 
     QString label;
-    qreal bandwith_mbits;
+    qreal bandwidth;
 
     void adjust();
 

@@ -35,15 +35,9 @@ namespace eCAL
     Destroy(); 
   }
 
-  void CProcessGraph::Create()
-  {
+  void CProcessGraph::Create(){}
 
-  }
-
-  void CProcessGraph::Destroy()
-  {
-
-  }
+  void CProcessGraph::Destroy(){}
 
   eCAL::ProcessGraph::SProcessGraph CProcessGraph::GetProcessGraph(const eCAL::Monitoring::SMonitoring& monitoring) 
   {
@@ -60,7 +54,6 @@ namespace eCAL
     {
       if (!it->isAlive) 
       {
-        m_edgeHashTable.erase(it->edgeID);
         it = m_process_graph.processEdges.erase(it);
       }
        
@@ -182,7 +175,6 @@ namespace eCAL
   {
     // This method assumes that edge is not already in the list
     m_process_graph.processEdges.push_back(newEdge);
-    m_edgeHashTable.insert( newEdge.edgeID );
   }
 
   eCAL::ProcessGraph::SProcessGraphEdge CProcessGraph::CreateProcessEdge(const eCAL::Monitoring::STopicMon& pub , const eCAL::Monitoring::STopicMon& sub, const std::string& edgeID )
@@ -195,8 +187,6 @@ namespace eCAL
       sub.uname, 
       pub.tname,
       GetBandwidth(pub),
-      nullptr,
-      nullptr
       };
   }
 

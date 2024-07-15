@@ -24,11 +24,11 @@ void Monitoring::updateProcessGraph()
         };
 
         process_graph.processEdges = {
-            {true, "process_sub1", "ACU Process", "sub1", "Topic 2", 5.0, nullptr, nullptr},
-            {true, "process_sub2", "ACU Process", "sub2", "Topic 3", 3.2, nullptr, nullptr},
-            {true, "process_sub3", "ACU Process", "sub3", "Topic 4", 0.01, nullptr, nullptr},
-            {true, "process_sub4", "ACU Process", "sub4", "Topic 4", 0.01, nullptr, nullptr},
-            {true, "publisher_process", "Camera", "ACU Process", "Rear_Camera", 9.8, nullptr, nullptr}
+            {true, "process_sub1", "ACU Process", "sub1", "Topic 2", 5.0},
+            {true, "process_sub2", "ACU Process", "sub2", "Topic 3", 3.2},
+            {true, "process_sub3", "ACU Process", "sub3", "Topic 4", 0.01},
+            {true, "process_sub4", "ACU Process", "sub4", "Topic 4", 0.01},
+            {true, "publisher_process", "Camera", "ACU Process", "Rear_Camera", 9.8}
         };
 
         process_graph.topicTreeItems = {
@@ -47,10 +47,10 @@ void Monitoring::updateProcessGraph()
         };
 
         process_graph.processEdges = {
-            {true, "process_sub1", "ACU Process", "sub1", "Topic 2", 50.0, nullptr, nullptr},
-            {true, "process_sub2", "ACU Process", "sub2", "Topic 3", 30.2, nullptr, nullptr},
-            {true, "process_sub3", "ACU Process", "sub3", "Topic 4", 10.01, nullptr, nullptr},
-            {true, "publisher_process", "Camera", "ACU Process", "Rear_Camera", 90.8, nullptr, nullptr}
+            {true, "process_sub1", "ACU Process", "sub1", "Topic 2", 50.0},
+            {true, "process_sub2", "ACU Process", "sub2", "Topic 3", 30.2},
+            {true, "process_sub3", "ACU Process", "sub3", "Topic 4", 10.01},
+            {true, "publisher_process", "Camera", "ACU Process", "Rear_Camera", 90.8}
         };
 
         process_graph.topicTreeItems = {

@@ -69,7 +69,6 @@ namespace eCAL
       eCAL::ProcessGraph::STopicTreeItem CProcessGraph::CreateTopicTreeItem(const eCAL::Monitoring::STopicMon& process );
       eCAL::ProcessGraph::STopicTreeItem* FindProcess( const int& processID );
 
-      std::unordered_set<std::string> m_edgeHashTable; 
       eCAL::ProcessGraph::SProcessGraph m_process_graph; 
   };
 }

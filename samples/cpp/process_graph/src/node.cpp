@@ -10,8 +10,8 @@
 #include <QPainter>
 #include <QStyleOption>
 
-Node::Node(NodeType nodeType, QString name, std::optional<qreal> internalBandwidth_mbits)
-    : nodeType(nodeType), name(name), internalBandwidth_mbits(internalBandwidth_mbits)
+Node::Node(NodeType nodeType, QString name, std::optional<qreal> internalBandwidth_)
+    : nodeType(nodeType), name(name), internalBandwidth(internalBandwidth_)
 {
     setFlag(ItemIsMovable);
     setFlag(ItemSendsGeometryChanges);
@@ -19,8 +19,8 @@ Node::Node(NodeType nodeType, QString name, std::optional<qreal> internalBandwid
     setZValue(-1);
 
     QString text_label = name;
-    if (internalBandwidth_mbits.has_value()) {
-        text_label += "\n  🗘" + QString::number(internalBandwidth_mbits.value()) + " MBit/s";
+    if (internalBandwidth.has_value()) {
+        text_label += "\n  🗘" + QString::number(internalBandwidth.value()) + " MBit/s";
     }
 
     // Erstellen des label-Widgets und Einstellen des Textes
@@ -29,9 +29,9 @@ Node::Node(NodeType nodeType, QString name, std::optional<qreal> internalBandwid
     label->setPos(5, -30); // Position relativ zum Knoten
 }
 
-void Node::setInternalBandwidthMbits(qreal internalBandwidth_mbits_) {
+void Node::setInternalBandwidthMbits(qreal internalBandwidth_) {
     QString text_label = name;
-    text_label += "\n  🗘" + QString::number(internalBandwidth_mbits_) + " MBit/s";
+    text_label += "\n  🗘" + QString::number(internalBandwidth_) + " MBit/s";
     label->setPlainText(text_label);
 }
 
@@ -155,6 +155,8 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
             dark = new QColor(Qt::darkGreen);
             break;
         default:
+            light = new QColor(Qt::blue);
+            dark = new QColor(Qt::darkBlue);
             break;
     }
 

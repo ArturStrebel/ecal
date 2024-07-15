@@ -41,9 +41,6 @@ namespace eCAL
       std::string subscriberName;
       std::string topicName;
       double bandwidth;  // stored in Bit/s
-
-      SProcessGraphEdge* publisherNext = nullptr;
-      SProcessGraphEdge* subscriberNext = nullptr;
     };
 
     struct SHostGraphEdge
