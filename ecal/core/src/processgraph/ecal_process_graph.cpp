@@ -34,9 +34,8 @@ namespace eCAL
     Destroy(); 
   }
 
-  void CProcessGraph::Create(){}
-
-  void CProcessGraph::Destroy(){}
+  void CProcessGraph::Create() {}
+  void CProcessGraph::Destroy() {}
 
   eCAL::ProcessGraph::SProcessGraph CProcessGraph::GetProcessGraph(const eCAL::Monitoring::SMonitoring& monitoring) 
   {
@@ -44,7 +43,7 @@ namespace eCAL
     return m_process_graph; 
   }
 
-  eCAL::ProcessGraph::SProcessGraphEdge* CProcessGraph::FindProcessEdge(std::string edgeID) 
+  eCAL::ProcessGraph::SProcessGraphEdge* CProcessGraph::FindProcessEdge(std::pair<int,int> edgeID) 
   {
     for (auto it = m_process_graph.processEdges.begin(); it != m_process_graph.processEdges.end(); ++it) 
       if(it->edgeID == edgeID)
@@ -52,7 +51,7 @@ namespace eCAL
     return nullptr;
   }
 
-  eCAL::ProcessGraph::SHostGraphEdge* CProcessGraph::FindHostEdge(std::string edgeID) 
+  eCAL::ProcessGraph::SHostGraphEdge* CProcessGraph::FindHostEdge(std::pair<int,int> edgeID) 
   {
     for (auto it = m_process_graph.hostEdges.begin(); it != m_process_graph.hostEdges.end(); ++it) 
       if(it->edgeID == edgeID)
@@ -70,7 +69,7 @@ namespace eCAL
 
   void CProcessGraph::TryInsertProcessEdge(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub ) 
   {
-    auto edgeID = std::to_string(pub.pid) + "_" + std::to_string(sub.pid);
+    auto edgeID = std::make_pair(pub.pid, sub.pid);
     auto processPtr = FindProcessEdge(edgeID);
     if( processPtr == nullptr)
       m_process_graph.processEdges.push_back(CreateProcessEdge(pub, sub));
@@ -80,7 +79,7 @@ namespace eCAL
 
   void CProcessGraph::TryInsertHostEdge(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub ) 
   {
-    auto edgeID = std::to_string(pub.hid) + "_" + std::to_string(sub.hid);
+    auto edgeID = std::make_pair(pub.hid, sub.hid);
     auto processPtr = FindHostEdge(edgeID);
     if( processPtr == nullptr)
       m_process_graph.hostEdges.push_back(CreateHostEdge(pub, sub));
@@ -196,7 +195,7 @@ namespace eCAL
     return 
     {
       true,
-      std::to_string(pub.pid) + "_" + std::to_string(sub.pid),
+      std::make_pair(pub.pid, sub.pid),
       pub.uname, 
       sub.uname, 
       pub.tname,
@@ -209,7 +208,7 @@ namespace eCAL
     return 
     {
       true,
-      std::to_string(pub.hid) + "_" + std::to_string(sub.hid),
+      std::make_pair(pub.hid, sub.hid),
       pub.hname,
       sub.hname,
       GetBandwidth(pub)

@@ -48,14 +48,14 @@ namespace eCAL
       double GetBandwidth(const eCAL::Monitoring::STopicMon& pub);
 
       // Functions for process view
-      eCAL::ProcessGraph::SProcessGraphEdge* FindProcessEdge(std::string edgeID);
+      eCAL::ProcessGraph::SProcessGraphEdge* FindProcessEdge(std::pair<int,int> edgeID);
       eCAL::ProcessGraph::SProcessGraphEdge CreateProcessEdge(const eCAL::Monitoring::STopicMon& pub , const eCAL::Monitoring::STopicMon& sub );
-      void TryInsertProcessEdge(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub );
-      
+      void TryInsertProcessEdge(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub ); 
+
       // Functions for host traffic view
-      eCAL::ProcessGraph::SHostGraphEdge* FindHostEdge(std::string edgeID);
-      eCAL::ProcessGraph::SHostGraphEdge CreateHostEdge(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub );
-      void TryInsertHostEdge(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub );
+      eCAL::ProcessGraph::SHostGraphEdge* FindHostEdge(std::pair<int,int> edgeID);
+      eCAL::ProcessGraph::SHostGraphEdge CreateHostEdge(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub);
+      void TryInsertHostEdge(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub ); 
 
       // Functions for topic tree
       eCAL::ProcessGraph::STopicTreeItem* FindTopicTreeItem(int topicID); 

@@ -28,7 +28,7 @@ namespace eCAL
     struct SProcessGraphEdge
     {
       bool isAlive;
-      std::string edgeID;
+      std::pair<int,int> edgeID;
       std::string publisherName;
       std::string subscriberName;
       std::string topicName;
@@ -38,7 +38,7 @@ namespace eCAL
     struct SHostGraphEdge
     {
       bool isAlive;
-      std::string edgeID;
+      std::pair<int,int> edgeID;
       std::string outgoingHostName;
       std::string incomingHostName;
       double bandwidth;  // stored in Bit/s
