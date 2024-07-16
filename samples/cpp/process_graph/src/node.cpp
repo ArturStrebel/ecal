@@ -58,10 +58,15 @@ void Node::calculateForces()
         return;
     }
 
+    // Relevant physics parameters
+    qreal charge = 500.0;            // How strong nodes repel each other
+    qreal weightFactor = 20.0;       // How strong edges pull nodes together
+    qreal velocityThreshold = 3.0;   // Lower velocities than this get set to zero
+
+
     // Sum up all forces pushing this item away
     qreal xvel = 0;
     qreal yvel = 0;
-    qreal charge = 1000.0;
     const QList<QGraphicsItem *> items = scene()->items();
     for (QGraphicsItem *item : items) {
         Node *node = qgraphicsitem_cast<Node *>(item);
@@ -72,7 +77,7 @@ void Node::calculateForces()
         qreal dx = vec.x();
         qreal dy = vec.y();
 
-        double l = 2.0 * (dx * dx + dy * dy);
+        qreal l = 2.0 * (dx * dx + dy * dy);
         if (l > 0) {
             xvel += (dx * charge) / l;
             yvel += (dy * charge) / l;
@@ -80,7 +85,7 @@ void Node::calculateForces()
     }
 
     // Now subtract all forces pulling items together
-    double weight = (edgeList.size() + 1) * 10;
+    qreal weight = (edgeList.size() + 1) * weightFactor;
     for (const Edge *edge : std::as_const(edgeList)) {
         QPointF vec;
         if (edge->sourceNode() == this)
@@ -91,7 +96,7 @@ void Node::calculateForces()
         yvel -= vec.y() / weight;
     }
 
-    if (qAbs(xvel) < 0.1 && qAbs(yvel) < 0.1)
+    if (qAbs(xvel) < velocityThreshold && qAbs(yvel) < velocityThreshold)
         xvel = yvel = 0;
 
     QRectF sceneRect = scene()->sceneRect();
