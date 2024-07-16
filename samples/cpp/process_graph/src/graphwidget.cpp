@@ -113,7 +113,11 @@ void GraphWidget::updateProcessGraph() {
         for (const auto& pair: node_map) {
             std::string nodeId = pair.first;
             Node* node = pair.second;
-            if (node->edges().size() == 0) {
+            bool nodeDeleted = true;
+            for (auto it : process_graph.hostEdges) 
+                if(it.incomingHostName == nodeId || it.outgoingHostName == nodeId )
+                    nodeDeleted = false;
+            if (nodeDeleted == true) {
                 graphicsScene->removeItem(node);
                 delete node;
                 hostsToDrop.append(nodeId);

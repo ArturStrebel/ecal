@@ -31,7 +31,7 @@ Node::Node(NodeType nodeType, QString name, std::optional<qreal> internalBandwid
 
 void Node::setInternalBandwidth(qreal internalBandwidth_) {
     QString text_label = name;
-    text_label += "\n  🗘" + QString::number(internalBandwidth_) + " MBit/s";
+    text_label += "\n  🗘" + printHumanReadableBandwidth(internalBandwidth_);
     label->setPlainText(text_label);
 }
 

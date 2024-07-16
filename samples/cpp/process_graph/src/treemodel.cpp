@@ -185,7 +185,7 @@ std::string str_tolower(std::string s)
 
 void TreeModel::setupModelData(const std::vector<eCAL::ProcessGraph::STopicTreeItem>& treeData)
 {
-    for ( size_t i = 0; i < treeData.size(); ) 
+    for ( size_t i = 0; i < treeData.size(); ) //TODO: Clean this up 
     {
         rootItem->insertChildren(rootItem->childCount(), 1, rootItem->columnCount());
 
