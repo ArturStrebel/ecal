@@ -183,9 +183,23 @@ std::string str_tolower(std::string s)
     return s;
 }
 
+void TreeModel::insertProcess( size_t& pos , std::string direction, std::string currentTopic, const std::vector<eCAL::ProcessGraph::STopicTreeItem>& treeData)
+{
+    while(treeData[pos].topicName == currentTopic && str_tolower(treeData[pos].direction) == direction)
+    {
+        auto dirItem = rootItem->child(rootItem->childCount()-1)->child(direction == "publisher" ? 0 : 1);
+        dirItem->insertChildren(dirItem->childCount(), 1, rootItem->columnCount());
+        auto processItem = dirItem->child(dirItem->childCount() -1);
+        processItem->setData(0, QString::fromStdString(treeData[pos].processName));
+        processItem->setData(1, QString::fromStdString(treeData[pos].description));
+        if (++pos == treeData.size())
+            break; 
+    }
+}
+
 void TreeModel::setupModelData(const std::vector<eCAL::ProcessGraph::STopicTreeItem>& treeData)
 {
-    for ( size_t i = 0; i < treeData.size(); ) //TODO: Clean this up 
+    for ( size_t i = 0; i < treeData.size(); )
     {
         rootItem->insertChildren(rootItem->childCount(), 1, rootItem->columnCount());
 
@@ -196,29 +210,10 @@ void TreeModel::setupModelData(const std::vector<eCAL::ProcessGraph::STopicTreeI
         topicItem->insertChildren(0, 2, rootItem->columnCount());
         topicItem->child(0)->setData(0, "Publisher");
         topicItem->child(1)->setData(0, "Subscriber");
-        while(treeData[i].topicName == currentTopic && str_tolower(treeData[i].direction) == "publisher")
-        {
-            auto dirItem = topicItem->child(0);
-            dirItem->insertChildren(dirItem->childCount(), 1, rootItem->columnCount());
-            auto processItem = dirItem->child(dirItem->childCount() -1);
-            processItem->setData(0, QString::fromStdString(treeData[i].processName));
-            processItem->setData(1, QString::fromStdString(treeData[i].description));
-            if (++i == treeData.size())
-                break; 
-        }
 
+        insertProcess( i, "publisher", currentTopic, treeData);
         if (i == treeData.size())
             break;
-
-        while(treeData[i].topicName == currentTopic && str_tolower(treeData[i].direction) == "subscriber")
-        {
-            auto dirItem = topicItem->child(1);
-            dirItem->insertChildren(dirItem->childCount(), 1, rootItem->columnCount());
-            auto processItem = dirItem->child(dirItem->childCount() -1);
-            processItem->setData(0, QString::fromStdString(treeData[i].processName));
-            processItem->setData(1, QString::fromStdString(treeData[i].description));
-            if (++i == treeData.size())
-                break;     
-        }
+        insertProcess( i, "subscriber", currentTopic, treeData);
     }           
 }

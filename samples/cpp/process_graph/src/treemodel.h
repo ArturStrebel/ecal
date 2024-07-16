@@ -54,6 +54,7 @@ public:
 
 private:
     void setupModelData(const std::vector<eCAL::ProcessGraph::STopicTreeItem>& treeData);
+    void insertProcess( size_t& pos , std::string direction, std::string currentTopic, const std::vector<eCAL::ProcessGraph::STopicTreeItem>& treeData);
     TreeItem *getItem(const QModelIndex &index) const;
 
     std::unique_ptr<TreeItem> rootItem;
