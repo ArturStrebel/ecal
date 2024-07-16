@@ -40,6 +40,23 @@ int main(int argc, char **argv)
 
     processgraph = eCAL::ProcessGraph::GetProcessGraph(monitoring);
 
+    for (const auto edge : processgraph.hostEdges) 
+    {
+      std::cout << "Host ID: " << edge.edgeID.first << "_" << edge.edgeID.second << " from " << edge.outgoingHostName << " to " << edge.incomingHostName << " with BW: " << edge.bandwidth << std::endl;
+    }
+    std::cout << std::endl;
+
+    for (const auto edge : processgraph.processEdges) 
+    {
+      std::cout << "Process ID: " << edge.edgeID.first << "_" << edge.edgeID.second << " from " << edge.publisherName << " to " << edge.subscriberName << " with BW: " << edge.bandwidth << std::endl;
+    }
+    std::cout << std::endl;
+
+    for (const auto edge : processgraph.topicTreeItems) 
+    {
+      std::cout << "Topic ID: " << edge.topicID << " Name: " << edge.processName << " from topic " << edge.topicName << " as a " << edge.direction << std::endl;
+    }
+    std::cout << std::endl;
     // sleep few milliseconds
     eCAL::Process::SleepMS(g_mon_timing);
   }

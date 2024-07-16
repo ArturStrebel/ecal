@@ -21,6 +21,7 @@ public slots: // Hinzufügen von slots
 
 private:
     QTimer *timer;           // Timer für periodische Updates.
+    eCAL::Monitoring::SMonitoring monitoring;
     eCAL::ProcessGraph::SProcessGraph process_graph; // process_graph hinzufügen
     int counter = 0;
 };

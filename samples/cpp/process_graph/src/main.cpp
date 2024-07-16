@@ -23,29 +23,17 @@ int main(int argc, char **argv)
     // initialize eCAL core API
     eCAL::Initialize(argc, argv, "monitoring", eCAL::Init::All);
 
-    // eCAL::Monitoring::SMonitoring monitoring;
-    eCAL::ProcessGraph::SProcessGraph process_graph;
-
-//     eCAL::Monitoring::GetMonitoring(monitoring, eCAL::Monitoring::Entity::All);
-//     process_graph = eCAL::ProcessGraph::GetProcessGraph(monitoring);
-
     QWidget *centralWidget = new QWidget;
     QHBoxLayout *layout = new QHBoxLayout(centralWidget);
 
     Monitoring* monitor = new Monitoring();
+    GraphWidget *HostTrafficView = new GraphWidget(monitor, GraphWidget::ViewType::HostView, nullptr, "Host Network traffic");
+    MainWindow *TopicTreeView = new MainWindow(monitor);
+    GraphWidget *ProcessGraphView = new GraphWidget(monitor, GraphWidget::ViewType::ProcessView, nullptr, "Process Graph");
 
-    // Host View Graph
-    GraphWidget *widget1 = new GraphWidget(monitor, GraphWidget::ViewType::HostView, nullptr, "Host Network traffic");
-
-    // Topic View
-    MainWindow *widget2 = new MainWindow(monitor);
-
-    // Process View Graph
-    GraphWidget *widget3 = new GraphWidget(monitor, GraphWidget::ViewType::ProcessView, nullptr, "Process Graph");
-
-    layout->addWidget(widget1);
-    layout->addWidget(widget2);
-    layout->addWidget(widget3);
+    layout->addWidget(HostTrafficView);
+    layout->addWidget(TopicTreeView);
+    layout->addWidget(ProcessGraphView);
 
     QMainWindow mainWindow;
     mainWindow.setCentralWidget(centralWidget);
