@@ -44,10 +44,10 @@ void GraphWidget::updateProcessGraph() {
             bool edgeExists = edge_map.find(edge.edgeID) != edge_map.end();
             if (!edgeExists) {
                 // Add new node if incoming Host does not exist
-                bool incomingNodeExists = node_map.find(edge.incomingHostName) != node_map.end();
+                bool incomingNodeExists = node_map.find(edge.edgeID.second) != node_map.end();
                 if (!incomingNodeExists) {
-                    Node* newNode = new Node(Node::Host, QString::fromStdString(edge.incomingHostName));
-                    node_map.insert(std::make_pair(edge.incomingHostName, newNode));
+                    Node* newNode = new Node(Node::Host, QString::fromStdString(edge.incomingHostName), edge.edgeID.second);
+                    node_map.insert(std::make_pair(edge.edgeID.second, newNode));
 
                     // Add new Node to Scene
                     graphicsScene->addItem(newNode);
@@ -56,10 +56,10 @@ void GraphWidget::updateProcessGraph() {
                 }
 
                 // Add new node if outgoing Host does not exist
-                bool outgoingNodeExists = node_map.find(edge.outgoingHostName) != node_map.end();
+                bool outgoingNodeExists = node_map.find(edge.edgeID.first) != node_map.end();
                 if (!outgoingNodeExists) {
-                    Node* newNode = new Node(Node::Host, QString::fromStdString(edge.outgoingHostName));
-                    node_map.insert(std::make_pair(edge.outgoingHostName, newNode));
+                    Node* newNode = new Node(Node::Host, QString::fromStdString(edge.outgoingHostName), edge.edgeID.first);
+                    node_map.insert(std::make_pair(edge.edgeID.first, newNode));
 
                     // Add new Node to Scene
                     graphicsScene->addItem(newNode);
@@ -68,17 +68,17 @@ void GraphWidget::updateProcessGraph() {
                 }
 
                 // Finally add the edge
-                if (edge.outgoingHostName == edge.incomingHostName) {
-                    node_map[edge.outgoingHostName]->setInternalBandwidth(edge.bandwidth);
+                if (edge.edgeID.first == edge.edgeID.second) {
+                    node_map[edge.edgeID.first]->setInternalBandwidth(edge.bandwidth);
                     edge_map.insert(std::make_pair(edge.edgeID, nullptr));
                 } else {
-                    Edge* newEdge = new Edge(node_map[edge.outgoingHostName], node_map[edge.incomingHostName], true, true, "", edge.bandwidth);
+                    Edge* newEdge = new Edge(node_map[edge.edgeID.first], node_map[edge.edgeID.second], true, true, "", edge.bandwidth);
                     edge_map.insert(std::make_pair(edge.edgeID, newEdge));
                     graphicsScene->addItem(newEdge);
                 }
             } else {
-                if (edge.outgoingHostName == edge.incomingHostName) {
-                    node_map[edge.outgoingHostName]->setInternalBandwidth(edge.bandwidth);
+                if (edge.edgeID.first == edge.edgeID.second) {
+                    node_map[edge.edgeID.first]->setInternalBandwidth(edge.bandwidth);
                 } else {
                     edge_map[edge.edgeID]->bandwidth = edge.bandwidth; 
                 }
@@ -109,13 +109,13 @@ void GraphWidget::updateProcessGraph() {
         }
 
         // Drop Nodes without Edges
-        QList<std::string> hostsToDrop;
+        QList<int> hostsToDrop;
         for (const auto& pair: node_map) {
-            std::string nodeId = pair.first;
+            int nodeId = pair.first;
             Node* node = pair.second;
             bool nodeDeleted = true;
             for (auto it : process_graph.hostEdges) 
-                if(it.incomingHostName == nodeId || it.outgoingHostName == nodeId )
+                if(it.edgeID.first == nodeId || it.edgeID.second == nodeId )
                     nodeDeleted = false;
             if (nodeDeleted == true) {
                 graphicsScene->removeItem(node);
@@ -133,10 +133,10 @@ void GraphWidget::updateProcessGraph() {
             bool edgeExists = edge_map.find(edge.edgeID) != edge_map.end();
             if (!edgeExists) {
                 // Add new node if incoming Host does not exist
-                bool publisherNodeExists = node_map.find(edge.publisherName) != node_map.end();
+                bool publisherNodeExists = node_map.find(edge.edgeID.first) != node_map.end();
                 if (!publisherNodeExists) {
-                    Node* newNode = new Node(Node::Publisher, QString::fromStdString(edge.publisherName));
-                    node_map.insert(std::make_pair(edge.publisherName, newNode));
+                    Node* newNode = new Node(Node::Publisher, QString::fromStdString(edge.publisherName), edge.edgeID.first);
+                    node_map.insert(std::make_pair(edge.edgeID.first, newNode));
 
                     // Add new Node to Scene
                     graphicsScene->addItem(newNode);
@@ -145,10 +145,10 @@ void GraphWidget::updateProcessGraph() {
                 }
 
                 // Add new node if outgoing Host does not exist
-                bool subscriberNodeExists = node_map.find(edge.subscriberName) != node_map.end();
+                bool subscriberNodeExists = node_map.find(edge.edgeID.second) != node_map.end();
                 if (!subscriberNodeExists) {
-                    Node* newNode = new Node(Node::Subscriber, QString::fromStdString(edge.subscriberName));
-                    node_map.insert(std::make_pair(edge.subscriberName, newNode));
+                    Node* newNode = new Node(Node::Subscriber, QString::fromStdString(edge.subscriberName), edge.edgeID.second);
+                    node_map.insert(std::make_pair(edge.edgeID.second, newNode));
 
                     // Add new Node to Scene
                     graphicsScene->addItem(newNode);
@@ -157,7 +157,7 @@ void GraphWidget::updateProcessGraph() {
                 }
 
                 // Finally add the edge
-                Edge* newEdge = new Edge(node_map[edge.publisherName], node_map[edge.subscriberName], true, false, QString::fromStdString(edge.topicName), edge.bandwidth);
+                Edge* newEdge = new Edge(node_map[edge.edgeID.first], node_map[edge.edgeID.second], true, false, QString::fromStdString(edge.topicName), edge.bandwidth);
                 edge_map.insert(std::make_pair(edge.edgeID, newEdge));
                 graphicsScene->addItem(newEdge);
             } else {
@@ -191,9 +191,9 @@ void GraphWidget::updateProcessGraph() {
         }
 
         // Drop Nodes without Edges
-        QList<std::string> hostsToDrop;
+        QList<int> hostsToDrop;
         for (const auto& pair: node_map) {
-            std::string nodeId = pair.first;
+            int nodeId = pair.first;
             Node* node = pair.second;
             if (node->edges().size() == 0) {
                 graphicsScene->removeItem(node);

@@ -22,7 +22,7 @@ public:
     };
     NodeType nodeType;
 
-    Node(NodeType nodeType, QString name, std::optional<qreal> internalBandwidth = std::nullopt);
+    Node(NodeType nodeType, QString name, int nodeId, std::optional<qreal> internalBandwidth = std::nullopt);
 
     void setInternalBandwidth(qreal internalBandwidth);
     void addEdge(Edge *edge);
@@ -54,6 +54,7 @@ private:
     QGraphicsTextItem *label;
     std::optional<qreal> internalBandwidth = std::nullopt;
     QString name;
+    int nodeId;
 };
 //! [0]
 

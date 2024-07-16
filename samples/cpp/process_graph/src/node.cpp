@@ -10,8 +10,8 @@
 #include <QPainter>
 #include <QStyleOption>
 
-Node::Node(NodeType nodeType, QString name, std::optional<qreal> internalBandwidth_)
-    : nodeType(nodeType), name(name), internalBandwidth(internalBandwidth_)
+Node::Node(NodeType nodeType_, QString name_, int nodeId_, std::optional<qreal> internalBandwidth_)
+    : nodeType(nodeType_), name(name_), nodeId(nodeId_), internalBandwidth(internalBandwidth_)
 {
     setFlag(ItemIsMovable);
     setFlag(ItemSendsGeometryChanges);
