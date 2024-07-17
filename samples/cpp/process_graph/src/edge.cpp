@@ -135,13 +135,20 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
     // Rotate the painter's coordinate system
     painter->save();
     painter->translate(midPoint);
-    qreal labelAngle = std::atan2(-line.dy(), line.dx());
+    qreal labelAngle;
+    if (sourcePoint.x() > destPoint.x()) // Flip label if edge goes from right to left
+        labelAngle = std::atan2(line.dy(), -line.dx());
+    else 
+        labelAngle = std::atan2(-line.dy(), line.dx());
     painter->rotate(-labelAngle * 180 / M_PI); // Convert from radians to degrees
 
     // Draw the label
     painter->setPen(labelColor);
-    painter->drawText(QRectF(- width / 2, - height / 2 - excentricity, width, height), Qt::AlignCenter, label + "\n" + printHumanReadableBandwidth(bandwidth));
-
+    if (sourcePoint.x() > destPoint.x()) 
+        painter->drawText(QRectF(- width / 2, - height / 2 - excentricity -5, width, height), Qt::AlignCenter, label + "\n" + printHumanReadableBandwidth(bandwidth));
+    else
+        painter->drawText(QRectF(- width / 2, - height / 2 + excentricity -15, width, height), Qt::AlignCenter, label + "\n" + printHumanReadableBandwidth(bandwidth));
+    
     // Restore the painter's coordinate system
     painter->restore();
 

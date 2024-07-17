@@ -185,15 +185,14 @@ std::string str_tolower(std::string s)
 
 void TreeModel::insertProcess( size_t& pos , std::string direction, std::string currentTopic, const std::vector<eCAL::ProcessGraph::STopicTreeItem>& treeData)
 {
-    while(treeData[pos].topicName == currentTopic && str_tolower(treeData[pos].direction) == direction)
+    while( pos != treeData.size() && treeData[pos].topicName == currentTopic && str_tolower(treeData[pos].direction) == direction)
     {
         auto dirItem = rootItem->child(rootItem->childCount()-1)->child(direction == "publisher" ? 0 : 1);
         dirItem->insertChildren(dirItem->childCount(), 1, rootItem->columnCount());
         auto processItem = dirItem->child(dirItem->childCount() -1);
         processItem->setData(0, QString::fromStdString(treeData[pos].processName));
         processItem->setData(1, QString::fromStdString(treeData[pos].description));
-        if (++pos == treeData.size())
-            break; 
+        ++pos;
     }
 }
 
@@ -201,6 +200,7 @@ void TreeModel::setupModelData(const std::vector<eCAL::ProcessGraph::STopicTreeI
 {
     for ( size_t i = 0; i < treeData.size(); )
     {
+        // Fill topic tree one topic at a time
         rootItem->insertChildren(rootItem->childCount(), 1, rootItem->columnCount());
 
         auto topicItem = rootItem->child(rootItem->childCount()-1);
@@ -212,8 +212,6 @@ void TreeModel::setupModelData(const std::vector<eCAL::ProcessGraph::STopicTreeI
         topicItem->child(1)->setData(0, "Subscriber");
 
         insertProcess( i, "publisher", currentTopic, treeData);
-        if (i == treeData.size())
-            break;
         insertProcess( i, "subscriber", currentTopic, treeData);
     }           
 }
