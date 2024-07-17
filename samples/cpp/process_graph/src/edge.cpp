@@ -113,7 +113,11 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
     // Temporarily rotate the painter's coordinate system for drawing the label
     painter->save();
     painter->translate(midPoint);
-    qreal labelAngle = std::atan2(-line.dy(), line.dx());
+    qreal labelAngle;
+    if (sourcePoint.x() > destPoint.x()) // Flip label if edge goes from right to left
+        labelAngle = std::atan2(line.dy(), -line.dx());
+    else 
+        labelAngle = std::atan2(-line.dy(), line.dx());
     painter->rotate(-labelAngle * 180 / M_PI); // Convert from radians to degrees
     painter->setPen(labelColor);
     if (curvedArrow == true)
