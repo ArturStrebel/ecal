@@ -72,7 +72,7 @@ void GraphWidget::updateProcessGraph() {
                     node_map[edge.edgeID.first]->setInternalBandwidth(edge.bandwidth);
                     edge_map.insert(std::make_pair(edge.edgeID, nullptr));
                 } else {
-                    Edge* newEdge = new Edge(node_map[edge.edgeID.first], node_map[edge.edgeID.second], true, true, "", edge.bandwidth);
+                    Edge* newEdge = new Edge(node_map[edge.edgeID.first], node_map[edge.edgeID.second], true, "", edge.bandwidth);
                     edge_map.insert(std::make_pair(edge.edgeID, newEdge));
                     graphicsScene->addItem(newEdge);
                 }
@@ -157,7 +157,7 @@ void GraphWidget::updateProcessGraph() {
                 }
 
                 // Finally add the edge
-                Edge* newEdge = new Edge(node_map[edge.edgeID.first], node_map[edge.edgeID.second], true, false, QString::fromStdString(edge.topicName), edge.bandwidth);
+                Edge* newEdge = new Edge(node_map[edge.edgeID.first], node_map[edge.edgeID.second], false, QString::fromStdString(edge.topicName), edge.bandwidth);
                 edge_map.insert(std::make_pair(edge.edgeID, newEdge));
                 graphicsScene->addItem(newEdge);
             } else {

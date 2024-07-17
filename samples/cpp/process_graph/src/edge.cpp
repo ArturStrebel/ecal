@@ -7,8 +7,8 @@
 #include <QPainter>
 #include <QtMath>
 
-Edge::Edge(Node *sourceNode, Node *destNode, bool singleArrow, bool curvedArrow, QString label, qreal bandwidth_)
-    : source(sourceNode), dest(destNode), singleArrow(singleArrow), curvedArrow(curvedArrow), label(label), bandwidth(bandwidth_)
+Edge::Edge(Node *sourceNode, Node *destNode, bool curvedArrow_, QString label_, qreal bandwidth_)
+    : source(sourceNode), dest(destNode), curvedArrow(curvedArrow_), label(label_), bandwidth(bandwidth_)
 {
     setAcceptedMouseButtons(Qt::NoButton);
     source->addEdge(this);
@@ -78,14 +78,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 
     // Draw the line itself
     painter->setPen(QPen(Qt::black, 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-    qreal excentricity;
-
-    if (curvedArrow) {
-        excentricity = 25.0;
-    }
-    else {
-        excentricity = 0.0;
-    }
+    const qreal excentricity = curvedArrow ? 25.0 : 0.0;
 
     QPainterPath pathPainter;
     QPointF lineVec = destPoint - sourcePoint;
@@ -108,31 +101,16 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
                                               cos(arrowAngle - M_PI + M_PI / 3) * arrowSize);
     painter->drawPolygon(QPolygonF() << line.p2() << destArrowP1 << destArrowP2);
 
-    if (!singleArrow && !curvedArrow)
-    {
-        QPointF sourceArrowP1 = sourcePoint + QPointF(sin(arrowAngle + M_PI / 3) * arrowSize,
-                                                      cos(arrowAngle + M_PI / 3) * arrowSize);
-        QPointF sourceArrowP2 = sourcePoint + QPointF(sin(arrowAngle + M_PI - M_PI / 3) * arrowSize,
-                                                      cos(arrowAngle + M_PI - M_PI / 3) * arrowSize);
-        painter->drawPolygon(QPolygonF() << line.p1() << sourceArrowP1 << sourceArrowP2);
-    }
-
-    // Draw the label
-
-    // Calc width for label
+    // Setup label
     int fontsize = 10;
     qreal width = std::max(static_cast<double>(label.length()), 12.0) * fontsize * 0.75;
     qreal height = 30;
-
-    // Set the color for the label
     QColor labelColor(0, 0, 0);
-
-    // Set the font for the label
     QFont font = painter->font();
     font.setPointSize(fontsize);
     painter->setFont(font);
 
-    // Rotate the painter's coordinate system
+    // Temporarily rotate the painter's coordinate system for drawing the label
     painter->save();
     painter->translate(midPoint);
     qreal labelAngle;
@@ -141,17 +119,12 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
     else 
         labelAngle = std::atan2(-line.dy(), line.dx());
     painter->rotate(-labelAngle * 180 / M_PI); // Convert from radians to degrees
-
-    // Draw the label
     painter->setPen(labelColor);
     if (sourcePoint.x() > destPoint.x()) 
         painter->drawText(QRectF(- width / 2, - height / 2 - excentricity -5, width, height), Qt::AlignCenter, label + "\n" + printHumanReadableBandwidth(bandwidth));
     else
         painter->drawText(QRectF(- width / 2, - height / 2 + excentricity -15, width, height), Qt::AlignCenter, label + "\n" + printHumanReadableBandwidth(bandwidth));
-    
-    // Restore the painter's coordinate system
     painter->restore();
-
 }
 
 // TODO:: Same function as in Node, implement more elegant solution
