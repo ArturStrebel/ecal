@@ -23,10 +23,10 @@ Node::Node(NodeType nodeType_, QString name_, int nodeId_, std::optional<qreal> 
         text_label += "\n  🗘" + printHumanReadableBandwidth(internalBandwidth.value());
     }
 
-    // Erstellen des label-Widgets und Einstellen des Textes
+    // show node label
     label = new QGraphicsTextItem(this);
     label->setPlainText(text_label);
-    label->setPos(5, -30); // Position relativ zum Knoten
+    label->setPos(5, -30); // position relative to node
 }
 
 void Node::setInternalBandwidth(qreal internalBandwidth_) {
@@ -62,7 +62,6 @@ void Node::calculateForces()
     qreal charge = 500.0;            // How strong nodes repel each other
     qreal weightFactor = 20.0;       // How strong edges pull nodes together
     qreal velocityThreshold = 3.0;   // Lower velocities than this get set to zero
-
 
     // Sum up all forces pushing this item away
     qreal xvel = 0;
