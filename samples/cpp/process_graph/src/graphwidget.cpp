@@ -32,7 +32,6 @@ GraphWidget::GraphWidget(Monitoring* monitor, GraphWidget::ViewType view_type, Q
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(updateProcessGraph()));
     timer->start(500);
-
 }
 
 void GraphWidget::updateProcessGraph() {
@@ -72,7 +71,13 @@ void GraphWidget::updateProcessGraph() {
                     node_map[edge.edgeID.first]->setInternalBandwidth(edge.bandwidth);
                     edge_map.insert(std::make_pair(edge.edgeID, nullptr));
                 } else {
-                    Edge* newEdge = new Edge(node_map[edge.edgeID.first], node_map[edge.edgeID.second], true, true, "", edge.bandwidth);
+                    Edge* newEdge = new Edge(node_map[edge.edgeID.first], node_map[edge.edgeID.second], false, "", edge.bandwidth);
+                    auto reverseEdge = edge_map.find(std::make_pair(edge.edgeID.second, edge.edgeID.first));
+                    if (reverseEdge != edge_map.end()) // if reverse edge exists, change edges to curved
+                    {
+                        reverseEdge->second->setCurvedArrow(true);
+                        newEdge->setCurvedArrow(true);
+                    }
                     edge_map.insert(std::make_pair(edge.edgeID, newEdge));
                     graphicsScene->addItem(newEdge);
                 }
@@ -157,7 +162,7 @@ void GraphWidget::updateProcessGraph() {
                 }
 
                 // Finally add the edge
-                Edge* newEdge = new Edge(node_map[edge.edgeID.first], node_map[edge.edgeID.second], true, false, QString::fromStdString(edge.topicName), edge.bandwidth);
+                Edge* newEdge = new Edge(node_map[edge.edgeID.first], node_map[edge.edgeID.second], false, QString::fromStdString(edge.topicName), edge.bandwidth);
                 edge_map.insert(std::make_pair(edge.edgeID, newEdge));
                 graphicsScene->addItem(newEdge);
             } else {

@@ -12,7 +12,7 @@ class Node;
 class Edge : public QGraphicsItem
 {
 public:
-    Edge(Node *sourceNode, Node *destNode, bool singleArrow, bool curvedArrow,
+    Edge(Node *sourceNode, Node *destNode, bool curvedArrow,
          QString label, qreal bandwidth);
     ~Edge();
     Node *sourceNode() const;
@@ -22,6 +22,7 @@ public:
     qreal bandwidth;
 
     void adjust();
+    void setCurvedArrow(bool newState);
 
     enum { Type = UserType + 2 };
     int type() const override { return Type; }
@@ -37,7 +38,6 @@ private:
     QPointF sourcePoint;
     QPointF destPoint;
     qreal arrowSize = 10;
-    bool singleArrow = true;
     bool curvedArrow = false;
 };
 //! [0]
