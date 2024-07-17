@@ -121,7 +121,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
     painter->rotate(-labelAngle * 180 / M_PI); // Convert from radians to degrees
     painter->setPen(labelColor);
     if (curvedArrow == true)
-    {
+    { 
         if (sourcePoint.x() > destPoint.x()) 
             painter->drawText(QRectF(- width / 2, - height / 2 - excentricity - 5, width, height), Qt::AlignCenter, label + "\n" + printHumanReadableBandwidth(bandwidth));
         else

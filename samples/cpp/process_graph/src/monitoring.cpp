@@ -24,7 +24,7 @@ void Monitoring::updateProcessGraph()
         {true, std::make_pair(3,1), "PC", "Laptop", 123456789},
         {true, std::make_pair(2,1), "Handy", "Laptop", 0}
     };
-
+ 
     eCAL::Monitoring::GetMonitoring(monitoring, eCAL::Monitoring::Entity::All);
     // process_graph = eCAL::ProcessGraph::GetProcessGraph(monitoring);
 }
