@@ -120,10 +120,17 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
         labelAngle = std::atan2(-line.dy(), line.dx());
     painter->rotate(-labelAngle * 180 / M_PI); // Convert from radians to degrees
     painter->setPen(labelColor);
-    if (sourcePoint.x() > destPoint.x()) 
-        painter->drawText(QRectF(- width / 2, - height / 2 - excentricity -5, width, height), Qt::AlignCenter, label + "\n" + printHumanReadableBandwidth(bandwidth));
-    else
-        painter->drawText(QRectF(- width / 2, - height / 2 + excentricity -15, width, height), Qt::AlignCenter, label + "\n" + printHumanReadableBandwidth(bandwidth));
+    if (curvedArrow == true)
+    {
+        if (sourcePoint.x() > destPoint.x()) 
+            painter->drawText(QRectF(- width / 2, - height / 2 - excentricity - 5, width, height), Qt::AlignCenter, label + "\n" + printHumanReadableBandwidth(bandwidth));
+        else
+            painter->drawText(QRectF(- width / 2, - height / 2 + excentricity - 15, width, height), Qt::AlignCenter, label + "\n" + printHumanReadableBandwidth(bandwidth));
+    }
+    else 
+    {
+       painter->drawText(QRectF(- width / 2, - height / 2 + 5, width, height), Qt::AlignCenter, label + "\n" + printHumanReadableBandwidth(bandwidth)); 
+    }
     painter->restore();
 }
 
@@ -141,4 +148,9 @@ QString Edge::printHumanReadableBandwidth(qreal& internalBandwidth_) {
         case 3: return QString::number(internalBandwidth_) + " Gbit/s";
         default: return QString::number(internalBandwidth_) + " Bit/s";
     }
+}
+
+void Edge::setCurvedArrow(bool newState)
+{
+    curvedArrow = newState;
 }

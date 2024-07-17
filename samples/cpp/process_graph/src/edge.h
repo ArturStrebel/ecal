@@ -21,6 +21,7 @@ public:
     qreal bandwidth;
 
     void adjust();
+    void setCurvedArrow(bool newState);
 
     enum { Type = UserType + 2 };
     int type() const override { return Type; }
