@@ -11,6 +11,7 @@
 
 class TreeItem;
 
+//! [0]
 class TreeModel : public QAbstractItemModel
 {
     Q_OBJECT
@@ -21,6 +22,7 @@ public:
     TreeModel(const QStringList &headers, std::vector<eCAL::ProcessGraph::STopicTreeItem>& treeData,
               QObject *parent = nullptr);
     ~TreeModel() override;
+//! [0] //! [1]
 
     QVariant data(const QModelIndex &index, int role) const override;
     QVariant headerData(int section, Qt::Orientation orientation,
@@ -32,7 +34,9 @@ public:
 
     int rowCount(const QModelIndex &parent = {}) const override;
     int columnCount(const QModelIndex &parent = {}) const override;
+//! [1]
 
+//! [2]
     Qt::ItemFlags flags(const QModelIndex &index) const override;
     bool setData(const QModelIndex &index, const QVariant &value,
                  int role = Qt::EditRole) override;
@@ -55,5 +59,6 @@ private:
 
     std::unique_ptr<TreeItem> rootItem;
 };
+//! [2]
 
 #endif // TREEMODEL_H

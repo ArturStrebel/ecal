@@ -8,6 +8,7 @@
 
 class Node;
 
+//! [0]
 class Edge : public QGraphicsItem
 {
 public:
@@ -39,5 +40,6 @@ private:
     bool singleArrow = true;
     bool curvedArrow = false;
 };
+//! [0]
 
 #endif // EDGE_H

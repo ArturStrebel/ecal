@@ -10,6 +10,7 @@
 class Edge;
 class GraphWidget;
 
+//! [0]
 class Node : public QGraphicsItem
 {
 public:
@@ -55,5 +56,6 @@ private:
     QString name;
     int nodeId;
 };
+//! [0]
 
 #endif // NODE_H

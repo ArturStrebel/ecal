@@ -5,7 +5,7 @@
 #include <QTimer>
 #include <ecal/ecal.h>
 
-class Monitoring : public QObject
+class Monitoring : public QObject // Erben von QObject
 {
     Q_OBJECT
 
@@ -13,15 +13,17 @@ public:
     Monitoring();
     ~Monitoring();
 
-    const eCAL::ProcessGraph::SProcessGraph& getProcessGraph() const;
+    // Getter-Methode für ProcessGraph.
+    const eCAL::ProcessGraph::SProcessGraph& getProcessGraph() const; // Nicht nur SProcessGraph 
 
-public slots:
-    void updateProcessGraph();
+public slots: // Hinzufügen von slots
+    void updateProcessGraph(); // Slot, um die Prozessinformationen zu aktualisieren.
 
 private:
-    QTimer *timer; // for periodic updates.
+    QTimer *timer;           // Timer für periodische Updates.
     eCAL::Monitoring::SMonitoring monitoring;
-    eCAL::ProcessGraph::SProcessGraph process_graph;
+    eCAL::ProcessGraph::SProcessGraph process_graph; // process_graph hinzufügen
+    int counter = 0;
 };
 
 #endif // MONITORING_H
