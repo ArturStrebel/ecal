@@ -24,11 +24,6 @@ MainWindow::MainWindow(Monitoring* monitor, QWidget *parent)
         view->header()->setSectionResizeMode(column, QHeaderView::ResizeToContents);
     view->expandAll();
 
-    // set timer
-    timer = new QTimer(this);
-    connect(timer, &QTimer::timeout, this, &MainWindow::updateProcessGraph);
-    timer->start(500);
-
     connect(exitAction, &QAction::triggered, qApp, &QCoreApplication::quit);
 
     connect(view->selectionModel(), &QItemSelectionModel::selectionChanged,
@@ -40,6 +35,8 @@ MainWindow::MainWindow(Monitoring* monitor, QWidget *parent)
     connect(removeRowAction, &QAction::triggered, this, &MainWindow::removeRow);
     connect(removeColumnAction, &QAction::triggered, this, &MainWindow::removeColumn);
     connect(insertChildAction, &QAction::triggered, this, &MainWindow::insertChild);
+
+    connect(monitor, &Monitoring::updateTopicTree, this, &MainWindow::updateProcessGraph);
 
     updateActions();
 }

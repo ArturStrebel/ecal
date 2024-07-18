@@ -1,29 +1,28 @@
-#ifndef MONITORING_H
-#define MONITORING_H
+#pragma once
 
 #include <QObject>
 #include <QTimer>
 #include <ecal/ecal.h>
 
-class Monitoring : public QObject // Erben von QObject
+class Monitoring : public QObject
 {
     Q_OBJECT
 
 public:
     Monitoring();
     ~Monitoring();
+    const eCAL::ProcessGraph::SProcessGraph& getProcessGraph() const;
 
-    // Getter-Methode für ProcessGraph.
-    const eCAL::ProcessGraph::SProcessGraph& getProcessGraph() const; // Nicht nur SProcessGraph 
+public slots:
+    void updateProcessGraph();
 
-public slots: // Hinzufügen von slots
-    void updateProcessGraph(); // Slot, um die Prozessinformationen zu aktualisieren.
+signals:
+    void updateTopicTree();
 
 private:
-    QTimer *timer;           // Timer für periodische Updates.
+    bool topicTreeHasChanged();
+    QTimer *timer;
     eCAL::Monitoring::SMonitoring monitoring;
-    eCAL::ProcessGraph::SProcessGraph process_graph; // process_graph hinzufügen
-    int counter = 0;
+    eCAL::ProcessGraph::SProcessGraph process_graph; 
+    std::vector<eCAL::ProcessGraph::STopicTreeItem> previousTopicTree;
 };
-
-#endif // MONITORING_H

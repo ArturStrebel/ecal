@@ -1,8 +1,7 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
 
 #include "ui_mainwindow.h"
 #include <ecal/ecal.h>
@@ -31,7 +30,4 @@ private slots:
 
 private:
     Monitoring* monitor;
-    QTimer *timer;
 };
-
-#endif // MAINWINDOW_H
