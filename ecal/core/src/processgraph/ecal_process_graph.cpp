@@ -73,8 +73,11 @@ namespace eCAL
     auto processPtr = FindProcessEdge(edgeID);
     if( processPtr == nullptr)
       m_process_graph.processEdges.push_back(CreateProcessEdge(pub, sub));
-    else
+    else 
+    {
       processPtr->isAlive = true;
+      processPtr->bandwidth = GetBandwidth(pub);
+    }
   }
 
   void CProcessGraph::TryInsertHostEdge(const eCAL::Monitoring::STopicMon& pub, const eCAL::Monitoring::STopicMon& sub ) 
