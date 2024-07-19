@@ -41,7 +41,7 @@ int main(int argc, char **argv)
     MainWindow *widget2 = new MainWindow(monitor);
 
     // Process View Graph
-    GraphWidget *widget3 = new GraphWidget(monitor, GraphWidget::ViewType::ProcessView, nullptr, "Process Graph");
+    GraphWidget *widget3 = new GraphWidget(monitor, GraphWidget::ViewType::ProcessView, nullptr, "Process Graph", "ACU Process");
 
     layout->addWidget(widget1);
     layout->addWidget(widget2);

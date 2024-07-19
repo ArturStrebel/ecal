@@ -23,10 +23,11 @@ public:
         ProcessView
     };
 
-    GraphWidget(Monitoring* monitor, GraphWidget::ViewType view_type, QWidget *parent = nullptr, QString title = "Nodes and Edges");
+    GraphWidget(Monitoring* monitor, GraphWidget::ViewType view_type, QWidget *parent = nullptr, QString title = "Nodes and Edges", QString process_names = nullptr);
 
     void itemMoved();
     int random(int from, int to);
+    void addNodeToScene(Node* node);
 
 public slots:
     void shuffle();
@@ -53,6 +54,7 @@ private:
     QGraphicsScene *graphicsScene;
     ViewType view_type;
     QString title;
+    QString process_name;
     int counter = 0;
 };
 

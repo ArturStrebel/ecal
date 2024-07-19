@@ -91,10 +91,28 @@ void Node::calculateForces()
         yvel -= vec.y() / weight;
     }
 
+    // Substract forces pulling towards wall in order to sort subscribers right and publishers left.
+    QRectF sceneRect = scene()->sceneRect();
+    QPointF vec;
+    switch (nodeType)
+    {
+        case Node::NodeType::Subscriber:
+            vec = pos() - QPointF(sceneRect.right(), 0);
+            xvel -= vec.x() / weight;
+            yvel -= vec.y() / weight;
+            break;
+        case Node::NodeType::Publisher:
+            vec = pos() - QPointF(sceneRect.left(), 0);
+            xvel -= vec.x() / weight;
+            yvel -= vec.y() / weight;
+            break;
+        default:
+            break;
+    }
+
     if (qAbs(xvel) < 0.1 && qAbs(yvel) < 0.1)
         xvel = yvel = 0;
 
-    QRectF sceneRect = scene()->sceneRect();
     newPos = pos() + QPointF(xvel, yvel);
     newPos.setX(qMin(qMax(newPos.x(), sceneRect.left() + 10), sceneRect.right() - 10));
     newPos.setY(qMin(qMax(newPos.y(), sceneRect.top() + 10), sceneRect.bottom() - 10));
@@ -102,7 +120,7 @@ void Node::calculateForces()
 
 bool Node::advancePosition()
 {
-    if (newPos == pos())
+    if (newPos == pos() || nodeType == Node::NodeType::Process)
         return false;
 
     setPos(newPos);
