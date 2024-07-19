@@ -8,6 +8,7 @@
 #include <ecal/ecal.h>
 #include "monitoring.h"
 #include <QTimer>
+#include <QPushButton>
 
 class Node;
 class Edge;
@@ -23,7 +24,7 @@ public:
         ProcessView
     };
 
-    GraphWidget(Monitoring* monitor, GraphWidget::ViewType view_type, QWidget *parent = nullptr, QString title = "Nodes and Edges");
+    GraphWidget(Monitoring* monitor, QPushButton* pause_button, GraphWidget::ViewType view_type, QWidget *parent = nullptr, QString title = "Nodes and Edges");
 
     void itemMoved();
     int random(int from, int to);
@@ -46,6 +47,7 @@ protected:
 
 private:
     Monitoring* monitor;
+    QPushButton* pauseButton;
     QTimer *timer;
     int timerId = 0;
     std::map<int, Node*> node_map;
@@ -53,7 +55,6 @@ private:
     QGraphicsScene *graphicsScene;
     ViewType view_type;
     QString title;
-    int counter = 0;
 };
 
 #endif // GRAPHWIDGET_H

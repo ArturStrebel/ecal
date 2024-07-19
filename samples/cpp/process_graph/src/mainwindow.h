@@ -7,6 +7,7 @@
 #include <ecal/ecal.h>
 #include "monitoring.h"
 #include <QTimer>
+#include <QPushButton>
 
 #include <QMainWindow>
 
@@ -15,7 +16,7 @@ class MainWindow : public QMainWindow, private Ui::MainWindow
     Q_OBJECT
 
 public:
-    MainWindow(Monitoring* monitor, QWidget *parent = nullptr);
+    MainWindow(Monitoring* monitor, QPushButton* pause_button, QWidget *parent = nullptr);
 
 public slots:
     void updateActions();
@@ -30,4 +31,5 @@ private slots:
 
 private:
     Monitoring* monitor;
+    QPushButton* pauseButton;
 };

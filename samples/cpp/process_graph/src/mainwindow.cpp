@@ -8,11 +8,11 @@
 
 using namespace Qt::StringLiterals;
 
-MainWindow::MainWindow(Monitoring* monitor, QWidget *parent)
-    : QMainWindow(parent), monitor(monitor)
+MainWindow::MainWindow(Monitoring* monitor_, QPushButton* pause_button, QWidget *parent_)
+    : QMainWindow(parent_), monitor(monitor_), pauseButton(pause_button)
 {
     setupUi(this);
-    this->setMinimumSize(QSize(450, 600));
+    this->setMinimumSize(QSize(250, 400));
 
     // Initial set of model
     const QStringList headers({tr("Topic"), tr("Description")});
@@ -37,6 +37,18 @@ MainWindow::MainWindow(Monitoring* monitor, QWidget *parent)
     connect(insertChildAction, &QAction::triggered, this, &MainWindow::insertChild);
 
     connect(monitor, &Monitoring::updateTopicTree, this, &MainWindow::updateProcessGraph);
+
+    connect(pauseButton, &QPushButton::toggled, this, [this] (bool checked) 
+    {
+        if (checked == false) {
+            connect(monitor, &Monitoring::updateTopicTree, this, &MainWindow::updateProcessGraph);
+            pauseButton->setText("Pause");
+            updateProcessGraph();
+        } else {
+            disconnect(monitor, &Monitoring::updateTopicTree, this, &MainWindow::updateProcessGraph);
+            pauseButton->setText("Resume");
+        }
+    });
 
     updateActions();
 }

@@ -13,7 +13,8 @@
 #include <QApplication>
 #include <QTime>
 #include <QMainWindow>
-#include <QHBoxLayout>
+#include <QGridLayout>
+#include <QPushButton>
 
 
 int main(int argc, char **argv)
@@ -24,16 +25,19 @@ int main(int argc, char **argv)
     eCAL::Initialize(argc, argv, "monitoring", eCAL::Init::All);
 
     QWidget *centralWidget = new QWidget;
-    QHBoxLayout *layout = new QHBoxLayout(centralWidget);
+    QGridLayout *layout = new QGridLayout(centralWidget);
 
-    Monitoring* monitor = new Monitoring();
-    GraphWidget *HostTrafficView = new GraphWidget(monitor, GraphWidget::ViewType::HostView, nullptr, "Host Network traffic");
-    MainWindow *TopicTreeView = new MainWindow(monitor);
-    GraphWidget *ProcessGraphView = new GraphWidget(monitor, GraphWidget::ViewType::ProcessView, nullptr, "Process Graph");
+    Monitoring* Monitor = new Monitoring();
+    QPushButton *PauseButton = new QPushButton("Pause"); 
+    PauseButton->setCheckable(true);   
+    GraphWidget *HostTrafficView = new GraphWidget(Monitor, PauseButton, GraphWidget::ViewType::HostView, nullptr, "Host Network traffic");
+    MainWindow *TopicTreeView = new MainWindow(Monitor, PauseButton);
+    GraphWidget *ProcessGraphView = new GraphWidget(Monitor, PauseButton, GraphWidget::ViewType::ProcessView, nullptr, "Process Graph");
 
-    layout->addWidget(HostTrafficView);
-    layout->addWidget(TopicTreeView);
-    layout->addWidget(ProcessGraphView);
+    layout->addWidget(HostTrafficView,1,1);
+    layout->addWidget(TopicTreeView,0,0);
+    layout->addWidget(ProcessGraphView,0,1);
+    layout->addWidget(PauseButton,1,0);
 
     QMainWindow mainWindow;
     mainWindow.setCentralWidget(centralWidget);

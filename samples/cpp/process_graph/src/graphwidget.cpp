@@ -12,25 +12,35 @@
 #include <QKeyEvent>
 #include <QRandomGenerator>
 
-GraphWidget::GraphWidget(Monitoring* monitor, GraphWidget::ViewType view_type, QWidget *parent, QString title)
-    : QGraphicsView(parent), title(title), view_type(view_type), monitor(monitor)
+GraphWidget::GraphWidget(Monitoring* monitor, QPushButton* pause_button, GraphWidget::ViewType view_type, QWidget *parent, QString title)
+    : QGraphicsView(parent), title(title), view_type(view_type), monitor(monitor), pauseButton(pause_button)
 {
     // Setup the Scene/UI
     graphicsScene = new QGraphicsScene(this);
     graphicsScene->setItemIndexMethod(QGraphicsScene::NoIndex);
-    graphicsScene->setSceneRect(-300, -300, 600, 600);
+    graphicsScene->setSceneRect(-300, -300, 550, 350);
     setScene(graphicsScene);
     setCacheMode(CacheBackground);
     setViewportUpdateMode(BoundingRectViewportUpdate);
     setRenderHint(QPainter::Antialiasing);
     setTransformationAnchor(AnchorUnderMouse);
     scale(qreal(0.95), qreal(0.95));
-    setMinimumSize(600, 600);
+    setMinimumSize(400, 400);
     setWindowTitle(tr("Elastic Nodes"));
  
     // Recurrent update.
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(updateProcessGraph()));
+    connect(pauseButton, &QPushButton::toggled, this, [this] (bool checked) 
+    {
+        if (checked == false) {
+            connect(timer, SIGNAL(timeout()), this, SLOT(updateProcessGraph()));
+            pauseButton->setText("Pause");
+        } else {
+            disconnect(timer, SIGNAL(timeout()), this, SLOT(updateProcessGraph()));
+            pauseButton->setText("Resume");
+        }
+    });
     timer->start(500);
 }
 
