@@ -1,8 +1,7 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
-#ifndef NODE_H
-#define NODE_H
+#pragma once
 
 #include <QGraphicsItem>
 #include <QList>
@@ -10,7 +9,6 @@
 class Edge;
 class GraphWidget;
 
-//! [0]
 class Node : public QGraphicsItem
 {
 public:
@@ -35,6 +33,9 @@ public:
     void calculateForces();
     bool advancePosition();
     void setGraph(GraphWidget *newGraphWidget);
+    QString getName();
+    int getId();
+
 
     QRectF boundingRect() const override;
     QPainterPath shape() const override;
@@ -56,6 +57,3 @@ private:
     QString name;
     int nodeId;
 };
-//! [0]
-
-#endif // NODE_H

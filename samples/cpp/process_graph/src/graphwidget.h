@@ -1,12 +1,12 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
-#ifndef GRAPHWIDGET_H
-#define GRAPHWIDGET_H
+#pragma once
 
 #include <QGraphicsView>
 #include <ecal/ecal.h>
 #include "monitoring.h"
+#include "filter.h"
 #include <QTimer>
 #include <QPushButton>
 
@@ -24,7 +24,7 @@ public:
         ProcessView
     };
 
-    GraphWidget(Monitoring* monitor, QPushButton* pause_button, GraphWidget::ViewType view_type, QWidget *parent = nullptr, QString title = "Nodes and Edges");
+    GraphWidget(Monitoring* monitor, ProcessGraphFilter* filter_, QPushButton* pause_button, GraphWidget::ViewType view_type, QWidget *parent = nullptr, QString title = "Nodes and Edges");
 
     void itemMoved();
     int random(int from, int to);
@@ -55,6 +55,5 @@ private:
     QGraphicsScene *graphicsScene;
     ViewType view_type;
     QString title;
+    ProcessGraphFilter *filter;
 };
-
-#endif // GRAPHWIDGET_H

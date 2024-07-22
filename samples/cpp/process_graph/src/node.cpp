@@ -35,6 +35,16 @@ void Node::setInternalBandwidth(qreal internalBandwidth_) {
     label->setPlainText(text_label);
 }
 
+QString Node::getName()
+{
+    return name;
+}
+
+int Node::getId()
+{
+    return nodeId;
+}
+
 void Node::addEdge(Edge *edge)
 {
     edgeList << edge;

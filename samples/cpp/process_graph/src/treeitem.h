@@ -1,8 +1,7 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
-#ifndef TREEITEM_H
-#define TREEITEM_H
+#pragma once
 
 #include <QVariant>
 #include <QList>
@@ -29,5 +28,3 @@ private:
     QVariantList itemData;
     TreeItem *m_parentItem;
 };
-
-#endif // TREEITEM_H

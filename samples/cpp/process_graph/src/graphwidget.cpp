@@ -12,8 +12,8 @@
 #include <QKeyEvent>
 #include <QRandomGenerator>
 
-GraphWidget::GraphWidget(Monitoring* monitor, QPushButton* pause_button, GraphWidget::ViewType view_type, QWidget *parent, QString title)
-    : QGraphicsView(parent), title(title), view_type(view_type), monitor(monitor), pauseButton(pause_button)
+GraphWidget::GraphWidget(Monitoring* monitor, ProcessGraphFilter* filter_, QPushButton* pause_button, GraphWidget::ViewType view_type, QWidget *parent, QString title)
+    : QGraphicsView(parent), title(title), view_type(view_type), monitor(monitor), filter(filter_), pauseButton(pause_button)
 {
     // Setup the Scene/UI
     graphicsScene = new QGraphicsScene(this);
@@ -146,7 +146,7 @@ void GraphWidget::updateProcessGraph() {
 
         for (auto edge : process_graph.processEdges) {        
             bool edgeExists = edge_map.find(edge.edgeID) != edge_map.end();
-            if (!edgeExists) {
+            if (!edgeExists && !filter->isInFilterList(edge)) {
                 // Add new node if incoming Host does not exist
                 bool publisherNodeExists = node_map.find(edge.edgeID.first) != node_map.end();
                 if (!publisherNodeExists) {
@@ -176,8 +176,12 @@ void GraphWidget::updateProcessGraph() {
                 edge_map.insert(std::make_pair(edge.edgeID, newEdge));
                 graphicsScene->addItem(newEdge);
             } else {
-                edge_map[edge.edgeID]->bandwidth = edge.bandwidth; 
-                edge_map[edge.edgeID]->label = QString::fromStdString(edge.topicName); 
+                if (!filter->isInFilterList(edge))
+                {
+                    edge_map[edge.edgeID]->bandwidth = edge.bandwidth; 
+                    edge_map[edge.edgeID]->label = QString::fromStdString(edge.topicName); 
+                }
+
             }
         
         }
@@ -187,10 +191,12 @@ void GraphWidget::updateProcessGraph() {
         for (const auto& pair: edge_map) {
             std::pair<int,int> edgeToCheck = pair.first;
             bool edgeDeleted = true;
-            for (auto edge : process_graph.processEdges) {
-                if (edge.edgeID == edgeToCheck) {
-                    edgeDeleted = false;
-                    break;
+            if (!filter->isInFilterList(pair.second)) {
+                for (auto edge : process_graph.processEdges) {
+                    if (edge.edgeID == edgeToCheck) {
+                        edgeDeleted = false;
+                        break;
+                    }
                 }
             }
 

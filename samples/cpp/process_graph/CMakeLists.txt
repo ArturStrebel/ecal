@@ -58,6 +58,9 @@ set(source_files
 
     src/monitoring.cpp
     src/monitoring.h
+
+    src/filter.cpp
+    src/filter.h
 )
 
 set(ui_files
