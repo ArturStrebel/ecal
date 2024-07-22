@@ -34,6 +34,7 @@ int main(int argc, char **argv)
     QPushButton *PauseButton = new QPushButton("Pause"); 
     PauseButton->setCheckable(true);
 
+    // TODO: Funktionen auf ihren Zugriff überprüfen, was sollte public sein, was private?
     GraphWidget *HostTrafficView = new GraphWidget(Monitor, filter, PauseButton, GraphWidget::ViewType::HostView, nullptr, "Host Network traffic");
     MainWindow *TopicTreeView = new MainWindow(Monitor, PauseButton);
     GraphWidget *ProcessGraphView = new GraphWidget(Monitor, filter, PauseButton, GraphWidget::ViewType::ProcessView, nullptr, "Process Graph");
@@ -44,6 +45,7 @@ int main(int argc, char **argv)
     
     subLayout->addWidget(PauseButton,0,0);
 
+    // TODO: Hinzufügen einer Positiv-Auswahl für den Process_name -> setzen des Filters.
     subLayout->addWidget(filter->addToFilter,1,0);    
     subLayout->addWidget(filter->buttonAdd,1,1);
     subLayout->addWidget(filter->removeFromFilter,2,0);    

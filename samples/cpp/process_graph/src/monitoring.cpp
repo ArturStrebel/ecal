@@ -5,6 +5,7 @@ Monitoring::Monitoring()
 {
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &Monitoring::updateProcessGraph);
+    updateProcessGraph();
     timer->start(500);
 }
 
@@ -24,6 +25,7 @@ void Monitoring::updateProcessGraph()
 
 bool Monitoring::topicTreeHasChanged()
 {
+    // TODO: Methode verschlanken. 
     if (previousTopicTree.size() != process_graph.topicTreeItems.size()) return true;
 
     bool found;

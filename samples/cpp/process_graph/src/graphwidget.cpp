@@ -12,6 +12,7 @@
 #include <QKeyEvent>
 #include <QRandomGenerator>
 
+
 GraphWidget::GraphWidget(Monitoring* monitor, ProcessGraphFilter* filter_, QPushButton* pause_button, GraphWidget::ViewType view_type, QWidget *parent, QString title)
     : QGraphicsView(parent), title(title), view_type(view_type), monitor(monitor), filter(filter_), pauseButton(pause_button)
 {
@@ -46,6 +47,8 @@ GraphWidget::GraphWidget(Monitoring* monitor, ProcessGraphFilter* filter_, QPush
 
 void GraphWidget::updateProcessGraph() {
     eCAL::ProcessGraph::SProcessGraph process_graph = monitor->getProcessGraph();
+    process_name = QString::fromStdString(filter->getSelectedProcess());
+
     if (view_type == GraphWidget::ViewType::HostView) {
 
         // Add new Edges
@@ -58,10 +61,7 @@ void GraphWidget::updateProcessGraph() {
                     Node* newNode = new Node(Node::Host, QString::fromStdString(edge.incomingHostName), edge.edgeID.second);
                     node_map.insert(std::make_pair(edge.edgeID.second, newNode));
 
-                    // Add new Node to Scene
-                    graphicsScene->addItem(newNode);
-                    newNode->setGraph(this);
-                    newNode->setPos(GraphWidget::random(-50, 50), GraphWidget::random(-50, 50));
+                    addNodeToScene(newNode);
                 }
 
                 // Add new node if outgoing Host does not exist
@@ -70,10 +70,7 @@ void GraphWidget::updateProcessGraph() {
                     Node* newNode = new Node(Node::Host, QString::fromStdString(edge.outgoingHostName), edge.edgeID.first);
                     node_map.insert(std::make_pair(edge.edgeID.first, newNode));
 
-                    // Add new Node to Scene
-                    graphicsScene->addItem(newNode);
-                    newNode->setGraph(this);
-                    newNode->setPos(GraphWidget::random(-50, 50), GraphWidget::random(-50, 50));
+                    addNodeToScene(newNode);
                 }
 
                 // Finally add the edge
@@ -150,25 +147,27 @@ void GraphWidget::updateProcessGraph() {
                 // Add new node if incoming Host does not exist
                 bool publisherNodeExists = node_map.find(edge.edgeID.first) != node_map.end();
                 if (!publisherNodeExists) {
-                    Node* newNode = new Node(Node::Publisher, QString::fromStdString(edge.publisherName), edge.edgeID.first);
+                    QString node_name = QString::fromStdString(edge.publisherName);
+                    Node* newNode = new Node(Node::Publisher, node_name, edge.edgeID.first);
+                    if (node_name == process_name) {
+                        newNode->nodeType = Node::NodeType::Process;
+                    } 
                     node_map.insert(std::make_pair(edge.edgeID.first, newNode));
 
-                    // Add new Node to Scene
-                    graphicsScene->addItem(newNode);
-                    newNode->setGraph(this);
-                    newNode->setPos(GraphWidget::random(-50, 50), GraphWidget::random(-50, 50));
+                    addNodeToScene(newNode);
                 }
 
                 // Add new node if outgoing Host does not exist
                 bool subscriberNodeExists = node_map.find(edge.edgeID.second) != node_map.end();
                 if (!subscriberNodeExists) {
-                    Node* newNode = new Node(Node::Subscriber, QString::fromStdString(edge.subscriberName), edge.edgeID.second);
+                    QString node_name = QString::fromStdString(edge.subscriberName);
+                    Node* newNode = new Node(Node::Subscriber, node_name, edge.edgeID.second);
+                    if (node_name == process_name) {
+                        newNode->nodeType = Node::NodeType::Process;
+                    } 
                     node_map.insert(std::make_pair(edge.edgeID.second, newNode));
 
-                    // Add new Node to Scene
-                    graphicsScene->addItem(newNode);
-                    newNode->setGraph(this);
-                    newNode->setPos(GraphWidget::random(-50, 50), GraphWidget::random(-50, 50));
+                    addNodeToScene(newNode);
                 }
 
                 // Finally add the edge
@@ -231,6 +230,34 @@ void GraphWidget::updateProcessGraph() {
     this->viewport()->update();
 }
 
+void GraphWidget::addNodeToScene(Node* node) {
+    graphicsScene->addItem(node);
+    node->setGraph(this);
+    QPointF pos;
+
+    switch(node->nodeType) {
+        case Node::NodeType::Publisher:
+            pos.setX(-50);
+            pos.setY(GraphWidget::random(-50, 50));
+            break;
+        case Node::NodeType::Subscriber:
+            pos.setX(50);
+            pos.setY(GraphWidget::random(-50, 50));
+            break;
+        case Node::NodeType::Process:
+            pos.setX(0);
+            pos.setY(0);
+            break;       
+        default:
+            pos.setX(GraphWidget::random(-50, 50));
+            pos.setY(GraphWidget::random(-50, 50));
+            break;
+    }
+    node->setPos(pos);
+
+}
+
+// TODO: Ersetzen durch Standardfunktion???
 int GraphWidget::random(int from, int to) {
     return rand() % (to - from + 1) + from;
 }

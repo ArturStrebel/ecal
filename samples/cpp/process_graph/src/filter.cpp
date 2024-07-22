@@ -31,6 +31,11 @@ ProcessGraphFilter::ProcessGraphFilter()
     });
 }
 
+std::string ProcessGraphFilter::getSelectedProcess()
+{
+  return selected_process;
+}
+
 bool ProcessGraphFilter::isInFilterList(const std::string& id)
 {
   return std::find(blockedNames.begin(), blockedNames.end(), id) != blockedNames.end();

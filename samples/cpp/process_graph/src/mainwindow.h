@@ -22,6 +22,9 @@ public slots:
     void updateActions();
     void updateProcessGraph();
 
+// TODO: Die Slots werden bis jetzt nicht verwendet.
+// Entweder entledigen oder die Funktionen verwenden um das Update durchzuführen.
+// Das Update des Process Graph führt im Moment zu einem Aufklappen aller Knoten/Topics im Tree.
 private slots:
     void insertChild();
     bool insertColumn();

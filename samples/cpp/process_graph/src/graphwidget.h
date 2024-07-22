@@ -23,11 +23,11 @@ public:
         HostView,
         ProcessView
     };
-
-    GraphWidget(Monitoring* monitor, ProcessGraphFilter* filter_, QPushButton* pause_button, GraphWidget::ViewType view_type, QWidget *parent = nullptr, QString title = "Nodes and Edges");
+    GraphWidget(Monitoring* monitor, ProcessGraphFilter* filter_, QPushButton* pause_button, GraphWidget::ViewType view_type, QWidget *parent, QString title);
 
     void itemMoved();
-    int random(int from, int to);
+    int random(int from, int to); // TODO
+    void addNodeToScene(Node* node);
 
 public slots:
     void shuffle();
@@ -56,4 +56,6 @@ private:
     ViewType view_type;
     QString title;
     ProcessGraphFilter *filter;
+    QString process_name = "";
 };
+

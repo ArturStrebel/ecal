@@ -41,8 +41,10 @@ class ProcessGraphFilter
     bool isInFilterList(const int& id);
     bool isInFilterList(const eCAL::ProcessGraph::SProcessGraphEdge& edge);
     bool isInFilterList(const Edge* edge);
+    std::string getSelectedProcess();
 
     // QT elements
+    // TODO: Absorption der Q-Elemente und des Arrangements aus der main.cpp
     QLineEdit *addToFilter = new QLineEdit();
     QPushButton *buttonAdd = new QPushButton("Add to filter");
     QLineEdit *removeFromFilter = new QLineEdit();
@@ -50,4 +52,5 @@ class ProcessGraphFilter
 
   private:
     std::set<std::string> blockedNames;
+    std::string selected_process = "";
 };
