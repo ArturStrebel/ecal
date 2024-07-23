@@ -42,14 +42,8 @@ int main(int argc, char **argv)
     layout->addWidget(HostTrafficView,1,1);
     layout->addWidget(TopicTreeView,0,0);
     layout->addWidget(ProcessGraphView,0,1);
-    
     subLayout->addWidget(PauseButton,0,0);
-
-    // TODO: Hinzufügen einer Positiv-Auswahl für den Process_name -> setzen des Filters.
-    subLayout->addWidget(filter->addToFilter,1,0);    
-    subLayout->addWidget(filter->buttonAdd,1,1);
-    subLayout->addWidget(filter->removeFromFilter,2,0);    
-    subLayout->addWidget(filter->buttonRemove,2,1);
+    subLayout->addWidget(filter,1,0);
     layout->addLayout(subLayout,1,0);
 
     QMainWindow mainWindow;

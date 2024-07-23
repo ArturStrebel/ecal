@@ -19,21 +19,39 @@
 
 #include "filter.h"
 
+#include <QGridLayout>
+
 ProcessGraphFilter::ProcessGraphFilter()
 {
-  QObject::connect(buttonAdd, &QPushButton::clicked, [=]() {
+  QGridLayout *layout = new QGridLayout();
+
+  layout->addWidget(setCenterProcess,0,0);    
+  layout->addWidget(buttonSet,0,1);
+  layout->addWidget(addToFilter,1,0);    
+  layout->addWidget(buttonAdd,1,1);
+  layout->addWidget(removeFromFilter,2,0);    
+  layout->addWidget(buttonRemove,2,1);
+  setLayout(layout);
+
+  QObject::connect(buttonAdd, &QPushButton::clicked, [&]() {
       blockedNames.insert(addToFilter->text().toStdString());
       addToFilter->clear();
-    });
-  QObject::connect(buttonRemove, &QPushButton::clicked, [=]() { 
+  });
+  QObject::connect(buttonRemove, &QPushButton::clicked, [&]() { 
       blockedNames.erase(removeFromFilter->text().toStdString());
       removeFromFilter->clear();
-    });
+  });
+  QObject::connect(buttonSet, &QPushButton::clicked, [&]() { 
+      selectedProcess = setCenterProcess->text().toStdString();
+      setCenterProcess->clear();
+  });
+
+  show();
 }
 
 std::string ProcessGraphFilter::getSelectedProcess()
 {
-  return selected_process;
+  return selectedProcess;
 }
 
 bool ProcessGraphFilter::isInFilterList(const std::string& id)

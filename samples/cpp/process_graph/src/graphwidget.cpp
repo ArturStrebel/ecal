@@ -13,8 +13,8 @@
 #include <QRandomGenerator>
 
 
-GraphWidget::GraphWidget(Monitoring* monitor, ProcessGraphFilter* filter_, QPushButton* pause_button, GraphWidget::ViewType view_type, QWidget *parent, QString title)
-    : QGraphicsView(parent), title(title), view_type(view_type), monitor(monitor), filter(filter_), pauseButton(pause_button)
+GraphWidget::GraphWidget(Monitoring* monitor_, ProcessGraphFilter* filter_, QPushButton* pause_button, GraphWidget::ViewType view_type_, QWidget *parent_, QString title_)
+    : QGraphicsView(parent_), title(title_), view_type(view_type_), monitor(monitor_), filter(filter_), pauseButton(pause_button)
 {
     // Setup the Scene/UI
     graphicsScene = new QGraphicsScene(this);
@@ -31,6 +31,7 @@ GraphWidget::GraphWidget(Monitoring* monitor, ProcessGraphFilter* filter_, QPush
  
     // Recurrent update.
     timer = new QTimer(this);
+    timer->start(500);
     connect(timer, SIGNAL(timeout()), this, SLOT(updateProcessGraph()));
     connect(pauseButton, &QPushButton::toggled, this, [this] (bool checked) 
     {
@@ -42,7 +43,6 @@ GraphWidget::GraphWidget(Monitoring* monitor, ProcessGraphFilter* filter_, QPush
             pauseButton->setText("Resume");
         }
     });
-    timer->start(500);
 }
 
 void GraphWidget::updateProcessGraph() {
@@ -116,9 +116,7 @@ void GraphWidget::updateProcessGraph() {
                 edgesToDrop.append(edgeToCheck);
             }
         }
-        for (auto key : edgesToDrop) {
-            edge_map.erase(key);
-        }
+        edge_map.erase(edgesToDrop.begin(), edgesToDrop.end());
 
         // Drop Nodes without Edges
         QList<int> hostsToDrop;
@@ -135,9 +133,7 @@ void GraphWidget::updateProcessGraph() {
                 hostsToDrop.append(nodeId);
             }
         }
-        for (auto key : hostsToDrop) {
-            node_map.erase(key);
-        }
+        node_map.erase(hostsToDrop.begin(), hostsToDrop.end());
 
     } else if (view_type == GraphWidget::ViewType::ProcessView) {
 
@@ -176,13 +172,21 @@ void GraphWidget::updateProcessGraph() {
                 graphicsScene->addItem(newEdge);
             } else {
                 if (!filter->isInFilterList(edge))
-                {
+                {   
+                    if (edge.publisherName == process_name.toStdString()) {
+                        edge_map[edge.edgeID]->sourceNode()->nodeType = Node::NodeType::Process;
+                        graphicsScene->removeItem(edge_map[edge.edgeID]->sourceNode());
+                        addNodeToScene(edge_map[edge.edgeID]->sourceNode());
+                    }
+                    if (edge.subscriberName == process_name.toStdString()) {
+                        edge_map[edge.edgeID]->destNode()->nodeType = Node::NodeType::Process;
+                        graphicsScene->removeItem(edge_map[edge.edgeID]->destNode());
+                        addNodeToScene(edge_map[edge.edgeID]->destNode());
+                    }
                     edge_map[edge.edgeID]->bandwidth = edge.bandwidth; 
                     edge_map[edge.edgeID]->label = QString::fromStdString(edge.topicName); 
                 }
-
             }
-        
         }
         
         // Delete Edges that do not exist anymore
@@ -206,9 +210,7 @@ void GraphWidget::updateProcessGraph() {
                 edgesToDrop.append(edgeToCheck);
             }
         }
-        for (auto key : edgesToDrop) {
-            edge_map.erase(key);
-        }
+        edge_map.erase(edgesToDrop.begin(),edgesToDrop.end());
 
         // Drop Nodes without Edges
         QList<int> hostsToDrop;
@@ -221,9 +223,7 @@ void GraphWidget::updateProcessGraph() {
                 hostsToDrop.append(nodeId);
             }
         }
-        for (auto key : hostsToDrop) {
-            node_map.erase(key);
-        }
+        node_map.erase(hostsToDrop.begin(), hostsToDrop.end());
     }
 
     this->update();
@@ -257,7 +257,6 @@ void GraphWidget::addNodeToScene(Node* node) {
 
 }
 
-// TODO: Ersetzen durch Standardfunktion???
 int GraphWidget::random(int from, int to) {
     return rand() % (to - from + 1) + from;
 }
@@ -338,8 +337,8 @@ void GraphWidget::drawBackground(QPainter *painter, const QRectF &rect)
 
     // Fill
     QLinearGradient gradient(sceneRect.topLeft(), sceneRect.bottomRight());
-    gradient.setColorAt(0, Qt::white);
-    gradient.setColorAt(1, Qt::lightGray);
+    gradient.setColorAt(0, Qt::black);
+    gradient.setColorAt(1, Qt::darkGray);
     painter->fillRect(rect.intersected(sceneRect), gradient);
     painter->setBrush(Qt::NoBrush);
     painter->drawRect(sceneRect);
@@ -352,9 +351,9 @@ void GraphWidget::drawBackground(QPainter *painter, const QRectF &rect)
     font.setBold(true);
     font.setPointSize(14);
     painter->setFont(font);
-    painter->setPen(Qt::lightGray);
+    painter->setPen(Qt::darkGray);
     painter->drawText(textRect.translated(2, 2), title);
-    painter->setPen(Qt::black);
+    painter->setPen(Qt::white);
     painter->drawText(textRect, title);
 }
 

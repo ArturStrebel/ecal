@@ -172,12 +172,12 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     switch (nodeType)
     {
         case Node::Publisher:
-            light = new QColor(Qt::gray);
-            dark = new QColor(Qt::darkGray);
-            break;
-        case Node::Process:
             light = new QColor(Qt::blue);
             dark = new QColor(Qt::darkBlue);
+            break;
+        case Node::Process:
+            light = new QColor(Qt::gray);
+            dark = new QColor(Qt::darkGray);
             break;
         case Node::Subscriber:
             light = new QColor(Qt::yellow);
@@ -188,8 +188,8 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
             dark = new QColor(Qt::darkGreen);
             break;
         default:
-            light = new QColor(Qt::blue);
-            dark = new QColor(Qt::darkBlue);
+            light = new QColor(Qt::gray);
+            dark = new QColor(Qt::darkGray);
             break;
     }
 
@@ -242,12 +242,13 @@ QString Node::printHumanReadableBandwidth(qreal& internalBandwidth_) {
     while( internalBandwidth_ > 1024 && bandwidthDimension < 4) {
         internalBandwidth_ /= 1024;
         bandwidthDimension++;
-    }      
-
+    }
+        
+    QString bw = QString::number(internalBandwidth_, 'f', 2);
     switch(bandwidthDimension) {
-        case 1: return QString::number(internalBandwidth_) + " Kbit/s";
-        case 2: return QString::number(internalBandwidth_) + " Mbit/s";
-        case 3: return QString::number(internalBandwidth_) + " Gbit/s";
-        default: return QString::number(internalBandwidth_) + " Bit/s";
+        case 1: return bw + " Kbit/s";
+        case 2: return bw + " Mbit/s";
+        case 3: return bw + " Gbit/s";
+        default: return bw + " Bit/s";
     }
 }

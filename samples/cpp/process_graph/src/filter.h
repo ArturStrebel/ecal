@@ -31,8 +31,10 @@
 #include <QLineEdit>
 #include <ecal/ecal.h>
 
-class ProcessGraphFilter
+class ProcessGraphFilter : public QWidget
 {
+    Q_OBJECT
+
   public:
     ProcessGraphFilter();
     ~ProcessGraphFilter() = default;
@@ -44,7 +46,8 @@ class ProcessGraphFilter
     std::string getSelectedProcess();
 
     // QT elements
-    // TODO: Absorption der Q-Elemente und des Arrangements aus der main.cpp
+    QLineEdit *setCenterProcess = new QLineEdit();
+    QPushButton *buttonSet = new QPushButton("Set as central process");    
     QLineEdit *addToFilter = new QLineEdit();
     QPushButton *buttonAdd = new QPushButton("Add to filter");
     QLineEdit *removeFromFilter = new QLineEdit();
@@ -52,5 +55,5 @@ class ProcessGraphFilter
 
   private:
     std::set<std::string> blockedNames;
-    std::string selected_process = "";
+    std::string selectedProcess = "";
 };

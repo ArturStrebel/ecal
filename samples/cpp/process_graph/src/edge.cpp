@@ -105,10 +105,10 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
     int fontsize = 10;
     qreal width = std::max(static_cast<double>(label.length()), 12.0) * fontsize * 0.75;
     qreal height = 30;
-    QColor labelColor(0, 0, 0);
     QFont font = painter->font();
     font.setPointSize(fontsize);
     painter->setFont(font);
+    painter->setPen(Qt::white);
 
     // Temporarily rotate the painter's coordinate system for drawing the label
     painter->save();
@@ -119,7 +119,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
     else 
         labelAngle = std::atan2(-line.dy(), line.dx());
     painter->rotate(-labelAngle * 180 / M_PI); // Convert from radians to degrees
-    painter->setPen(labelColor);
+    painter->setPen(Qt::white);
     if (curvedArrow == true)
     {
         if (sourcePoint.x() > destPoint.x()) 
@@ -141,12 +141,12 @@ QString Edge::printHumanReadableBandwidth(qreal& internalBandwidth_) {
         internalBandwidth_ /= 1024;
         bandwidthDimension++;
     }      
-
+    QString bw = QString::number(internalBandwidth_, 'f', 2);
     switch(bandwidthDimension) {
-        case 1: return QString::number(internalBandwidth_) + " Kbit/s";
-        case 2: return QString::number(internalBandwidth_) + " Mbit/s";
-        case 3: return QString::number(internalBandwidth_) + " Gbit/s";
-        default: return QString::number(internalBandwidth_) + " Bit/s";
+        case 1: return bw + " Kbit/s";
+        case 2: return bw + " Mbit/s";
+        case 3: return bw + " Gbit/s";
+        default: return bw + " Bit/s";
     }
 }
 
