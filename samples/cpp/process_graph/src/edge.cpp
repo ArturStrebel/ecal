@@ -18,10 +18,10 @@ Edge::Edge(Node *sourceNode, Node *destNode, bool curvedArrow_, QString label_, 
 
 Edge::~Edge()
 {
-    source->removeEdge(this);
-    dest->removeEdge(this);
-    source = nullptr;
-    dest = nullptr;
+    // source->removeEdge(this);
+    // dest->removeEdge(this);
+    // source = nullptr;
+    // dest = nullptr;
 }
 
 Node *Edge::sourceNode() const
