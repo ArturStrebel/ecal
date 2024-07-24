@@ -45,11 +45,9 @@ GraphWidget::GraphWidget(Monitoring* monitor_, ProcessGraphFilter* filter_, QPus
 
 void GraphWidget::resetView()
 {
-    delete graphicsScene;
-    graphicsScene = new QGraphicsScene(this);
-    graphicsScene->setItemIndexMethod(QGraphicsScene::NoIndex);
-    graphicsScene->setSceneRect(-300, -300, 550, 350);
-    setScene(graphicsScene);
+    graphicsScene->clear();
+    node_map.erase(node_map.begin(),node_map.end());
+    edge_map.erase(edge_map.begin(),edge_map.end());
     updateProcessGraph();
 }
 
@@ -219,7 +217,7 @@ void GraphWidget::updateProcessGraph()
                 edgesToDrop.append(edgeToCheck);
             }
         }
-        edge_map.erase(edgesToDrop.begin(),edgesToDrop.end());
+        for (auto key : edgesToDrop) edge_map.erase(key);
 
         // Drop Nodes without Edges
         QList<int> hostsToDrop;
@@ -232,7 +230,7 @@ void GraphWidget::updateProcessGraph()
                 hostsToDrop.append(nodeId);
             }
         }
-        node_map.erase(hostsToDrop.begin(), hostsToDrop.end());
+        for (auto key : hostsToDrop) node_map.erase(key);
     }
 
     this->update();
