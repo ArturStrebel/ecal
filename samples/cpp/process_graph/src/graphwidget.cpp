@@ -40,15 +40,10 @@ GraphWidget::GraphWidget(Monitoring* monitor_, ProcessGraphFilter* filter_, QPus
             pauseButton->setText("Resume");
         }
     });
-    connect(filter, &ProcessGraphFilter::centralProcessChanged, this, &GraphWidget::resetView);
-}
-
-void GraphWidget::resetView()
-{
-    graphicsScene->clear();
-    node_map.erase(node_map.begin(),node_map.end());
-    edge_map.erase(edge_map.begin(),edge_map.end());
-    updateProcessGraph();
+    connect(filter, &ProcessGraphFilter::centralProcessChanged, this, [this] () 
+    {
+        if (view_type == GraphWidget::ViewType::ProcessView) graphicsScene->update();     
+    });
 }
 
 void GraphWidget::updateProcessGraph() 
