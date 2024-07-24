@@ -186,6 +186,16 @@ void GraphWidget::updateProcessGraph()
                 edge_map.insert(std::make_pair(edge.edgeID, newEdge));
                 graphicsScene->addItem(newEdge);
             } else {
+                if (edge.publisherName == centralProcess.toStdString()) {
+                    edge_map[edge.edgeID]->sourceNode()->nodeType = Node::NodeType::Process;
+                    graphicsScene->removeItem(edge_map[edge.edgeID]->sourceNode());
+                    addNodeToScene(edge_map[edge.edgeID]->sourceNode());
+                }
+                if (edge.subscriberName == centralProcess.toStdString()) {
+                    edge_map[edge.edgeID]->destNode()->nodeType = Node::NodeType::Process;
+                    graphicsScene->removeItem(edge_map[edge.edgeID]->destNode());
+                    addNodeToScene(edge_map[edge.edgeID]->destNode());
+                }
                 edge_map[edge.edgeID]->bandwidth = edge.bandwidth; 
                 edge_map[edge.edgeID]->label = QString::fromStdString(edge.topicName); 
             }
