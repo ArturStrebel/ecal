@@ -21,6 +21,8 @@
 int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
+    QMainWindow mainWindow;
+    mainWindow.setWindowTitle("eCAL Network Monitor");
 
     // initialize eCAL core API
     eCAL::Initialize(argc, argv, "monitoring", eCAL::Init::All);
@@ -46,9 +48,7 @@ int main(int argc, char **argv)
     subLayout->addWidget(filter,1,0);
     layout->addLayout(subLayout,1,0);
 
-    QMainWindow mainWindow;
     mainWindow.setCentralWidget(centralWidget);
-
     mainWindow.show();
 
     return app.exec();

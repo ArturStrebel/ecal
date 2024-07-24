@@ -43,7 +43,7 @@ ProcessGraphFilter::ProcessGraphFilter()
   });
   QObject::connect(buttonSet, &QPushButton::clicked, [&]() { 
       selectedProcess = setCenterProcess->text().toStdString();
-      setCenterProcess->clear();
+      emit centerProcessChanged();
   });
 
   show();

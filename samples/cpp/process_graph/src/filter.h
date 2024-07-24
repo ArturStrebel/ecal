@@ -53,6 +53,9 @@ class ProcessGraphFilter : public QWidget
     QLineEdit *removeFromFilter = new QLineEdit();
     QPushButton *buttonRemove = new QPushButton("Remove from filter");
 
+  signals:
+    void centerProcessChanged();
+
   private:
     std::set<std::string> blockedNames;
     std::string selectedProcess = "";

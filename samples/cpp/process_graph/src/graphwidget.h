@@ -34,6 +34,7 @@ public slots:
     void zoomIn();
     void zoomOut();
     void updateProcessGraph();
+    void resetView();
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;

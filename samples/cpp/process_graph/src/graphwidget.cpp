@@ -5,10 +5,8 @@
 #include "edge.h"
 #include "node.h"
 #include <ecal/ecal.h>
-#include <QTimer>
-
 #include <math.h>
-
+#include <QTimer>
 #include <QKeyEvent>
 #include <QRandomGenerator>
 
@@ -27,7 +25,6 @@ GraphWidget::GraphWidget(Monitoring* monitor_, ProcessGraphFilter* filter_, QPus
     setTransformationAnchor(AnchorUnderMouse);
     scale(qreal(0.95), qreal(0.95));
     setMinimumSize(400, 400);
-    setWindowTitle(tr("Elastic Nodes"));
  
     // Recurrent update.
     timer = new QTimer(this);
@@ -43,9 +40,21 @@ GraphWidget::GraphWidget(Monitoring* monitor_, ProcessGraphFilter* filter_, QPus
             pauseButton->setText("Resume");
         }
     });
+    connect(filter, &ProcessGraphFilter::centerProcessChanged, this, &GraphWidget::resetView);
 }
 
-void GraphWidget::updateProcessGraph() {
+void GraphWidget::resetView()
+{
+    delete graphicsScene;
+    graphicsScene = new QGraphicsScene(this);
+    graphicsScene->setItemIndexMethod(QGraphicsScene::NoIndex);
+    graphicsScene->setSceneRect(-300, -300, 550, 350);
+    setScene(graphicsScene);
+    updateProcessGraph();
+}
+
+void GraphWidget::updateProcessGraph() 
+{
     eCAL::ProcessGraph::SProcessGraph process_graph = monitor->getProcessGraph();
     process_name = QString::fromStdString(filter->getSelectedProcess());
 
@@ -116,7 +125,7 @@ void GraphWidget::updateProcessGraph() {
                 edgesToDrop.append(edgeToCheck);
             }
         }
-        edge_map.erase(edgesToDrop.begin(), edgesToDrop.end());
+        for (auto key : edgesToDrop) edge_map.erase(key);
 
         // Drop Nodes without Edges
         QList<int> hostsToDrop;
@@ -133,7 +142,7 @@ void GraphWidget::updateProcessGraph() {
                 hostsToDrop.append(nodeId);
             }
         }
-        node_map.erase(hostsToDrop.begin(), hostsToDrop.end());
+        for (auto key : hostsToDrop) node_map.erase(key);
 
     } else if (view_type == GraphWidget::ViewType::ProcessView) {
 
