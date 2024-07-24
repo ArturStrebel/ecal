@@ -40,7 +40,7 @@ GraphWidget::GraphWidget(Monitoring* monitor_, ProcessGraphFilter* filter_, QPus
             pauseButton->setText("Resume");
         }
     });
-    connect(filter, &ProcessGraphFilter::centerProcessChanged, this, &GraphWidget::resetView);
+    connect(filter, &ProcessGraphFilter::centralProcessChanged, this, &GraphWidget::resetView);
 }
 
 void GraphWidget::resetView()
@@ -54,7 +54,7 @@ void GraphWidget::resetView()
 void GraphWidget::updateProcessGraph() 
 {
     eCAL::ProcessGraph::SProcessGraph process_graph = monitor->getProcessGraph();
-    process_name = QString::fromStdString(filter->getSelectedProcess());
+    process_name = QString::fromStdString(filter->getCentralProcess());
 
     if (view_type == GraphWidget::ViewType::HostView) {
 
@@ -180,6 +180,7 @@ void GraphWidget::updateProcessGraph()
             } else {
                 if (!filter->isInFilterList(edge))
                 {   
+                    //TODO: Might be redundant now
                     if (edge.publisherName == process_name.toStdString()) {
                         edge_map[edge.edgeID]->sourceNode()->nodeType = Node::NodeType::Process;
                         graphicsScene->removeItem(edge_map[edge.edgeID]->sourceNode());

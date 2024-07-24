@@ -26,7 +26,7 @@ public:
     GraphWidget(Monitoring* monitor, ProcessGraphFilter* filter_, QPushButton* pause_button, GraphWidget::ViewType view_type, QWidget *parent, QString title);
 
     void itemMoved();
-    int random(int from, int to); // TODO
+    int random(int from, int to);
     void addNodeToScene(Node* node);
 
 public slots:

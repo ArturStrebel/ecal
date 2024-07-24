@@ -43,20 +43,25 @@ class ProcessGraphFilter : public QWidget
     bool isInFilterList(const int& id);
     bool isInFilterList(const eCAL::ProcessGraph::SProcessGraphEdge& edge);
     bool isInFilterList(const Edge* edge);
-    std::string getSelectedProcess();
+    std::string getCentralProcess();
 
     // QT elements
-    QLineEdit *setCenterProcess = new QLineEdit();
+    QLineEdit *setCentralProcessEdit = new QLineEdit();
     QPushButton *buttonSet = new QPushButton("Set as central process");    
-    QLineEdit *addToFilter = new QLineEdit();
+    QLineEdit *addToBlackListEdit = new QLineEdit();
     QPushButton *buttonAdd = new QPushButton("Add to filter");
-    QLineEdit *removeFromFilter = new QLineEdit();
+    QLineEdit *removeFromBlackListEdit = new QLineEdit();
     QPushButton *buttonRemove = new QPushButton("Remove from filter");
 
+  public slots:
+    void addToBlackList();
+    void removeFromBlackList();
+    void setCentralProcess();
+
   signals:
-    void centerProcessChanged();
+    void centralProcessChanged();
 
   private:
-    std::set<std::string> blockedNames;
-    std::string selectedProcess = "";
+    std::set<std::string> blackList;
+    std::string centralProcess = "";
 };
