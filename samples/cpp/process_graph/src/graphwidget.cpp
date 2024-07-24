@@ -40,10 +40,6 @@ GraphWidget::GraphWidget(Monitoring* monitor_, ProcessGraphFilter* filter_, QPus
             pauseButton->setText("Resume");
         }
     });
-    connect(filter, &ProcessGraphFilter::centralProcessChanged, this, [this] () 
-    {
-        if (view_type == GraphWidget::ViewType::ProcessView) graphicsScene->update();     
-    });
 }
 
 void GraphWidget::applyFilter(eCAL::ProcessGraph::SProcessGraph& process_graph ) 
@@ -57,13 +53,31 @@ void GraphWidget::applyFilter(eCAL::ProcessGraph::SProcessGraph& process_graph )
     }
 }
 
+void GraphWidget::updateCentralProcess(QString newCentralProcess)
+{
+    if (centralProcess == newCentralProcess) return;
+
+    for (auto it = node_map.begin(); it != node_map.end(); it++)
+    {
+        if (it->second->getName() == newCentralProcess){
+            it->second->setPosition(QPointF(0,0));
+            graphicsScene->update(sceneRect());  
+            it->second->setFlag(QGraphicsItem::ItemIsMovable, false);
+        }
+        if (it->second->getName() == centralProcess)
+            it->second->setFlag(QGraphicsItem::ItemIsMovable, true);
+    }
+    centralProcess = newCentralProcess;
+    this->update();
+    this->viewport()->update();
+}
+
 void GraphWidget::updateProcessGraph() 
 {
     eCAL::ProcessGraph::SProcessGraph process_graph = monitor->getProcessGraph();
     applyFilter(process_graph);
 
-    centralProcess = QString::fromStdString(filter->getCentralProcess());
-
+    updateCentralProcess(QString::fromStdString(filter->getCentralProcess()));
     if (view_type == GraphWidget::ViewType::HostView) {
 
         // Add new Edges
@@ -160,9 +174,6 @@ void GraphWidget::updateProcessGraph()
                 if (!publisherNodeExists) {
                     QString node_name = QString::fromStdString(edge.publisherName);
                     Node* newNode = new Node(Node::Publisher, node_name, edge.edgeID.first);
-                    if (node_name == centralProcess) {
-                        newNode->nodeType = Node::NodeType::Process;
-                    } 
                     node_map.insert(std::make_pair(edge.edgeID.first, newNode));
 
                     addNodeToScene(newNode);
@@ -173,9 +184,6 @@ void GraphWidget::updateProcessGraph()
                 if (!subscriberNodeExists) {
                     QString node_name = QString::fromStdString(edge.subscriberName);
                     Node* newNode = new Node(Node::Subscriber, node_name, edge.edgeID.second);
-                    if (node_name == centralProcess) {
-                        newNode->nodeType = Node::NodeType::Process;
-                    } 
                     node_map.insert(std::make_pair(edge.edgeID.second, newNode));
 
                     addNodeToScene(newNode);
@@ -186,16 +194,6 @@ void GraphWidget::updateProcessGraph()
                 edge_map.insert(std::make_pair(edge.edgeID, newEdge));
                 graphicsScene->addItem(newEdge);
             } else {
-                if (edge.publisherName == centralProcess.toStdString()) {
-                    edge_map[edge.edgeID]->sourceNode()->nodeType = Node::NodeType::Process;
-                    graphicsScene->removeItem(edge_map[edge.edgeID]->sourceNode());
-                    addNodeToScene(edge_map[edge.edgeID]->sourceNode());
-                }
-                if (edge.subscriberName == centralProcess.toStdString()) {
-                    edge_map[edge.edgeID]->destNode()->nodeType = Node::NodeType::Process;
-                    graphicsScene->removeItem(edge_map[edge.edgeID]->destNode());
-                    addNodeToScene(edge_map[edge.edgeID]->destNode());
-                }
                 edge_map[edge.edgeID]->bandwidth = edge.bandwidth; 
                 edge_map[edge.edgeID]->label = QString::fromStdString(edge.topicName); 
             }
@@ -212,8 +210,6 @@ void GraphWidget::updateProcessGraph()
                     break;
                 }
             }
-
-
             if (edgeDeleted) {
                 Edge* edge = pair.second;
                 graphicsScene->removeItem(edge);
@@ -236,7 +232,6 @@ void GraphWidget::updateProcessGraph()
         }
         for (auto key : hostsToDrop) node_map.erase(key);
     }
-
     this->update();
     this->viewport()->update();
 }
@@ -265,7 +260,6 @@ void GraphWidget::addNodeToScene(Node* node) {
             break;
     }
     node->setPos(pos);
-
 }
 
 int GraphWidget::random(int from, int to) {

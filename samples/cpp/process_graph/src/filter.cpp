@@ -48,7 +48,6 @@ ProcessGraphFilter::ProcessGraphFilter()
 void ProcessGraphFilter::setCentralProcess()
 {
   centralProcess = setCentralProcessEdit->text().toStdString();
-  emit centralProcessChanged();
 }
 
 void ProcessGraphFilter::addToBlackList()

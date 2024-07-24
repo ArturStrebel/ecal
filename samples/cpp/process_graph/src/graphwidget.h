@@ -29,6 +29,7 @@ public:
     int random(int from, int to);
     void addNodeToScene(Node* node);
     void applyFilter(eCAL::ProcessGraph::SProcessGraph& process_graph ); 
+    void updateCentralProcess(QString newCentralProcess);
 
 public slots:
     void shuffle();

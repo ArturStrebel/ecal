@@ -58,9 +58,6 @@ class ProcessGraphFilter : public QWidget
     void removeFromBlackList();
     void setCentralProcess();
 
-  signals:
-    void centralProcessChanged();
-
   private:
     std::set<std::string> blackList;
     std::string centralProcess = "";

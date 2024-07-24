@@ -35,6 +35,7 @@ public:
     void setGraph(GraphWidget *newGraphWidget);
     QString getName();
     int getId();
+    void setPosition(QPointF pos);
 
 
     QRectF boundingRect() const override;
