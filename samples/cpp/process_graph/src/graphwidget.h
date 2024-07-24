@@ -28,6 +28,7 @@ public:
     void itemMoved();
     int random(int from, int to);
     void addNodeToScene(Node* node);
+    void applyFilter(eCAL::ProcessGraph::SProcessGraph& process_graph ); 
 
 public slots:
     void shuffle();
@@ -56,6 +57,6 @@ private:
     ViewType view_type;
     QString title;
     ProcessGraphFilter *filter;
-    QString process_name = "";
+    QString centralProcess = "";
 };
 

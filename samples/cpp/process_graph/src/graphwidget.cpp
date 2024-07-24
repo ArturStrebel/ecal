@@ -46,10 +46,23 @@ GraphWidget::GraphWidget(Monitoring* monitor_, ProcessGraphFilter* filter_, QPus
     });
 }
 
+void GraphWidget::applyFilter(eCAL::ProcessGraph::SProcessGraph& process_graph ) 
+{
+    for (auto it = process_graph.processEdges.begin(); it != process_graph.processEdges.end(); )
+    {
+        if (filter->isInFilterList(*it))
+            it = process_graph.processEdges.erase(it);
+        else
+            ++it;
+    }
+}
+
 void GraphWidget::updateProcessGraph() 
 {
     eCAL::ProcessGraph::SProcessGraph process_graph = monitor->getProcessGraph();
-    process_name = QString::fromStdString(filter->getCentralProcess());
+    applyFilter(process_graph);
+
+    centralProcess = QString::fromStdString(filter->getCentralProcess());
 
     if (view_type == GraphWidget::ViewType::HostView) {
 
@@ -141,13 +154,13 @@ void GraphWidget::updateProcessGraph()
 
         for (auto edge : process_graph.processEdges) {        
             bool edgeExists = edge_map.find(edge.edgeID) != edge_map.end();
-            if (!edgeExists && !filter->isInFilterList(edge)) {
+            if (!edgeExists) {
                 // Add new node if incoming Host does not exist
                 bool publisherNodeExists = node_map.find(edge.edgeID.first) != node_map.end();
                 if (!publisherNodeExists) {
                     QString node_name = QString::fromStdString(edge.publisherName);
                     Node* newNode = new Node(Node::Publisher, node_name, edge.edgeID.first);
-                    if (node_name == process_name) {
+                    if (node_name == centralProcess) {
                         newNode->nodeType = Node::NodeType::Process;
                     } 
                     node_map.insert(std::make_pair(edge.edgeID.first, newNode));
@@ -160,7 +173,7 @@ void GraphWidget::updateProcessGraph()
                 if (!subscriberNodeExists) {
                     QString node_name = QString::fromStdString(edge.subscriberName);
                     Node* newNode = new Node(Node::Subscriber, node_name, edge.edgeID.second);
-                    if (node_name == process_name) {
+                    if (node_name == centralProcess) {
                         newNode->nodeType = Node::NodeType::Process;
                     } 
                     node_map.insert(std::make_pair(edge.edgeID.second, newNode));
@@ -173,22 +186,8 @@ void GraphWidget::updateProcessGraph()
                 edge_map.insert(std::make_pair(edge.edgeID, newEdge));
                 graphicsScene->addItem(newEdge);
             } else {
-                if (!filter->isInFilterList(edge))
-                {   
-                    //TODO: Might be redundant now
-                    if (edge.publisherName == process_name.toStdString()) {
-                        edge_map[edge.edgeID]->sourceNode()->nodeType = Node::NodeType::Process;
-                        graphicsScene->removeItem(edge_map[edge.edgeID]->sourceNode());
-                        addNodeToScene(edge_map[edge.edgeID]->sourceNode());
-                    }
-                    if (edge.subscriberName == process_name.toStdString()) {
-                        edge_map[edge.edgeID]->destNode()->nodeType = Node::NodeType::Process;
-                        graphicsScene->removeItem(edge_map[edge.edgeID]->destNode());
-                        addNodeToScene(edge_map[edge.edgeID]->destNode());
-                    }
-                    edge_map[edge.edgeID]->bandwidth = edge.bandwidth; 
-                    edge_map[edge.edgeID]->label = QString::fromStdString(edge.topicName); 
-                }
+                edge_map[edge.edgeID]->bandwidth = edge.bandwidth; 
+                edge_map[edge.edgeID]->label = QString::fromStdString(edge.topicName); 
             }
         }
         
@@ -197,14 +196,13 @@ void GraphWidget::updateProcessGraph()
         for (const auto& pair: edge_map) {
             std::pair<int,int> edgeToCheck = pair.first;
             bool edgeDeleted = true;
-            if (!filter->isInFilterList(pair.second)) {
-                for (auto edge : process_graph.processEdges) {
-                    if (edge.edgeID == edgeToCheck) {
-                        edgeDeleted = false;
-                        break;
-                    }
+            for (auto edge : process_graph.processEdges) {
+                if (edge.edgeID == edgeToCheck) {
+                    edgeDeleted = false;
+                    break;
                 }
             }
+
 
             if (edgeDeleted) {
                 Edge* edge = pair.second;
