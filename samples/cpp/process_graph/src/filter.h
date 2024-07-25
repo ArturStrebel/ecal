@@ -24,15 +24,14 @@
 
 #pragma once
 
-#include "node.h"
 #include "edge.h"
-#include <set>
-#include <QPushButton>
+#include "node.h"
 #include <QLineEdit>
+#include <QPushButton>
 #include <ecal/ecal.h>
+#include <set>
 
-class ProcessGraphFilter : public QWidget
-{
+class ProcessGraphFilter : public QWidget {
   Q_OBJECT
 
 public:

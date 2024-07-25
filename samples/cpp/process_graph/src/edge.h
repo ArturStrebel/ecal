@@ -7,38 +7,35 @@
 
 class Node;
 
-class Edge : public QGraphicsItem
-{
+class Edge : public QGraphicsItem {
 public:
-    Edge(Node *sourceNode, Node *destNode, bool curvedArrow,
-         QString label, qreal bandwidth);
-    ~Edge();
-    Node *sourceNode() const;
-    Node *destNode() const;
+  Edge(Node *sourceNode, Node *destNode, bool curvedArrow, QString label,
+       qreal bandwidth);
+  ~Edge();
+  Node *sourceNode() const;
+  Node *destNode() const;
 
-    QString label;
-    qreal bandwidth;
+  QString label;
+  qreal bandwidth;
 
-    void adjust();
-    void setCurvedArrow(bool newState);
+  void adjust();
+  void setCurvedArrow(bool newState);
 
-    enum
-    {
-        Type = UserType + 2
-    };
-    int type() const override { return Type; }
-    bool isAlive = true;
+  enum { Type = UserType + 2 };
+  int type() const override { return Type; }
+  bool isAlive = true;
 
 protected:
-    QRectF boundingRect() const override;
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
-    QString printHumanReadableBandwidth(qreal &internalBandwidth_);
+  QRectF boundingRect() const override;
+  void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+             QWidget *widget) override;
+  QString printHumanReadableBandwidth(qreal &internalBandwidth_);
 
 private:
-    Node *source, *dest;
+  Node *source, *dest;
 
-    QPointF sourcePoint;
-    QPointF destPoint;
-    qreal arrowSize = 10;
-    bool curvedArrow = false;
+  QPointF sourcePoint;
+  QPointF destPoint;
+  qreal arrowSize = 10;
+  bool curvedArrow = false;
 };

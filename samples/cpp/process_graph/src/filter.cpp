@@ -21,8 +21,7 @@
 
 #include <QGridLayout>
 
-ProcessGraphFilter::ProcessGraphFilter()
-{
+ProcessGraphFilter::ProcessGraphFilter() {
   QGridLayout *layout = new QGridLayout();
 
   layout->addWidget(setCentralProcessEdit, 0, 0);
@@ -33,56 +32,59 @@ ProcessGraphFilter::ProcessGraphFilter()
   layout->addWidget(buttonRemove, 2, 1);
   setLayout(layout);
 
-  QObject::connect(buttonSet, &QPushButton::clicked, this, &ProcessGraphFilter::setCentralProcess);
-  QObject::connect(setCentralProcessEdit, &QLineEdit::returnPressed, this, &ProcessGraphFilter::setCentralProcess);
+  QObject::connect(buttonSet, &QPushButton::clicked, this,
+                   &ProcessGraphFilter::setCentralProcess);
+  QObject::connect(setCentralProcessEdit, &QLineEdit::returnPressed, this,
+                   &ProcessGraphFilter::setCentralProcess);
 
-  QObject::connect(buttonAdd, &QPushButton::clicked, this, &ProcessGraphFilter::addToBlackList);
-  QObject::connect(addToBlackListEdit, &QLineEdit::returnPressed, this, &ProcessGraphFilter::addToBlackList);
+  QObject::connect(buttonAdd, &QPushButton::clicked, this,
+                   &ProcessGraphFilter::addToBlackList);
+  QObject::connect(addToBlackListEdit, &QLineEdit::returnPressed, this,
+                   &ProcessGraphFilter::addToBlackList);
 
-  QObject::connect(buttonRemove, &QPushButton::clicked, this, &ProcessGraphFilter::removeFromBlackList);
-  QObject::connect(removeFromBlackListEdit, &QLineEdit::returnPressed, this, &ProcessGraphFilter::removeFromBlackList);
+  QObject::connect(buttonRemove, &QPushButton::clicked, this,
+                   &ProcessGraphFilter::removeFromBlackList);
+  QObject::connect(removeFromBlackListEdit, &QLineEdit::returnPressed, this,
+                   &ProcessGraphFilter::removeFromBlackList);
 
   show();
 }
 
-void ProcessGraphFilter::setCentralProcess()
-{
+void ProcessGraphFilter::setCentralProcess() {
   centralProcess = setCentralProcessEdit->text().toStdString();
 }
 
-void ProcessGraphFilter::addToBlackList()
-{
+void ProcessGraphFilter::addToBlackList() {
   blackList.insert(addToBlackListEdit->text().toStdString());
   addToBlackListEdit->clear();
 }
 
-void ProcessGraphFilter::removeFromBlackList()
-{
+void ProcessGraphFilter::removeFromBlackList() {
   blackList.erase(removeFromBlackListEdit->text().toStdString());
   removeFromBlackListEdit->clear();
 }
 
-std::string ProcessGraphFilter::getCentralProcess()
-{
-  return centralProcess;
-}
+std::string ProcessGraphFilter::getCentralProcess() { return centralProcess; }
 
-bool ProcessGraphFilter::isInFilterList(const std::string &id)
-{
+bool ProcessGraphFilter::isInFilterList(const std::string &id) {
   return std::find(blackList.begin(), blackList.end(), id) != blackList.end();
 }
 
-bool ProcessGraphFilter::isInFilterList(const int &id)
-{
+bool ProcessGraphFilter::isInFilterList(const int &id) {
   return isInFilterList(std::to_string(id));
 }
 
-bool ProcessGraphFilter::isInFilterList(const eCAL::ProcessGraph::SProcessGraphEdge &edge)
-{
-  return (isInFilterList(edge.edgeID.first) || isInFilterList(edge.edgeID.first) || isInFilterList(edge.publisherName) || isInFilterList(edge.subscriberName));
+bool ProcessGraphFilter::isInFilterList(
+    const eCAL::ProcessGraph::SProcessGraphEdge &edge) {
+  return (isInFilterList(edge.edgeID.first) ||
+          isInFilterList(edge.edgeID.first) ||
+          isInFilterList(edge.publisherName) ||
+          isInFilterList(edge.subscriberName));
 }
 
-bool ProcessGraphFilter::isInFilterList(const Edge *edge)
-{
-  return (isInFilterList(edge->sourceNode()->getId()) || isInFilterList(edge->destNode()->getId()) || isInFilterList(edge->sourceNode()->getName().toStdString()) || isInFilterList(edge->destNode()->getName().toStdString()));
+bool ProcessGraphFilter::isInFilterList(const Edge *edge) {
+  return (isInFilterList(edge->sourceNode()->getId()) ||
+          isInFilterList(edge->destNode()->getId()) ||
+          isInFilterList(edge->sourceNode()->getName().toStdString()) ||
+          isInFilterList(edge->destNode()->getName().toStdString()));
 }
