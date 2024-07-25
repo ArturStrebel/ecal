@@ -18,9 +18,8 @@ class GraphWidget : public QGraphicsView {
 
 public:
   enum ViewType { HostView, ProcessView };
-  GraphWidget(Monitoring *monitor, ProcessGraphFilter *filter_,
-              QPushButton *pause_button, GraphWidget::ViewType view_type,
-              QWidget *parent, QString title);
+  GraphWidget(Monitoring *monitor, ProcessGraphFilter *filter_, QPushButton *pause_button,
+              GraphWidget::ViewType view_type, QWidget *parent, QString title);
 
   void itemMoved();
   int random(int from, int to);

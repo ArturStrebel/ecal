@@ -32,13 +32,11 @@ ProcessGraphFilter::ProcessGraphFilter() {
   layout->addWidget(buttonRemove, 2, 1);
   setLayout(layout);
 
-  QObject::connect(buttonSet, &QPushButton::clicked, this,
-                   &ProcessGraphFilter::setCentralProcess);
+  QObject::connect(buttonSet, &QPushButton::clicked, this, &ProcessGraphFilter::setCentralProcess);
   QObject::connect(setCentralProcessEdit, &QLineEdit::returnPressed, this,
                    &ProcessGraphFilter::setCentralProcess);
 
-  QObject::connect(buttonAdd, &QPushButton::clicked, this,
-                   &ProcessGraphFilter::addToBlackList);
+  QObject::connect(buttonAdd, &QPushButton::clicked, this, &ProcessGraphFilter::addToBlackList);
   QObject::connect(addToBlackListEdit, &QLineEdit::returnPressed, this,
                    &ProcessGraphFilter::addToBlackList);
 
@@ -66,25 +64,13 @@ void ProcessGraphFilter::removeFromBlackList() {
 
 std::string ProcessGraphFilter::getCentralProcess() { return centralProcess; }
 
-bool ProcessGraphFilter::isInFilterList(const std::string &id) {
+bool ProcessGraphFilter::isInBlackList(const std::string &id) {
   return std::find(blackList.begin(), blackList.end(), id) != blackList.end();
 }
 
-bool ProcessGraphFilter::isInFilterList(const int &id) {
-  return isInFilterList(std::to_string(id));
-}
+bool ProcessGraphFilter::isInBlackList(const int &id) { return isInBlackList(std::to_string(id)); }
 
-bool ProcessGraphFilter::isInFilterList(
-    const eCAL::ProcessGraph::SProcessGraphEdge &edge) {
-  return (isInFilterList(edge.edgeID.first) ||
-          isInFilterList(edge.edgeID.first) ||
-          isInFilterList(edge.publisherName) ||
-          isInFilterList(edge.subscriberName));
-}
-
-bool ProcessGraphFilter::isInFilterList(const Edge *edge) {
-  return (isInFilterList(edge->sourceNode()->getId()) ||
-          isInFilterList(edge->destNode()->getId()) ||
-          isInFilterList(edge->sourceNode()->getName().toStdString()) ||
-          isInFilterList(edge->destNode()->getName().toStdString()));
+bool ProcessGraphFilter::isInBlackList(const eCAL::ProcessGraph::SProcessGraphEdge &edge) {
+  return (isInBlackList(edge.edgeID.first) || isInBlackList(edge.edgeID.first) ||
+          isInBlackList(edge.publisherName) || isInBlackList(edge.subscriberName));
 }

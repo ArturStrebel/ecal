@@ -22,39 +22,39 @@
 #include <ecal/ecal_os.h>
 
 namespace eCAL {
-namespace ProcessGraph {
-struct SProcessGraphEdge {
-  bool isAlive;
-  std::pair<int, int> edgeID;
-  std::string publisherName;
-  std::string subscriberName;
-  std::string topicName;
-  double bandwidth; // stored in Bit/s
-};
+  namespace ProcessGraph {
+    struct SProcessGraphEdge {
+      bool isAlive;
+      std::pair<int, int> edgeID;
+      std::string publisherName;
+      std::string subscriberName;
+      std::string topicName;
+      double bandwidth; // stored in Bit/s
+    };
 
-struct SHostGraphEdge {
-  bool isAlive;
-  std::pair<int, int> edgeID;
-  std::string outgoingHostName;
-  std::string incomingHostName;
-  double bandwidth; // stored in Bit/s
-};
+    struct SHostGraphEdge {
+      bool isAlive;
+      std::pair<int, int> edgeID;
+      std::string outgoingHostName;
+      std::string incomingHostName;
+      double bandwidth; // stored in Bit/s
+    };
 
-struct STopicTreeItem {
-  bool isAlive;
-  int topicID;
-  std::string topicName;
-  std::string direction; // subscriber or publisher
-  std::string processName;
-  std::string description;
-};
+    struct STopicTreeItem {
+      bool isAlive;
+      int topicID;
+      std::string topicName;
+      std::string direction; // subscriber or publisher
+      std::string processName;
+      std::string description;
+    };
 
-struct SProcessGraph {
-  std::vector<SProcessGraphEdge> processEdges;
-  std::vector<SHostGraphEdge> hostEdges;
-  std::vector<STopicTreeItem> topicTreeItems;
-};
+    struct SProcessGraph {
+      std::vector<SProcessGraphEdge> processEdges;
+      std::vector<SHostGraphEdge> hostEdges;
+      std::vector<STopicTreeItem> topicTreeItems;
+    };
 
-ECAL_API SProcessGraph GetProcessGraph(const eCAL::Monitoring::SMonitoring &);
-} // namespace ProcessGraph
+    ECAL_API SProcessGraph GetProcessGraph(const eCAL::Monitoring::SMonitoring &);
+  } // namespace ProcessGraph
 } // namespace eCAL

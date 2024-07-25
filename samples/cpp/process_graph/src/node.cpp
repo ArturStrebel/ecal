@@ -10,10 +10,8 @@
 #include <QPainter>
 #include <QStyleOption>
 
-Node::Node(NodeType nodeType_, QString name_, int nodeId_,
-           std::optional<qreal> internalBandwidth_)
-    : nodeType(nodeType_), name(name_), nodeId(nodeId_),
-      internalBandwidth(internalBandwidth_) {
+Node::Node(NodeType nodeType_, QString name_, int nodeId_, std::optional<qreal> internalBandwidth_)
+    : nodeType(nodeType_), name(name_), nodeId(nodeId_), internalBandwidth(internalBandwidth_) {
   setFlag(ItemIsMovable);
   setFlag(ItemSendsGeometryChanges);
   setCacheMode(DeviceCoordinateCache);
@@ -21,8 +19,7 @@ Node::Node(NodeType nodeType_, QString name_, int nodeId_,
 
   QString text_label = name;
   if (internalBandwidth.has_value()) {
-    text_label +=
-        "\n  🗘" + printHumanReadableBandwidth(internalBandwidth.value());
+    text_label += "\n  🗘" + printHumanReadableBandwidth(internalBandwidth.value());
   }
 
   // Erstellen des label-Widgets und Einstellen des Textes
@@ -119,10 +116,8 @@ void Node::calculateForces() {
 
   if (flags() & QGraphicsItem::ItemIsMovable) {
     newPos = pos() + QPointF(xvel, yvel);
-    newPos.setX(
-        qMin(qMax(newPos.x(), sceneRect.left() + 10), sceneRect.right() - 10));
-    newPos.setY(
-        qMin(qMax(newPos.y(), sceneRect.top() + 10), sceneRect.bottom() - 10));
+    newPos.setX(qMin(qMax(newPos.x(), sceneRect.left() + 10), sceneRect.right() - 10));
+    newPos.setY(qMin(qMax(newPos.y(), sceneRect.top() + 10), sceneRect.bottom() - 10));
   }
 }
 
@@ -147,8 +142,7 @@ QPainterPath Node::shape() const {
   return path;
 }
 
-void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
-                 QWidget *) {
+void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *) {
   painter->setPen(Qt::NoPen);
   painter->setBrush(Qt::darkGray);
   painter->drawEllipse(-7, -7, 20, 20);

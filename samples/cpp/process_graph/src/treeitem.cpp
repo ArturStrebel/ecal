@@ -13,8 +13,7 @@ TreeItem::TreeItem(QVariantList data, TreeItem *parent)
     : itemData(std::move(data)), m_parentItem(parent) {}
 
 TreeItem *TreeItem::child(int number) {
-  return (number >= 0 && number < childCount()) ? m_childItems.at(number).get()
-                                                : nullptr;
+  return (number >= 0 && number < childCount()) ? m_childItems.at(number).get() : nullptr;
 }
 
 int TreeItem::childCount() const { return int(m_childItems.size()); }
@@ -24,9 +23,7 @@ int TreeItem::row() const {
     return 0;
   const auto it = std::find_if(
       m_parentItem->m_childItems.cbegin(), m_parentItem->m_childItems.cend(),
-      [this](const std::unique_ptr<TreeItem> &treeItem) {
-        return treeItem.get() == this;
-      });
+      [this](const std::unique_ptr<TreeItem> &treeItem) { return treeItem.get() == this; });
 
   if (it != m_parentItem->m_childItems.cend())
     return std::distance(m_parentItem->m_childItems.cbegin(), it);
@@ -44,8 +41,7 @@ bool TreeItem::insertChildren(int position, int count, int columns) {
 
   for (int row = 0; row < count; ++row) {
     QVariantList data(columns);
-    m_childItems.insert(m_childItems.cbegin() + position,
-                        std::make_unique<TreeItem>(data, this));
+    m_childItems.insert(m_childItems.cbegin() + position, std::make_unique<TreeItem>(data, this));
   }
 
   return true;

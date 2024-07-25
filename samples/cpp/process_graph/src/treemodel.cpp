@@ -7,8 +7,7 @@
 using namespace Qt::StringLiterals;
 
 TreeModel::TreeModel(const QStringList &headers,
-                     std::vector<eCAL::ProcessGraph::STopicTreeItem> &treeData,
-                     QObject *parent)
+                     std::vector<eCAL::ProcessGraph::STopicTreeItem> &treeData, QObject *parent)
     : QAbstractItemModel(parent) {
   QVariantList rootData;
   for (const QString &header : headers)
@@ -52,15 +51,12 @@ TreeItem *TreeModel::getItem(const QModelIndex &index) const {
   return rootItem.get();
 }
 
-QVariant TreeModel::headerData(int section, Qt::Orientation orientation,
-                               int role) const {
-  return (orientation == Qt::Horizontal && role == Qt::DisplayRole)
-             ? rootItem->data(section)
-             : QVariant{};
+QVariant TreeModel::headerData(int section, Qt::Orientation orientation, int role) const {
+  return (orientation == Qt::Horizontal && role == Qt::DisplayRole) ? rootItem->data(section)
+                                                                    : QVariant{};
 }
 
-QModelIndex TreeModel::index(int row, int column,
-                             const QModelIndex &parent) const {
+QModelIndex TreeModel::index(int row, int column, const QModelIndex &parent) const {
   if (parent.isValid() && parent.column() != 0)
     return {};
 
@@ -73,8 +69,7 @@ QModelIndex TreeModel::index(int row, int column,
   return {};
 }
 
-bool TreeModel::insertColumns(int position, int columns,
-                              const QModelIndex &parent) {
+bool TreeModel::insertColumns(int position, int columns, const QModelIndex &parent) {
   beginInsertColumns(parent, position, position + columns - 1);
   const bool success = rootItem->insertColumns(position, columns);
   endInsertColumns();
@@ -88,8 +83,7 @@ bool TreeModel::insertRows(int position, int rows, const QModelIndex &parent) {
     return false;
 
   beginInsertRows(parent, position, position + rows - 1);
-  const bool success =
-      parentItem->insertChildren(position, rows, rootItem->columnCount());
+  const bool success = parentItem->insertChildren(position, rows, rootItem->columnCount());
   endInsertRows();
 
   return success;
@@ -107,8 +101,7 @@ QModelIndex TreeModel::parent(const QModelIndex &index) const {
              : QModelIndex{};
 }
 
-bool TreeModel::removeColumns(int position, int columns,
-                              const QModelIndex &parent) {
+bool TreeModel::removeColumns(int position, int columns, const QModelIndex &parent) {
   beginRemoveColumns(parent, position, position + columns - 1);
   const bool success = rootItem->removeColumns(position, columns);
   endRemoveColumns();
@@ -140,8 +133,7 @@ int TreeModel::rowCount(const QModelIndex &parent) const {
   return parentItem ? parentItem->childCount() : 0;
 }
 
-bool TreeModel::setData(const QModelIndex &index, const QVariant &value,
-                        int role) {
+bool TreeModel::setData(const QModelIndex &index, const QVariant &value, int role) {
   if (role != Qt::EditRole)
     return false;
 
@@ -154,8 +146,8 @@ bool TreeModel::setData(const QModelIndex &index, const QVariant &value,
   return result;
 }
 
-bool TreeModel::setHeaderData(int section, Qt::Orientation orientation,
-                              const QVariant &value, int role) {
+bool TreeModel::setHeaderData(int section, Qt::Orientation orientation, const QVariant &value,
+                              int role) {
   if (role != Qt::EditRole || orientation != Qt::Horizontal)
     return false;
 
@@ -168,18 +160,16 @@ bool TreeModel::setHeaderData(int section, Qt::Orientation orientation,
 }
 
 std::string str_tolower(std::string s) {
-  std::transform(s.begin(), s.end(), s.begin(),
-                 [](unsigned char c) { return std::tolower(c); });
+  std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return std::tolower(c); });
   return s;
 }
 
-void TreeModel::insertProcess(
-    size_t &pos, std::string direction, std::string currentTopic,
-    const std::vector<eCAL::ProcessGraph::STopicTreeItem> &treeData) {
+void TreeModel::insertProcess(size_t &pos, std::string direction, std::string currentTopic,
+                              const std::vector<eCAL::ProcessGraph::STopicTreeItem> &treeData) {
   while (treeData[pos].topicName == currentTopic &&
          str_tolower(treeData[pos].direction) == direction) {
-    auto dirItem = rootItem->child(rootItem->childCount() - 1)
-                       ->child(direction == "publisher" ? 0 : 1);
+    auto dirItem =
+        rootItem->child(rootItem->childCount() - 1)->child(direction == "publisher" ? 0 : 1);
     dirItem->insertChildren(dirItem->childCount(), 1, rootItem->columnCount());
     auto processItem = dirItem->child(dirItem->childCount() - 1);
     processItem->setData(0, QString::fromStdString(treeData[pos].processName));
@@ -189,11 +179,9 @@ void TreeModel::insertProcess(
   }
 }
 
-void TreeModel::setupModelData(
-    const std::vector<eCAL::ProcessGraph::STopicTreeItem> &treeData) {
+void TreeModel::setupModelData(const std::vector<eCAL::ProcessGraph::STopicTreeItem> &treeData) {
   for (size_t i = 0; i < treeData.size();) {
-    rootItem->insertChildren(rootItem->childCount(), 1,
-                             rootItem->columnCount());
+    rootItem->insertChildren(rootItem->childCount(), 1, rootItem->columnCount());
 
     auto topicItem = rootItem->child(rootItem->childCount() - 1);
     std::string currentTopic = treeData[i].topicName;

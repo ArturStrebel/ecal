@@ -28,45 +28,42 @@
 #include <ecal/types/monitoring.h>
 
 namespace eCAL {
-class CProcessGraph {
-public:
-  CProcessGraph();
-  ~CProcessGraph();
+  class CProcessGraph {
+  public:
+    CProcessGraph();
+    ~CProcessGraph();
 
-  void Create();
-  void Destroy();
+    void Create();
+    void Destroy();
 
-  eCAL::ProcessGraph::SProcessGraph
-  GetProcessGraph(const eCAL::Monitoring::SMonitoring &monitoring);
+    eCAL::ProcessGraph::SProcessGraph
+    GetProcessGraph(const eCAL::Monitoring::SMonitoring &monitoring);
 
-private:
-  // General functions
-  void UpdateProcessGraph(const eCAL::Monitoring::SMonitoring &monitoring);
-  double GetBandwidth(const eCAL::Monitoring::STopicMon &pub);
+  private:
+    // General functions
+    void UpdateProcessGraph(const eCAL::Monitoring::SMonitoring &monitoring);
+    double GetBandwidth(const eCAL::Monitoring::STopicMon &pub);
 
-  // Functions for process view
-  eCAL::ProcessGraph::SProcessGraphEdge *
-  FindProcessEdge(std::pair<int, int> edgeID);
-  eCAL::ProcessGraph::SProcessGraphEdge
-  CreateProcessEdge(const eCAL::Monitoring::STopicMon &pub,
-                    const eCAL::Monitoring::STopicMon &sub);
-  void TryInsertProcessEdge(const eCAL::Monitoring::STopicMon &pub,
-                            const eCAL::Monitoring::STopicMon &sub);
+    // Functions for process view
+    eCAL::ProcessGraph::SProcessGraphEdge *FindProcessEdge(std::pair<int, int> edgeID);
+    eCAL::ProcessGraph::SProcessGraphEdge CreateProcessEdge(const eCAL::Monitoring::STopicMon &pub,
+                                                            const eCAL::Monitoring::STopicMon &sub);
+    void TryInsertProcessEdge(const eCAL::Monitoring::STopicMon &pub,
+                              const eCAL::Monitoring::STopicMon &sub);
 
-  // Functions for host traffic view
-  eCAL::ProcessGraph::SHostGraphEdge *FindHostEdge(std::pair<int, int> edgeID);
-  eCAL::ProcessGraph::SHostGraphEdge
-  CreateHostEdge(const eCAL::Monitoring::STopicMon &pub,
-                 const eCAL::Monitoring::STopicMon &sub);
-  void TryInsertHostEdge(const eCAL::Monitoring::STopicMon &pub,
-                         const eCAL::Monitoring::STopicMon &sub);
+    // Functions for host traffic view
+    eCAL::ProcessGraph::SHostGraphEdge *FindHostEdge(std::pair<int, int> edgeID);
+    eCAL::ProcessGraph::SHostGraphEdge CreateHostEdge(const eCAL::Monitoring::STopicMon &pub,
+                                                      const eCAL::Monitoring::STopicMon &sub);
+    void TryInsertHostEdge(const eCAL::Monitoring::STopicMon &pub,
+                           const eCAL::Monitoring::STopicMon &sub);
 
-  // Functions for topic tree
-  eCAL::ProcessGraph::STopicTreeItem *FindTopicTreeItem(int topicID);
-  eCAL::ProcessGraph::STopicTreeItem
-  CreateTopicTreeItem(const eCAL::Monitoring::STopicMon &process);
-  void TryInsertTopicTreeItem(const eCAL::Monitoring::STopicMon &proc);
+    // Functions for topic tree
+    eCAL::ProcessGraph::STopicTreeItem *FindTopicTreeItem(int topicID);
+    eCAL::ProcessGraph::STopicTreeItem
+    CreateTopicTreeItem(const eCAL::Monitoring::STopicMon &process);
+    void TryInsertTopicTreeItem(const eCAL::Monitoring::STopicMon &proc);
 
-  eCAL::ProcessGraph::SProcessGraph m_process_graph;
-};
+    eCAL::ProcessGraph::SProcessGraph m_process_graph;
+  };
 } // namespace eCAL

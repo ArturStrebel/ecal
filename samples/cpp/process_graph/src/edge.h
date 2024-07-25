@@ -9,8 +9,7 @@ class Node;
 
 class Edge : public QGraphicsItem {
 public:
-  Edge(Node *sourceNode, Node *destNode, bool curvedArrow, QString label,
-       qreal bandwidth);
+  Edge(Node *sourceNode, Node *destNode, bool curvedArrow, QString label, qreal bandwidth);
   ~Edge();
   Node *sourceNode() const;
   Node *destNode() const;
@@ -27,8 +26,7 @@ public:
 
 protected:
   QRectF boundingRect() const override;
-  void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
-             QWidget *widget) override;
+  void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
   QString printHumanReadableBandwidth(qreal &internalBandwidth_);
 
 private:

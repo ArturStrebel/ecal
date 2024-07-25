@@ -8,8 +8,7 @@
 
 using namespace Qt::StringLiterals;
 
-MainWindow::MainWindow(Monitoring *monitor_, QPushButton *pause_button,
-                       QWidget *parent_)
+MainWindow::MainWindow(Monitoring *monitor_, QPushButton *pause_button, QWidget *parent_)
     : QMainWindow(parent_), monitor(monitor_), pauseButton(pause_button) {
   setupUi(this);
   this->setMinimumSize(QSize(250, 400));
@@ -31,26 +30,20 @@ MainWindow::MainWindow(Monitoring *monitor_, QPushButton *pause_button,
 
   connect(actionsMenu, &QMenu::aboutToShow, this, &MainWindow::updateActions);
   connect(insertRowAction, &QAction::triggered, this, &MainWindow::insertRow);
-  connect(insertColumnAction, &QAction::triggered, this,
-          &MainWindow::insertColumn);
+  connect(insertColumnAction, &QAction::triggered, this, &MainWindow::insertColumn);
   connect(removeRowAction, &QAction::triggered, this, &MainWindow::removeRow);
-  connect(removeColumnAction, &QAction::triggered, this,
-          &MainWindow::removeColumn);
-  connect(insertChildAction, &QAction::triggered, this,
-          &MainWindow::insertChild);
+  connect(removeColumnAction, &QAction::triggered, this, &MainWindow::removeColumn);
+  connect(insertChildAction, &QAction::triggered, this, &MainWindow::insertChild);
 
-  connect(monitor, &Monitoring::updateTopicTree, this,
-          &MainWindow::updateProcessGraph);
+  connect(monitor, &Monitoring::updateTopicTree, this, &MainWindow::updateProcessGraph);
 
   connect(pauseButton, &QPushButton::toggled, this, [this](bool checked) {
     if (checked == false) {
-      connect(monitor, &Monitoring::updateTopicTree, this,
-              &MainWindow::updateProcessGraph);
+      connect(monitor, &Monitoring::updateTopicTree, this, &MainWindow::updateProcessGraph);
       pauseButton->setText("Pause");
       updateProcessGraph();
     } else {
-      disconnect(monitor, &Monitoring::updateTopicTree, this,
-                 &MainWindow::updateProcessGraph);
+      disconnect(monitor, &Monitoring::updateTopicTree, this, &MainWindow::updateProcessGraph);
       pauseButton->setText("Resume");
     }
   });
@@ -86,8 +79,7 @@ void MainWindow::insertChild() {
     const QModelIndex child = model->index(0, column, index);
     model->setData(child, QVariant(tr("[No data]")), Qt::EditRole);
     if (!model->headerData(column, Qt::Horizontal).isValid())
-      model->setHeaderData(column, Qt::Horizontal, QVariant(tr("[No header]")),
-                           Qt::EditRole);
+      model->setHeaderData(column, Qt::Horizontal, QVariant(tr("[No header]")), Qt::EditRole);
   }
 
   view->selectionModel()->setCurrentIndex(model->index(0, 0, index),
@@ -102,8 +94,7 @@ bool MainWindow::insertColumn() {
   // Insert a column in the parent item.
   bool changed = model->insertColumn(column + 1);
   if (changed)
-    model->setHeaderData(column + 1, Qt::Horizontal, QVariant("[No header]"),
-                         Qt::EditRole);
+    model->setHeaderData(column + 1, Qt::Horizontal, QVariant("[No header]"), Qt::EditRole);
 
   updateActions();
 
@@ -120,8 +111,7 @@ void MainWindow::insertRow() {
   updateActions();
 
   for (int column = 0; column < model->columnCount(index.parent()); ++column) {
-    const QModelIndex child =
-        model->index(index.row() + 1, column, index.parent());
+    const QModelIndex child = model->index(index.row() + 1, column, index.parent());
     model->setData(child, QVariant(tr("[No data]")), Qt::EditRole);
   }
 }
@@ -162,7 +152,6 @@ void MainWindow::updateActions() {
     if (view->selectionModel()->currentIndex().parent().isValid())
       statusBar()->showMessage(tr("Position: (%1,%2)").arg(row).arg(column));
     else
-      statusBar()->showMessage(
-          tr("Position: (%1,%2) in top level").arg(row).arg(column));
+      statusBar()->showMessage(tr("Position: (%1,%2) in top level").arg(row).arg(column));
   }
 }

@@ -36,13 +36,12 @@ int main(int argc, char **argv) {
 
   // TODO: Funktionen auf ihren Zugriff überprüfen, was sollte public sein, was
   // private?
-  GraphWidget *HostTrafficView = new GraphWidget(
-      Monitor, filter, PauseButton, GraphWidget::ViewType::HostView, nullptr,
-      "Host Network traffic");
+  GraphWidget *HostTrafficView =
+      new GraphWidget(Monitor, filter, PauseButton, GraphWidget::ViewType::HostView, nullptr,
+                      "Host Network traffic");
   MainWindow *TopicTreeView = new MainWindow(Monitor, PauseButton);
   GraphWidget *ProcessGraphView = new GraphWidget(
-      Monitor, filter, PauseButton, GraphWidget::ViewType::ProcessView, nullptr,
-      "Process Graph");
+      Monitor, filter, PauseButton, GraphWidget::ViewType::ProcessView, nullptr, "Process Graph");
 
   layout->addWidget(HostTrafficView, 1, 1);
   layout->addWidget(TopicTreeView, 0, 0);
