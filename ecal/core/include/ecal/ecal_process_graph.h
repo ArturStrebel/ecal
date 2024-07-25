@@ -5,9 +5,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,7 +15,7 @@
  * limitations under the License.
  *
  * ========================= eCAL LICENSE =================================
-*/
+ */
 
 #pragma once
 
@@ -28,20 +28,20 @@ namespace eCAL
     struct SProcessGraphEdge
     {
       bool isAlive;
-      std::pair<int,int> edgeID;
+      std::pair<int, int> edgeID;
       std::string publisherName;
       std::string subscriberName;
       std::string topicName;
-      double bandwidth;  // stored in Bit/s
+      double bandwidth; // stored in Bit/s
     };
 
     struct SHostGraphEdge
     {
       bool isAlive;
-      std::pair<int,int> edgeID;
+      std::pair<int, int> edgeID;
       std::string outgoingHostName;
       std::string incomingHostName;
-      double bandwidth;  // stored in Bit/s
+      double bandwidth; // stored in Bit/s
     };
 
     struct STopicTreeItem
@@ -61,6 +61,6 @@ namespace eCAL
       std::vector<STopicTreeItem> topicTreeItems;
     };
 
-    ECAL_API SProcessGraph GetProcessGraph(const eCAL::Monitoring::SMonitoring&);    
+    ECAL_API SProcessGraph GetProcessGraph(const eCAL::Monitoring::SMonitoring &);
   }
 }

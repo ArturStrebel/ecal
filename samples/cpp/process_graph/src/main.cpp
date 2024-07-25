@@ -17,7 +17,6 @@
 #include <QGridLayout>
 #include <QPushButton>
 
-
 int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
@@ -31,9 +30,9 @@ int main(int argc, char **argv)
     QGridLayout *layout = new QGridLayout(centralWidget);
     QGridLayout *subLayout = new QGridLayout();
 
-    Monitoring* Monitor = new Monitoring();
-    ProcessGraphFilter* filter = new ProcessGraphFilter();
-    QPushButton *PauseButton = new QPushButton("Pause"); 
+    Monitoring *Monitor = new Monitoring();
+    ProcessGraphFilter *filter = new ProcessGraphFilter();
+    QPushButton *PauseButton = new QPushButton("Pause");
     PauseButton->setCheckable(true);
 
     // TODO: Funktionen auf ihren Zugriff überprüfen, was sollte public sein, was private?
@@ -41,12 +40,12 @@ int main(int argc, char **argv)
     MainWindow *TopicTreeView = new MainWindow(Monitor, PauseButton);
     GraphWidget *ProcessGraphView = new GraphWidget(Monitor, filter, PauseButton, GraphWidget::ViewType::ProcessView, nullptr, "Process Graph");
 
-    layout->addWidget(HostTrafficView,1,1);
-    layout->addWidget(TopicTreeView,0,0);
-    layout->addWidget(ProcessGraphView,0,1);
-    subLayout->addWidget(PauseButton,0,0);
-    subLayout->addWidget(filter,1,0);
-    layout->addLayout(subLayout,1,0);
+    layout->addWidget(HostTrafficView, 1, 1);
+    layout->addWidget(TopicTreeView, 0, 0);
+    layout->addWidget(ProcessGraphView, 0, 1);
+    subLayout->addWidget(PauseButton, 0, 0);
+    subLayout->addWidget(filter, 1, 0);
+    layout->addLayout(subLayout, 1, 0);
 
     mainWindow.setCentralWidget(centralWidget);
     mainWindow.show();

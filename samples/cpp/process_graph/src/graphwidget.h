@@ -18,17 +18,17 @@ class GraphWidget : public QGraphicsView
     Q_OBJECT
 
 public:
-
-    enum ViewType {
+    enum ViewType
+    {
         HostView,
         ProcessView
     };
-    GraphWidget(Monitoring* monitor, ProcessGraphFilter* filter_, QPushButton* pause_button, GraphWidget::ViewType view_type, QWidget *parent, QString title);
+    GraphWidget(Monitoring *monitor, ProcessGraphFilter *filter_, QPushButton *pause_button, GraphWidget::ViewType view_type, QWidget *parent, QString title);
 
     void itemMoved();
     int random(int from, int to);
-    void addNodeToScene(Node* node);
-    void applyFilter(eCAL::ProcessGraph::SProcessGraph& process_graph ); 
+    void addNodeToScene(Node *node);
+    void applyFilter(eCAL::ProcessGraph::SProcessGraph &process_graph);
     void updateCentralProcess(QString newCentralProcess);
 
 public slots:
@@ -48,16 +48,15 @@ protected:
     void scaleView(qreal scaleFactor);
 
 private:
-    Monitoring* monitor;
-    QPushButton* pauseButton;
+    Monitoring *monitor;
+    QPushButton *pauseButton;
     QTimer *timer;
     int timerId = 0;
-    std::map<int, Node*> node_map;
-    std::map<std::pair<int,int>, Edge*> edge_map;
+    std::map<int, Node *> node_map;
+    std::map<std::pair<int, int>, Edge *> edge_map;
     QGraphicsScene *graphicsScene;
     ViewType view_type;
     QString title;
     ProcessGraphFilter *filter;
     QString centralProcess = "";
 };
-

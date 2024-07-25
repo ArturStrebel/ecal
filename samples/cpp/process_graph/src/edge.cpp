@@ -20,8 +20,6 @@ Edge::~Edge()
 {
     source->removeEdge(this);
     dest->removeEdge(this);
-    // source = nullptr;
-    // dest = nullptr;
 }
 
 Node *Edge::sourceNode() const
@@ -44,11 +42,14 @@ void Edge::adjust()
 
     prepareGeometryChange();
 
-    if (length > qreal(20.)) {
+    if (length > qreal(20.))
+    {
         QPointF edgeOffset((line.dx() * 10) / length, (line.dy() * 10) / length);
         sourcePoint = line.p1() + edgeOffset;
         destPoint = line.p2() - edgeOffset;
-    } else {
+    }
+    else
+    {
         sourcePoint = destPoint = line.p1();
     }
 }
@@ -116,37 +117,44 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
     qreal labelAngle;
     if (sourcePoint.x() > destPoint.x()) // Flip label if edge goes from right to left
         labelAngle = std::atan2(line.dy(), -line.dx());
-    else 
+    else
         labelAngle = std::atan2(-line.dy(), line.dx());
     painter->rotate(-labelAngle * 180 / M_PI); // Convert from radians to degrees
     painter->setPen(Qt::white);
     if (curvedArrow == true)
     {
-        if (sourcePoint.x() > destPoint.x()) 
-            painter->drawText(QRectF(- width / 2, - height / 2 - excentricity - 5, width, height), Qt::AlignCenter, label + "\n" + printHumanReadableBandwidth(bandwidth));
+        if (sourcePoint.x() > destPoint.x())
+            painter->drawText(QRectF(-width / 2, -height / 2 - excentricity - 5, width, height), Qt::AlignCenter, label + "\n" + printHumanReadableBandwidth(bandwidth));
         else
-            painter->drawText(QRectF(- width / 2, - height / 2 + excentricity - 15, width, height), Qt::AlignCenter, label + "\n" + printHumanReadableBandwidth(bandwidth));
+            painter->drawText(QRectF(-width / 2, -height / 2 + excentricity - 15, width, height), Qt::AlignCenter, label + "\n" + printHumanReadableBandwidth(bandwidth));
     }
-    else 
+    else
     {
-       painter->drawText(QRectF(- width / 2, - height / 2 + 5, width, height), Qt::AlignCenter, label + "\n" + printHumanReadableBandwidth(bandwidth)); 
+        painter->drawText(QRectF(-width / 2, -height / 2 + 5, width, height), Qt::AlignCenter, label + "\n" + printHumanReadableBandwidth(bandwidth));
     }
     painter->restore();
 }
 
 // TODO:: Same function as in Node, implement more elegant solution
-QString Edge::printHumanReadableBandwidth(qreal& internalBandwidth_) {
+QString Edge::printHumanReadableBandwidth(qreal &internalBandwidth_)
+{
     int bandwidthDimension = 0;
-    while( internalBandwidth_ > 1024 && bandwidthDimension < 4) {
+    while (internalBandwidth_ > 1024 && bandwidthDimension < 4)
+    {
         internalBandwidth_ /= 1024;
         bandwidthDimension++;
-    }      
+    }
     QString bw = QString::number(internalBandwidth_, 'f', 2);
-    switch(bandwidthDimension) {
-        case 1: return bw + " Kbit/s";
-        case 2: return bw + " Mbit/s";
-        case 3: return bw + " Gbit/s";
-        default: return bw + " Bit/s";
+    switch (bandwidthDimension)
+    {
+    case 1:
+        return bw + " Kbit/s";
+    case 2:
+        return bw + " Mbit/s";
+    case 3:
+        return bw + " Gbit/s";
+    default:
+        return bw + " Bit/s";
     }
 }
 

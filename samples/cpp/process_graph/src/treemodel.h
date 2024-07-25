@@ -17,7 +17,7 @@ class TreeModel : public QAbstractItemModel
 public:
     Q_DISABLE_COPY_MOVE(TreeModel)
 
-    TreeModel(const QStringList &headers, std::vector<eCAL::ProcessGraph::STopicTreeItem>& treeData,
+    TreeModel(const QStringList &headers, std::vector<eCAL::ProcessGraph::STopicTreeItem> &treeData,
               QObject *parent = nullptr);
     ~TreeModel() override;
 
@@ -48,8 +48,8 @@ public:
                     const QModelIndex &parent = {}) override;
 
 private:
-    void setupModelData(const std::vector<eCAL::ProcessGraph::STopicTreeItem>& treeData);
-    void insertProcess( size_t& pos , std::string direction, std::string currentTopic, const std::vector<eCAL::ProcessGraph::STopicTreeItem>& treeData);
+    void setupModelData(const std::vector<eCAL::ProcessGraph::STopicTreeItem> &treeData);
+    void insertProcess(size_t &pos, std::string direction, std::string currentTopic, const std::vector<eCAL::ProcessGraph::STopicTreeItem> &treeData);
     TreeItem *getItem(const QModelIndex &index) const;
 
     std::unique_ptr<TreeItem> rootItem;

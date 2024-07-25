@@ -22,14 +22,17 @@ public:
     void adjust();
     void setCurvedArrow(bool newState);
 
-    enum { Type = UserType + 2 };
+    enum
+    {
+        Type = UserType + 2
+    };
     int type() const override { return Type; }
     bool isAlive = true;
 
 protected:
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
-    QString printHumanReadableBandwidth(qreal& internalBandwidth_);
+    QString printHumanReadableBandwidth(qreal &internalBandwidth_);
 
 private:
     Node *source, *dest;

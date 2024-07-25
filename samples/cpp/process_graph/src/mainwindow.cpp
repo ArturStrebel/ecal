@@ -8,7 +8,7 @@
 
 using namespace Qt::StringLiterals;
 
-MainWindow::MainWindow(Monitoring* monitor_, QPushButton* pause_button, QWidget *parent_)
+MainWindow::MainWindow(Monitoring *monitor_, QPushButton *pause_button, QWidget *parent_)
     : QMainWindow(parent_), monitor(monitor_), pauseButton(pause_button)
 {
     setupUi(this);
@@ -38,8 +38,8 @@ MainWindow::MainWindow(Monitoring* monitor_, QPushButton* pause_button, QWidget 
 
     connect(monitor, &Monitoring::updateTopicTree, this, &MainWindow::updateProcessGraph);
 
-    connect(pauseButton, &QPushButton::toggled, this, [this] (bool checked) 
-    {
+    connect(pauseButton, &QPushButton::toggled, this, [this](bool checked)
+            {
         if (checked == false) {
             connect(monitor, &Monitoring::updateTopicTree, this, &MainWindow::updateProcessGraph);
             pauseButton->setText("Pause");
@@ -47,13 +47,13 @@ MainWindow::MainWindow(Monitoring* monitor_, QPushButton* pause_button, QWidget 
         } else {
             disconnect(monitor, &Monitoring::updateTopicTree, this, &MainWindow::updateProcessGraph);
             pauseButton->setText("Resume");
-        }
-    });
+        } });
 
     updateActions();
 }
 
-void MainWindow::updateProcessGraph() {
+void MainWindow::updateProcessGraph()
+{
     eCAL::ProcessGraph::SProcessGraph process_graph = monitor->getProcessGraph();
 
     const QStringList headers({tr("Topic"), tr("Description")});
@@ -70,7 +70,8 @@ void MainWindow::insertChild()
     const QModelIndex index = view->selectionModel()->currentIndex();
     QAbstractItemModel *model = view->model();
 
-    if (model->columnCount(index) == 0) {
+    if (model->columnCount(index) == 0)
+    {
         if (!model->insertColumn(0, index))
             return;
     }
@@ -78,7 +79,8 @@ void MainWindow::insertChild()
     if (!model->insertRow(0, index))
         return;
 
-    for (int column = 0; column < model->columnCount(index); ++column) {
+    for (int column = 0; column < model->columnCount(index); ++column)
+    {
         const QModelIndex child = model->index(0, column, index);
         model->setData(child, QVariant(tr("[No data]")), Qt::EditRole);
         if (!model->headerData(column, Qt::Horizontal).isValid())
@@ -110,12 +112,13 @@ void MainWindow::insertRow()
     const QModelIndex index = view->selectionModel()->currentIndex();
     QAbstractItemModel *model = view->model();
 
-    if (!model->insertRow(index.row()+1, index.parent()))
+    if (!model->insertRow(index.row() + 1, index.parent()))
         return;
 
     updateActions();
 
-    for (int column = 0; column < model->columnCount(index.parent()); ++column) {
+    for (int column = 0; column < model->columnCount(index.parent()); ++column)
+    {
         const QModelIndex child = model->index(index.row() + 1, column, index.parent());
         model->setData(child, QVariant(tr("[No data]")), Qt::EditRole);
     }
@@ -152,7 +155,8 @@ void MainWindow::updateActions()
     insertRowAction->setEnabled(hasCurrent);
     insertColumnAction->setEnabled(hasCurrent);
 
-    if (hasCurrent) {
+    if (hasCurrent)
+    {
         view->closePersistentEditor(view->selectionModel()->currentIndex());
 
         const int row = view->selectionModel()->currentIndex().row();

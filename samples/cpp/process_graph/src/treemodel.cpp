@@ -6,7 +6,7 @@
 
 using namespace Qt::StringLiterals;
 
-TreeModel::TreeModel(const QStringList &headers, std::vector<eCAL::ProcessGraph::STopicTreeItem>& treeData, QObject *parent)
+TreeModel::TreeModel(const QStringList &headers, std::vector<eCAL::ProcessGraph::STopicTreeItem> &treeData, QObject *parent)
     : QAbstractItemModel(parent)
 {
     QVariantList rootData;
@@ -48,8 +48,9 @@ Qt::ItemFlags TreeModel::flags(const QModelIndex &index) const
 
 TreeItem *TreeModel::getItem(const QModelIndex &index) const
 {
-    if (index.isValid()) {
-        if (auto *item = static_cast<TreeItem*>(index.internalPointer()))
+    if (index.isValid())
+    {
+        if (auto *item = static_cast<TreeItem *>(index.internalPointer()))
             return item;
     }
     return rootItem.get();
@@ -59,7 +60,8 @@ QVariant TreeModel::headerData(int section, Qt::Orientation orientation,
                                int role) const
 {
     return (orientation == Qt::Horizontal && role == Qt::DisplayRole)
-        ? rootItem->data(section) : QVariant{};
+               ? rootItem->data(section)
+               : QVariant{};
 }
 
 QModelIndex TreeModel::index(int row, int column, const QModelIndex &parent) const
@@ -109,7 +111,8 @@ QModelIndex TreeModel::parent(const QModelIndex &index) const
     TreeItem *parentItem = childItem ? childItem->parent() : nullptr;
 
     return (parentItem != rootItem.get() && parentItem != nullptr)
-        ? createIndex(parentItem->row(), 0, parentItem) : QModelIndex{};
+               ? createIndex(parentItem->row(), 0, parentItem)
+               : QModelIndex{};
 }
 
 bool TreeModel::removeColumns(int position, int columns, const QModelIndex &parent)
@@ -178,32 +181,32 @@ bool TreeModel::setHeaderData(int section, Qt::Orientation orientation,
 std::string str_tolower(std::string s)
 {
     std::transform(s.begin(), s.end(), s.begin(),
-                   [](unsigned char c){ return std::tolower(c); }
-                  );
+                   [](unsigned char c)
+                   { return std::tolower(c); });
     return s;
 }
 
-void TreeModel::insertProcess( size_t& pos , std::string direction, std::string currentTopic, const std::vector<eCAL::ProcessGraph::STopicTreeItem>& treeData)
+void TreeModel::insertProcess(size_t &pos, std::string direction, std::string currentTopic, const std::vector<eCAL::ProcessGraph::STopicTreeItem> &treeData)
 {
-    while(treeData[pos].topicName == currentTopic && str_tolower(treeData[pos].direction) == direction)
+    while (treeData[pos].topicName == currentTopic && str_tolower(treeData[pos].direction) == direction)
     {
-        auto dirItem = rootItem->child(rootItem->childCount()-1)->child(direction == "publisher" ? 0 : 1);
+        auto dirItem = rootItem->child(rootItem->childCount() - 1)->child(direction == "publisher" ? 0 : 1);
         dirItem->insertChildren(dirItem->childCount(), 1, rootItem->columnCount());
-        auto processItem = dirItem->child(dirItem->childCount() -1);
+        auto processItem = dirItem->child(dirItem->childCount() - 1);
         processItem->setData(0, QString::fromStdString(treeData[pos].processName));
         processItem->setData(1, QString::fromStdString(treeData[pos].description));
         if (++pos == treeData.size())
-            break; 
+            break;
     }
 }
 
-void TreeModel::setupModelData(const std::vector<eCAL::ProcessGraph::STopicTreeItem>& treeData)
+void TreeModel::setupModelData(const std::vector<eCAL::ProcessGraph::STopicTreeItem> &treeData)
 {
-    for ( size_t i = 0; i < treeData.size(); )
+    for (size_t i = 0; i < treeData.size();)
     {
         rootItem->insertChildren(rootItem->childCount(), 1, rootItem->columnCount());
 
-        auto topicItem = rootItem->child(rootItem->childCount()-1);
+        auto topicItem = rootItem->child(rootItem->childCount() - 1);
         std::string currentTopic = treeData[i].topicName;
 
         topicItem->setData(0, QString::fromStdString(currentTopic));
@@ -211,9 +214,9 @@ void TreeModel::setupModelData(const std::vector<eCAL::ProcessGraph::STopicTreeI
         topicItem->child(0)->setData(0, "Publisher");
         topicItem->child(1)->setData(0, "Subscriber");
 
-        insertProcess( i, "publisher", currentTopic, treeData);
+        insertProcess(i, "publisher", currentTopic, treeData);
         if (i == treeData.size())
             break;
-        insertProcess( i, "subscriber", currentTopic, treeData);
-    }           
+        insertProcess(i, "subscriber", currentTopic, treeData);
+    }
 }

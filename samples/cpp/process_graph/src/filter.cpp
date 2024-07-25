@@ -5,9 +5,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,7 +15,7 @@
  * limitations under the License.
  *
  * ========================= eCAL LICENSE =================================
-*/
+ */
 
 #include "filter.h"
 
@@ -25,12 +25,12 @@ ProcessGraphFilter::ProcessGraphFilter()
 {
   QGridLayout *layout = new QGridLayout();
 
-  layout->addWidget(setCentralProcessEdit,0,0);    
-  layout->addWidget(buttonSet,0,1);
-  layout->addWidget(addToBlackListEdit,1,0);    
-  layout->addWidget(buttonAdd,1,1);
-  layout->addWidget(removeFromBlackListEdit,2,0);    
-  layout->addWidget(buttonRemove,2,1);
+  layout->addWidget(setCentralProcessEdit, 0, 0);
+  layout->addWidget(buttonSet, 0, 1);
+  layout->addWidget(addToBlackListEdit, 1, 0);
+  layout->addWidget(buttonAdd, 1, 1);
+  layout->addWidget(removeFromBlackListEdit, 2, 0);
+  layout->addWidget(buttonRemove, 2, 1);
   setLayout(layout);
 
   QObject::connect(buttonSet, &QPushButton::clicked, this, &ProcessGraphFilter::setCentralProcess);
@@ -67,22 +67,22 @@ std::string ProcessGraphFilter::getCentralProcess()
   return centralProcess;
 }
 
-bool ProcessGraphFilter::isInFilterList(const std::string& id)
+bool ProcessGraphFilter::isInFilterList(const std::string &id)
 {
   return std::find(blackList.begin(), blackList.end(), id) != blackList.end();
 }
 
-bool ProcessGraphFilter::isInFilterList(const int& id)
+bool ProcessGraphFilter::isInFilterList(const int &id)
 {
   return isInFilterList(std::to_string(id));
 }
 
-bool ProcessGraphFilter::isInFilterList(const eCAL::ProcessGraph::SProcessGraphEdge& edge)
+bool ProcessGraphFilter::isInFilterList(const eCAL::ProcessGraph::SProcessGraphEdge &edge)
 {
   return (isInFilterList(edge.edgeID.first) || isInFilterList(edge.edgeID.first) || isInFilterList(edge.publisherName) || isInFilterList(edge.subscriberName));
 }
 
-bool ProcessGraphFilter::isInFilterList(const Edge* edge)
+bool ProcessGraphFilter::isInFilterList(const Edge *edge)
 {
   return (isInFilterList(edge->sourceNode()->getId()) || isInFilterList(edge->destNode()->getId()) || isInFilterList(edge->sourceNode()->getName().toStdString()) || isInFilterList(edge->destNode()->getName().toStdString()));
 }

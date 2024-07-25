@@ -11,7 +11,7 @@ class Monitoring : public QObject
 public:
     Monitoring();
     ~Monitoring();
-    const eCAL::ProcessGraph::SProcessGraph& getProcessGraph() const;
+    const eCAL::ProcessGraph::SProcessGraph &getProcessGraph() const;
 
 public slots:
     void updateProcessGraph();
@@ -23,6 +23,6 @@ private:
     bool topicTreeHasChanged();
     QTimer *timer;
     eCAL::Monitoring::SMonitoring monitoring;
-    eCAL::ProcessGraph::SProcessGraph process_graph; 
+    eCAL::ProcessGraph::SProcessGraph process_graph;
     std::vector<eCAL::ProcessGraph::STopicTreeItem> previousTopicTree;
 };
