@@ -24,6 +24,7 @@ public:
 
     enum { Type = UserType + 2 };
     int type() const override { return Type; }
+    bool isAlive = true;
 
 protected:
     QRectF boundingRect() const override;

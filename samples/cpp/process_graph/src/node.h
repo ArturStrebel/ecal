@@ -43,6 +43,7 @@ public:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
     QString printHumanReadableBandwidth(qreal& internalBandwidth_);
     
+    bool isAlive = true;
 protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
 
