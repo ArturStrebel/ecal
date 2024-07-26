@@ -38,10 +38,9 @@ public:
   ProcessGraphFilter();
   ~ProcessGraphFilter() = default;
 
-  bool isInFilterList(const std::string &id);
-  bool isInFilterList(const int &id);
-  bool isInFilterList(const eCAL::ProcessGraph::SProcessGraphEdge &edge);
-  bool isInFilterList(const Edge *edge);
+  bool isInBlackList(const std::string &id);
+  bool isInBlackList(const int &id);
+  bool isInBlackList(const eCAL::ProcessGraph::SProcessGraphEdge &edge);
   std::string getCentralProcess();
 
   // QT elements

@@ -11,10 +11,10 @@
 #include <math.h>
 
 GraphWidget::GraphWidget(Monitoring *monitor_, ProcessGraphFilter *filter_,
-                         QPushButton *pause_button, GraphWidget::ViewType view_type_,
+                         QPushButton *pauseButton_, GraphWidget::ViewType viewType_,
                          QWidget *parent_, QString title_)
-    : QGraphicsView(parent_), title(title_), view_type(view_type_), monitor(monitor_),
-      filter(filter_), pauseButton(pause_button) {
+    : QGraphicsView(parent_), title(title_), viewType(viewType_), monitor(monitor_),
+      filter(filter_), pauseButton(pauseButton_) {
   // Setup the Scene/UI
   graphicsScene = new QGraphicsScene(this);
   graphicsScene->setItemIndexMethod(QGraphicsScene::NoIndex);
@@ -42,10 +42,10 @@ GraphWidget::GraphWidget(Monitoring *monitor_, ProcessGraphFilter *filter_,
   });
 }
 
-void GraphWidget::applyFilter(eCAL::ProcessGraph::SProcessGraph &process_graph) {
-  for (auto it = process_graph.processEdges.begin(); it != process_graph.processEdges.end();) {
+void GraphWidget::applyBlackList(eCAL::ProcessGraph::SProcessGraph &processGraph) {
+  for (auto it = processGraph.processEdges.begin(); it != processGraph.processEdges.end();) {
     if (filter->isInBlackList(*it))
-      process_graph.processEdges.erase(it++);
+      processGraph.processEdges.erase(it++);
     else
       ++it;
   }
@@ -55,7 +55,7 @@ void GraphWidget::updateCentralProcess(QString newCentralProcess) {
   if (centralProcess == newCentralProcess)
     return;
 
-  for (auto it = node_map.begin(); it != node_map.end(); it++) {
+  for (auto it = nodeMap.begin(); it != nodeMap.end(); it++) {
     if (it->second->getName() == newCentralProcess) {
       it->second->setPosition(QPointF(0, 0));
       graphicsScene->update(sceneRect());
@@ -70,131 +70,128 @@ void GraphWidget::updateCentralProcess(QString newCentralProcess) {
 }
 
 void GraphWidget::updateProcessGraph() {
-  eCAL::ProcessGraph::SProcessGraph process_graph = monitor->getProcessGraph();
-  applyFilter(process_graph);
+  eCAL::ProcessGraph::SProcessGraph processGraph = monitor->getProcessGraph();
+  applyBlackList(processGraph);
 
   updateCentralProcess(QString::fromStdString(filter->getCentralProcess()));
-  if (view_type == GraphWidget::ViewType::HostView) {
+  if (viewType == GraphWidget::ViewType::HostView) {
     // Add new Edges
-    for (auto edge : process_graph.hostEdges) {
-      if (!(edge_map.find(edge.edgeID) != edge_map.end())) {
+    for (auto edge : processGraph.hostEdges) {
+      if (!(edgeMap.find(edge.edgeID) != edgeMap.end())) {
         // Add new node if incoming Host does not exist
-        if (!(node_map.find(edge.edgeID.second) != node_map.end())) {
-          node_map.insert(
-              std::make_pair(edge.edgeID.second,
-                             new Node(Node::Host, QString::fromStdString(edge.incomingHostName),
-                                      edge.edgeID.second)));
-          addNodeToScene(node_map[edge.edgeID.second]);
+        if (!(nodeMap.find(edge.edgeID.second) != nodeMap.end())) {
+          Node *newNode = new Node(Node::Host, QString::fromStdString(edge.incomingHostName),
+                                   edge.edgeID.second);
+          nodeMap.insert(std::make_pair(edge.edgeID.second, newNode));
+          addNodeToScene(newNode);
         }
         // Add new node if outgoing Host does not exist
-        if (!(node_map.find(edge.edgeID.first) != node_map.end())) {
-          node_map.insert(std::make_pair(
-              edge.edgeID.first, new Node(Node::Host, QString::fromStdString(edge.outgoingHostName),
-                                          edge.edgeID.first)));
-          addNodeToScene(node_map[edge.edgeID.first]);
+        if (!(nodeMap.find(edge.edgeID.first) != nodeMap.end())) {
+          Node *newNode = new Node(Node::Host, QString::fromStdString(edge.outgoingHostName),
+                                   edge.edgeID.first);
+          nodeMap.insert(std::make_pair(edge.edgeID.first, newNode));
+          addNodeToScene(newNode);
         }
 
         // Finally add the edge
         if (edge.edgeID.first == edge.edgeID.second) {
-          node_map[edge.edgeID.first]->setInternalBandwidth(edge.bandwidth);
+          nodeMap[edge.edgeID.first]->setInternalBandwidth(edge.bandwidth);
         } else {
-          Edge *newEdge = new Edge(node_map[edge.edgeID.first], node_map[edge.edgeID.second], false,
-                                   "", edge.bandwidth);
-          auto reverseEdge = edge_map.find(std::make_pair(edge.edgeID.second, edge.edgeID.first));
-          if (reverseEdge != edge_map.end()) // if reverse edge exists, change edges to curved
+          Edge *newEdge =
+              new Edge(nodeMap[edge.edgeID.first], nodeMap[edge.edgeID.second], "", edge.bandwidth);
+          auto reverseEdge = edgeMap.find(std::make_pair(edge.edgeID.second, edge.edgeID.first));
+          if (reverseEdge != edgeMap.end()) // if reverse edge exists, change edges to curved
           {
             reverseEdge->second->setCurvedArrow(true);
             newEdge->setCurvedArrow(true);
           }
-          edge_map.insert(std::make_pair(edge.edgeID, newEdge));
+          edgeMap.insert(std::make_pair(edge.edgeID, newEdge));
           graphicsScene->addItem(newEdge);
         }
       } else {
         if (edge.edgeID.first == edge.edgeID.second) {
-          node_map[edge.edgeID.first]->setInternalBandwidth(edge.bandwidth);
+          nodeMap[edge.edgeID.first]->setInternalBandwidth(edge.bandwidth);
         } else {
-          edge_map[edge.edgeID]->bandwidth = edge.bandwidth;
+          edgeMap[edge.edgeID]->bandwidth = edge.bandwidth;
         }
-        node_map[edge.edgeID.first]->isAlive = true;
-        node_map[edge.edgeID.second]->isAlive = true;
-        edge_map[edge.edgeID]->isAlive = true;
+        nodeMap[edge.edgeID.first]->isAlive = true;
+        nodeMap[edge.edgeID.second]->isAlive = true;
+        edgeMap[edge.edgeID]->isAlive = true;
       }
     }
 
     // Delete Edges that do not exist anymore
-    for (auto edge = edge_map.begin(); edge != edge_map.end();) {
+    for (auto edge = edgeMap.begin(); edge != edgeMap.end();) {
       if (edge->second->isAlive) {
         edge->second->isAlive = false;
         ++edge;
       } else {
         graphicsScene->removeItem(edge->second);
-        edge_map.erase(edge++);
+        edgeMap.erase(edge++);
       }
     }
 
-    for (auto node = node_map.begin(); node != node_map.end();) {
+    for (auto node = nodeMap.begin(); node != nodeMap.end();) {
       if (node->second->isAlive) {
         node->second->isAlive = false;
         ++node;
       } else {
         graphicsScene->removeItem(node->second);
-        node_map.erase(node++);
+        nodeMap.erase(node++);
       }
     }
-  } else if (view_type == GraphWidget::ViewType::ProcessView) {
-    for (auto edge : process_graph.processEdges) {
-      if (!(edge_map.find(edge.edgeID) != edge_map.end())) {
+  } else if (viewType == GraphWidget::ViewType::ProcessView) {
+    for (auto edge : processGraph.processEdges) {
+      if (!(edgeMap.find(edge.edgeID) != edgeMap.end())) {
         // Add new node if incoming Host does not exist
-        if (!(node_map.find(edge.edgeID.first) != node_map.end())) {
-          node_map.insert(
-              std::make_pair(edge.edgeID.first,
-                             new Node(Node::Publisher, QString::fromStdString(edge.publisherName),
-                                      edge.edgeID.first)));
-          addNodeToScene(node_map[edge.edgeID.first]);
+        if (!(nodeMap.find(edge.edgeID.first) != nodeMap.end())) {
+          Node *newNode = new Node(Node::Publisher, QString::fromStdString(edge.publisherName),
+                                   edge.edgeID.first);
+          nodeMap.insert(std::make_pair(edge.edgeID.first, newNode));
+          addNodeToScene(newNode);
         }
 
         // Add new node if outgoing Host does not exist
-        if (!(node_map.find(edge.edgeID.second) != node_map.end())) {
-          node_map.insert(
-              std::make_pair(edge.edgeID.second,
-                             new Node(Node::Subscriber, QString::fromStdString(edge.subscriberName),
-                                      edge.edgeID.second)));
-          addNodeToScene(node_map[edge.edgeID.second]);
+        if (!(nodeMap.find(edge.edgeID.second) != nodeMap.end())) {
+          Node *newNode = new Node(Node::Subscriber, QString::fromStdString(edge.subscriberName),
+                                   edge.edgeID.second);
+          nodeMap.insert(std::make_pair(edge.edgeID.second, newNode));
+          addNodeToScene(newNode);
         }
 
         // Finally add the edge
-        edge_map.insert(std::make_pair(
-            edge.edgeID, new Edge(node_map[edge.edgeID.first], node_map[edge.edgeID.second], false,
-                                  QString::fromStdString(edge.topicName), edge.bandwidth)));
-        graphicsScene->addItem(edge_map[edge.edgeID]);
+        Edge *newEdge = new Edge(nodeMap[edge.edgeID.first], nodeMap[edge.edgeID.second],
+                                 QString::fromStdString(edge.topicName), edge.bandwidth);
+        edgeMap.insert(std::make_pair(edge.edgeID, newEdge));
+        graphicsScene->addItem(newEdge);
       } else {
-        edge_map[edge.edgeID]->bandwidth = edge.bandwidth;
-        edge_map[edge.edgeID]->label = QString::fromStdString(edge.topicName);
+        edgeMap[edge.edgeID]->bandwidth = edge.bandwidth;
+        edgeMap[edge.edgeID]->label = QString::fromStdString(edge.topicName);
 
-        node_map[edge.edgeID.first]->isAlive = true;
-        node_map[edge.edgeID.second]->isAlive = true;
-        edge_map[edge.edgeID]->isAlive = true;
+        nodeMap[edge.edgeID.first]->isAlive = true;
+        nodeMap[edge.edgeID.second]->isAlive = true;
+        edgeMap[edge.edgeID]->isAlive = true;
       }
     }
 
     // Delete Edges that do not exist anymore
-    for (auto edge = edge_map.begin(); edge != edge_map.end();) {
+    for (auto edge = edgeMap.begin(); edge != edgeMap.end();) {
       if (edge->second->isAlive) {
         edge->second->isAlive = false;
         ++edge;
       } else {
         graphicsScene->removeItem(edge->second);
-        edge_map.erase(edge++);
+        edgeMap.erase(edge++);
       }
     }
 
-    for (auto node = node_map.begin(); node != node_map.end();) {
+    for (auto node = nodeMap.begin(); node != nodeMap.end();) {
       if (node->second->isAlive) {
         node->second->isAlive = false;
         ++node;
       } else {
         graphicsScene->removeItem(node->second);
-        node_map.erase(node++);
+        nodeMap.erase(node++);
       }
     }
   }

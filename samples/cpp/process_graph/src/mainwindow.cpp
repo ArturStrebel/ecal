@@ -13,7 +13,6 @@ MainWindow::MainWindow(Monitoring *monitor_, QPushButton *pause_button, QWidget 
   setupUi(this);
   this->setMinimumSize(QSize(250, 400));
 
-  // Initial set of model
   const QStringList headers({tr("Topic"), tr("Description")});
 
   std::vector<eCAL::ProcessGraph::STopicTreeItem> topicTreeItems = {};

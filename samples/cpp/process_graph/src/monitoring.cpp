@@ -11,7 +11,7 @@ Monitoring::Monitoring() {
 Monitoring::~Monitoring() { delete timer; }
 
 void Monitoring::updateProcessGraph() {
-  // process_graph.hostEdges = {
+  // processGraph.hostEdges = {
   //     {true, std::make_pair(1,2), "HPC 1", "EDGE 1", 2.34},
   //     {true, std::make_pair(2,1), "EDGE 1", "HPC 1", 50.0},
   //     {true, std::make_pair(1,1), "HPC 1", "HPC 1", 10.34},
@@ -19,7 +19,7 @@ void Monitoring::updateProcessGraph() {
   //     {true, std::make_pair(3,1), "HPC Backup", "HPC 1", 10.34}
   // };
 
-  // process_graph.processEdges = {
+  // processGraph.processEdges = {
   //     {true, std::make_pair(1,1), "ACU Process", "sub1", "Topic 2", 50.0},
   //     {true, std::make_pair(1,2), "ACU Process", "sub2", "Topic 3", 30.2},
   //     {true, std::make_pair(1,3), "ACU Process", "sub3", "Topic 4", 10.01},
@@ -29,29 +29,29 @@ void Monitoring::updateProcessGraph() {
   //     Process", "Rear_CameraHD", 11190.8}
   // };
 
-  // process_graph.topicTreeItems = {
+  // processGraph.topicTreeItems = {
   //     {true, 1, "T1", "Publisher", "pub1", "Important"},
   //     {true, 2, "T1", "Publisher", "pub2", "stuff"},
   //     {true, 4, "T2", "Publisher", "pub1", "right"},
   //     {true, 5, "T3", "Publisher", "pub1", "here"}
   // };
 
-  previousTopicTree = process_graph.topicTreeItems;
-  eCAL::Monitoring::GetMonitoring(monitoring, eCAL::Monitoring::Entity::All);
-  process_graph = eCAL::ProcessGraph::GetProcessGraph(monitoring);
+  previousTopicTree = processGraph.topicTreeItems;
+  eCAL::Monitoring::GetMonitoring(monitor, eCAL::Monitoring::Entity::All);
+  processGraph = eCAL::ProcessGraph::GetProcessGraph(monitor);
   if (topicTreeHasChanged())
     emit updateTopicTree();
 }
 
 bool Monitoring::topicTreeHasChanged() {
   // TODO: Methode verschlanken.
-  if (previousTopicTree.size() != process_graph.topicTreeItems.size())
+  if (previousTopicTree.size() != processGraph.topicTreeItems.size())
     return true;
 
   bool found;
   for (const auto &it : previousTopicTree) {
     found = false;
-    for (const auto &it2 : process_graph.topicTreeItems)
+    for (const auto &it2 : processGraph.topicTreeItems)
       if (it.topicID == it2.topicID)
         found = true;
     if (found == false)
@@ -62,5 +62,5 @@ bool Monitoring::topicTreeHasChanged() {
 }
 
 const eCAL::ProcessGraph::SProcessGraph &Monitoring::getProcessGraph() const {
-  return process_graph;
+  return processGraph;
 }

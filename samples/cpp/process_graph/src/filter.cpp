@@ -31,6 +31,7 @@ ProcessGraphFilter::ProcessGraphFilter() {
   layout->addWidget(removeFromBlackListEdit, 2, 0);
   layout->addWidget(buttonRemove, 2, 1);
   setLayout(layout);
+  show();
 
   QObject::connect(buttonSet, &QPushButton::clicked, this, &ProcessGraphFilter::setCentralProcess);
   QObject::connect(setCentralProcessEdit, &QLineEdit::returnPressed, this,
@@ -44,8 +45,6 @@ ProcessGraphFilter::ProcessGraphFilter() {
                    &ProcessGraphFilter::removeFromBlackList);
   QObject::connect(removeFromBlackListEdit, &QLineEdit::returnPressed, this,
                    &ProcessGraphFilter::removeFromBlackList);
-
-  show();
 }
 
 void ProcessGraphFilter::setCentralProcess() {

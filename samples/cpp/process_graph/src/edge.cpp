@@ -7,9 +7,8 @@
 #include <QPainter>
 #include <QtMath>
 
-Edge::Edge(Node *sourceNode, Node *destNode, bool curvedArrow_, QString label_, qreal bandwidth_)
-    : source(sourceNode), dest(destNode), curvedArrow(curvedArrow_), label(label_),
-      bandwidth(bandwidth_) {
+Edge::Edge(Node *sourceNode, Node *destNode, QString label_, qreal bandwidth_)
+    : source(sourceNode), dest(destNode), label(label_), bandwidth(bandwidth_) {
   setAcceptedMouseButtons(Qt::NoButton);
   source->addEdge(this);
   dest->addEdge(this);

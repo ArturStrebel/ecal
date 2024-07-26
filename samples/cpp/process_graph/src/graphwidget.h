@@ -18,13 +18,13 @@ class GraphWidget : public QGraphicsView {
 
 public:
   enum ViewType { HostView, ProcessView };
-  GraphWidget(Monitoring *monitor, ProcessGraphFilter *filter_, QPushButton *pause_button,
-              GraphWidget::ViewType view_type, QWidget *parent, QString title);
+  GraphWidget(Monitoring *monitoringPtr, ProcessGraphFilter *filterPtr, QPushButton *pauseButton,
+              GraphWidget::ViewType viewType, QWidget *parent, QString title);
 
   void itemMoved();
   int random(int from, int to);
   void addNodeToScene(Node *node);
-  void applyFilter(eCAL::ProcessGraph::SProcessGraph &process_graph);
+  void applyBlackList(eCAL::ProcessGraph::SProcessGraph &processGraph);
   void updateCentralProcess(QString newCentralProcess);
 
 public slots:
@@ -48,10 +48,10 @@ private:
   QPushButton *pauseButton;
   QTimer *timer;
   int timerId = 0;
-  std::map<int, Node *> node_map;
-  std::map<std::pair<int, int>, Edge *> edge_map;
+  std::map<int, Node *> nodeMap;
+  std::map<std::pair<int, int>, Edge *> edgeMap;
   QGraphicsScene *graphicsScene;
-  ViewType view_type;
+  ViewType viewType;
   QString title;
   ProcessGraphFilter *filter;
   QString centralProcess = "";

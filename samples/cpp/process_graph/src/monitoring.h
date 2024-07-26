@@ -21,7 +21,7 @@ signals:
 private:
   bool topicTreeHasChanged();
   QTimer *timer;
-  eCAL::Monitoring::SMonitoring monitoring;
-  eCAL::ProcessGraph::SProcessGraph process_graph;
+  eCAL::Monitoring::SMonitoring monitor;
+  eCAL::ProcessGraph::SProcessGraph processGraph;
   std::vector<eCAL::ProcessGraph::STopicTreeItem> previousTopicTree;
 };
