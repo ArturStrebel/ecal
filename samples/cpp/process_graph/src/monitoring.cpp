@@ -52,7 +52,7 @@ bool Monitoring::topicTreeHasChanged() {
   for (const auto &it : previousTopicTree) {
     found = false;
     for (const auto &it2 : processGraph.topicTreeItems)
-      if (it.topicID == it2.topicID)
+      if (it.processID == it2.processID)
         found = true;
     if (found == false)
       return true;

@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
   QGridLayout *subLayout = new QGridLayout();
 
   Monitoring *Monitor = new Monitoring();
-  ProcessGraphFilter *filter = new ProcessGraphFilter();
+  ProcessGraphFilter *filter = new ProcessGraphFilter(Monitor);
   QPushButton *PauseButton = new QPushButton("Pause");
   PauseButton->setCheckable(true);
 

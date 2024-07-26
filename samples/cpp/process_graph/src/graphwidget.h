@@ -25,7 +25,7 @@ public:
   int random(int from, int to);
   void addNodeToScene(Node *node);
   void applyBlackList(eCAL::ProcessGraph::SProcessGraph &processGraph);
-  void updateCentralProcess(QString newCentralProcess);
+  void updateCentralProcess(int newCentralProcess);
 
 public slots:
   void shuffle();
@@ -54,5 +54,5 @@ private:
   ViewType viewType;
   QString title;
   ProcessGraphFilter *filter;
-  QString centralProcess = "";
+  int centralProcess;
 };

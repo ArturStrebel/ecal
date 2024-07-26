@@ -42,7 +42,7 @@ namespace eCAL {
 
     struct STopicTreeItem {
       bool isAlive;
-      int topicID;
+      int processID;
       std::string topicName;
       std::string direction; // subscriber or publisher
       std::string processName;

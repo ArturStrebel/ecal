@@ -54,7 +54,7 @@ int main(int argc, char **argv)
 
     for (const auto edge : processgraph.topicTreeItems) 
     {
-      std::cout << "Topic ID: " << edge.topicID << " Name: " << edge.processName << " from topic " << edge.topicName << " as a " << edge.direction << std::endl;
+      std::cout << "Process ID: " << edge.processID << " Name: " << edge.processName << " from topic " << edge.topicName << " as a " << edge.direction << std::endl;
     }
     std::cout << std::endl;
     // sleep few milliseconds

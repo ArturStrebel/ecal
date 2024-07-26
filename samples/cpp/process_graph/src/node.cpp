@@ -56,8 +56,8 @@ void Node::calculateForces() {
   }
 
   // Relevant physics parameters
-  qreal charge = 500.0;          // How strong nodes repel each other
-  qreal weightFactor = 20.0;     // How strong edges pull nodes together
+  qreal charge = 1000.0;         // How strong nodes repel each other
+  qreal weightFactor = 20.0;      // How strong edges pull nodes together
   qreal velocityThreshold = 3.0; // Lower velocities than this get set to zero
 
   // Sum up all forces pushing this item away

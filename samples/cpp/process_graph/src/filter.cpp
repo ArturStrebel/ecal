@@ -19,23 +19,25 @@
 
 #include "filter.h"
 
-#include <QGridLayout>
+ProcessGraphFilter::ProcessGraphFilter(Monitoring *monitor_) : monitor(monitor_) {
 
-ProcessGraphFilter::ProcessGraphFilter() {
-  QGridLayout *layout = new QGridLayout();
-
-  layout->addWidget(setCentralProcessEdit, 0, 0);
-  layout->addWidget(buttonSet, 0, 1);
+  layout->addWidget(comboBox, 0, 0);
+  layout->addWidget(new QLabel("Central Process", this), 0, 1);
   layout->addWidget(addToBlackListEdit, 1, 0);
   layout->addWidget(buttonAdd, 1, 1);
   layout->addWidget(removeFromBlackListEdit, 2, 0);
   layout->addWidget(buttonRemove, 2, 1);
-  setLayout(layout);
-  show();
+  layout->addWidget(blackListList, 3, 0, 1, 2);
 
-  QObject::connect(buttonSet, &QPushButton::clicked, this, &ProcessGraphFilter::setCentralProcess);
-  QObject::connect(setCentralProcessEdit, &QLineEdit::returnPressed, this,
-                   &ProcessGraphFilter::setCentralProcess);
+  blackListList->setAlignment(Qt::AlignTop);
+  setLayout(layout);
+
+  for (const auto &item : monitor->getProcessGraph().topicTreeItems) {
+    comboBox->addItem(QString::fromStdString(item.processName) +
+                      " (PID: " + QString::number(item.processID) + ")");
+  }
+
+  show();
 
   QObject::connect(buttonAdd, &QPushButton::clicked, this, &ProcessGraphFilter::addToBlackList);
   QObject::connect(addToBlackListEdit, &QLineEdit::returnPressed, this,
@@ -45,23 +47,68 @@ ProcessGraphFilter::ProcessGraphFilter() {
                    &ProcessGraphFilter::removeFromBlackList);
   QObject::connect(removeFromBlackListEdit, &QLineEdit::returnPressed, this,
                    &ProcessGraphFilter::removeFromBlackList);
+
+  QObject::connect(monitor, &Monitoring::updateTopicTree, this,
+                   &ProcessGraphFilter::updateComboBox);
+  QObject::connect(comboBox, &QComboBox::currentIndexChanged, this,
+                   &ProcessGraphFilter::updateCentralProcess);
 }
 
-void ProcessGraphFilter::setCentralProcess() {
-  centralProcess = setCentralProcessEdit->text().toStdString();
+void ProcessGraphFilter::updateComboBox() {
+
+  auto newTopicTree = monitor->getProcessGraph().topicTreeItems;
+
+  for (int index = 0; index < comboBox->count();) {
+    bool found = false;
+    for (auto treeItem : newTopicTree)
+      if (treeItem.processName == comboBox->itemText(index).toStdString())
+        found = true;
+    if (found == false)
+      comboBox->removeItem(index);
+    else
+      index++;
+  }
+
+  for (const auto &item : newTopicTree) {
+    QString newItem = QString::fromStdString(item.processName) +
+                      " (PID: " + QString::number(item.processID) + ")";
+    if (comboBox->findText(newItem, Qt::MatchExactly) == -1)
+      comboBox->addItem(newItem);
+  }
+}
+
+void ProcessGraphFilter::updateCentralProcess() {
+  std::string comboBoxText = comboBox->currentText().toStdString();
+  std::size_t start = comboBoxText.find(": ");
+  if (start != std::string::npos) {
+    start += 2;
+    std::size_t end = comboBoxText.find(")", start);
+    if (end != std::string::npos) {
+      centralProcess = std::stoi(comboBoxText.substr(start, end - start));
+    }
+  }
+}
+
+void ProcessGraphFilter::updateBlackListList() {
+  QStringList qBlackList;
+  std::transform(blackList.begin(), blackList.end(), std::back_inserter(qBlackList),
+                 [](const std::string &str) { return QString::fromStdString(str); });
+  blackListList->setText(qBlackList.join("\n"));
 }
 
 void ProcessGraphFilter::addToBlackList() {
   blackList.insert(addToBlackListEdit->text().toStdString());
   addToBlackListEdit->clear();
+  updateBlackListList();
 }
 
 void ProcessGraphFilter::removeFromBlackList() {
   blackList.erase(removeFromBlackListEdit->text().toStdString());
   removeFromBlackListEdit->clear();
+  updateBlackListList();
 }
 
-std::string ProcessGraphFilter::getCentralProcess() { return centralProcess; }
+int ProcessGraphFilter::getCentralProcess() { return centralProcess; }
 
 bool ProcessGraphFilter::isInBlackList(const std::string &id) {
   return std::find(blackList.begin(), blackList.end(), id) != blackList.end();

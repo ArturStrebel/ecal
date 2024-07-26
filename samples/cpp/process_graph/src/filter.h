@@ -25,7 +25,12 @@
 #pragma once
 
 #include "edge.h"
+#include "monitoring.h"
 #include "node.h"
+#include <QCheckBox>
+#include <QComboBox>
+#include <QGridLayout>
+#include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
 #include <ecal/ecal.h>
@@ -35,28 +40,34 @@ class ProcessGraphFilter : public QWidget {
   Q_OBJECT
 
 public:
-  ProcessGraphFilter();
+  ProcessGraphFilter() = default;
+  ProcessGraphFilter(Monitoring *monitor_);
   ~ProcessGraphFilter() = default;
 
   bool isInBlackList(const std::string &id);
   bool isInBlackList(const int &id);
   bool isInBlackList(const eCAL::ProcessGraph::SProcessGraphEdge &edge);
-  std::string getCentralProcess();
+  int getCentralProcess();
 
   // QT elements
-  QLineEdit *setCentralProcessEdit = new QLineEdit();
-  QPushButton *buttonSet = new QPushButton("Set as central process");
+  QComboBox *comboBox = new QComboBox();
   QLineEdit *addToBlackListEdit = new QLineEdit();
   QPushButton *buttonAdd = new QPushButton("Add to filter");
   QLineEdit *removeFromBlackListEdit = new QLineEdit();
   QPushButton *buttonRemove = new QPushButton("Remove from filter");
+  QLabel *blackListList = new QLabel();
 
 public slots:
   void addToBlackList();
   void removeFromBlackList();
-  void setCentralProcess();
+  void updateCentralProcess();
+  void updateComboBox();
 
 private:
+  Monitoring *monitor;
   std::set<std::string> blackList;
-  std::string centralProcess = "";
+  int centralProcess;
+  QGridLayout *layout = new QGridLayout();
+
+  void updateBlackListList();
 };

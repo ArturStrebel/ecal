@@ -52,10 +52,10 @@ namespace eCAL {
     return nullptr;
   }
 
-  eCAL::ProcessGraph::STopicTreeItem *CProcessGraph::FindTopicTreeItem(int topicID) {
+  eCAL::ProcessGraph::STopicTreeItem *CProcessGraph::FindTopicTreeItem(int processID_) {
     for (auto it = m_process_graph.topicTreeItems.begin();
          it != m_process_graph.topicTreeItems.end(); ++it)
-      if (it->topicID == topicID)
+      if (it->processID == processID_)
         return &*it;
     return nullptr;
   }

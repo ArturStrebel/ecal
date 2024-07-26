@@ -45,24 +45,25 @@ GraphWidget::GraphWidget(Monitoring *monitor_, ProcessGraphFilter *filter_,
 void GraphWidget::applyBlackList(eCAL::ProcessGraph::SProcessGraph &processGraph) {
   for (auto it = processGraph.processEdges.begin(); it != processGraph.processEdges.end();) {
     if (filter->isInBlackList(*it))
-      processGraph.processEdges.erase(it++);
+      it = processGraph.processEdges.erase(it);
     else
       ++it;
   }
 }
 
-void GraphWidget::updateCentralProcess(QString newCentralProcess) {
+void GraphWidget::updateCentralProcess(int newCentralProcess) {
   if (centralProcess == newCentralProcess)
     return;
 
   for (auto it = nodeMap.begin(); it != nodeMap.end(); it++) {
-    if (it->second->getName() == newCentralProcess) {
-      it->second->setPosition(QPointF(0, 0));
+    if (it->second->getId() == newCentralProcess) {
+      it->second->setPosition(sceneRect().center());
       graphicsScene->update(sceneRect());
       it->second->setFlag(QGraphicsItem::ItemIsMovable, false);
     }
-    if (it->second->getName() == centralProcess)
+    if (it->second->getId() == centralProcess) {
       it->second->setFlag(QGraphicsItem::ItemIsMovable, true);
+    }
   }
   centralProcess = newCentralProcess;
   this->update();
@@ -73,7 +74,7 @@ void GraphWidget::updateProcessGraph() {
   eCAL::ProcessGraph::SProcessGraph processGraph = monitor->getProcessGraph();
   applyBlackList(processGraph);
 
-  updateCentralProcess(QString::fromStdString(filter->getCentralProcess()));
+  updateCentralProcess(filter->getCentralProcess());
   if (viewType == GraphWidget::ViewType::HostView) {
     // Add new Edges
     for (auto edge : processGraph.hostEdges) {

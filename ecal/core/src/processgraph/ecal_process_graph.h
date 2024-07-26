@@ -59,7 +59,7 @@ namespace eCAL {
                            const eCAL::Monitoring::STopicMon &sub);
 
     // Functions for topic tree
-    eCAL::ProcessGraph::STopicTreeItem *FindTopicTreeItem(int topicID);
+    eCAL::ProcessGraph::STopicTreeItem *FindTopicTreeItem(int processID);
     eCAL::ProcessGraph::STopicTreeItem
     CreateTopicTreeItem(const eCAL::Monitoring::STopicMon &process);
     void TryInsertTopicTreeItem(const eCAL::Monitoring::STopicMon &proc);
