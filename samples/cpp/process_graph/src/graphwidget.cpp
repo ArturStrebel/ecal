@@ -96,6 +96,7 @@ void GraphWidget::updateProcessGraph() {
         // Finally add the edge
         if (edge.edgeID.first == edge.edgeID.second) {
           nodeMap[edge.edgeID.first]->setInternalBandwidth(edge.bandwidth);
+          edgeMap.insert(std::make_pair(edge.edgeID, nullptr));
         } else {
           Edge *newEdge =
               new Edge(nodeMap[edge.edgeID.first], nodeMap[edge.edgeID.second], "", edge.bandwidth);
@@ -113,15 +114,22 @@ void GraphWidget::updateProcessGraph() {
           nodeMap[edge.edgeID.first]->setInternalBandwidth(edge.bandwidth);
         } else {
           edgeMap[edge.edgeID]->bandwidth = edge.bandwidth;
+          edgeMap[edge.edgeID]->isAlive = true;
         }
         nodeMap[edge.edgeID.first]->isAlive = true;
         nodeMap[edge.edgeID.second]->isAlive = true;
-        edgeMap[edge.edgeID]->isAlive = true;
       }
     }
 
     // Delete Edges that do not exist anymore
     for (auto edge = edgeMap.begin(); edge != edgeMap.end();) {
+      if (edge->second == nullptr) {
+        ++edge;
+        continue; // Skip over "internal edges" TODO: edgeMap shouldnt need nullptr edges
+                  // checkout commit bc72e076c2bda8d3cb5d090087d3bf12a1ed34f9 and fix behaviour
+                  // there
+      }
+
       if (edge->second->isAlive) {
         edge->second->isAlive = false;
         ++edge;
