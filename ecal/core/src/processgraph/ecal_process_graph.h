@@ -37,11 +37,11 @@ namespace eCAL {
     void Destroy();
 
     eCAL::ProcessGraph::SProcessGraph
-    GetProcessGraph(const eCAL::Monitoring::SMonitoring &monitoring);
+    GetProcessGraph(const eCAL::Monitoring::SMonitoring &monitor);
 
   private:
     // General functions
-    void UpdateProcessGraph(const eCAL::Monitoring::SMonitoring &monitoring);
+    void UpdateProcessGraph(const eCAL::Monitoring::SMonitoring &monitor);
     double GetBandwidth(const eCAL::Monitoring::STopicMon &pub);
 
     // Functions for process view
@@ -60,8 +60,7 @@ namespace eCAL {
 
     // Functions for topic tree
     eCAL::ProcessGraph::STopicTreeItem *FindTopicTreeItem(int processID);
-    eCAL::ProcessGraph::STopicTreeItem
-    CreateTopicTreeItem(const eCAL::Monitoring::STopicMon &process);
+    eCAL::ProcessGraph::STopicTreeItem CreateTopicTreeItem(const eCAL::Monitoring::STopicMon &proc);
     void TryInsertTopicTreeItem(const eCAL::Monitoring::STopicMon &proc);
 
     eCAL::ProcessGraph::SProcessGraph m_process_graph;

@@ -19,8 +19,6 @@
 
 #pragma once
 
-#include <ecal/ecal_os.h>
-
 namespace eCAL {
   namespace ProcessGraph {
     struct SProcessGraphEdge {
@@ -55,6 +53,6 @@ namespace eCAL {
       std::vector<STopicTreeItem> topicTreeItems;
     };
 
-    ECAL_API SProcessGraph GetProcessGraph(const eCAL::Monitoring::SMonitoring &);
+    ECAL_API SProcessGraph GetProcessGraph(const eCAL::Monitoring::SMonitoring &monitor);
   } // namespace ProcessGraph
 } // namespace eCAL
