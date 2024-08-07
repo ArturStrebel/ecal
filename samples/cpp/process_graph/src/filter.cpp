@@ -23,30 +23,45 @@ ProcessGraphFilter::ProcessGraphFilter(Monitoring *monitor_) : monitor(monitor_)
 
   layout->addWidget(comboBox, 0, 0);
   layout->addWidget(new QLabel("Central Process", this), 0, 1);
-  layout->addWidget(addToBlackListEdit, 1, 0);
+  layout->addWidget(addToBlacklistEdit, 1, 0);
   layout->addWidget(buttonAdd, 1, 1);
-  layout->addWidget(removeFromBlackListEdit, 2, 0);
+  layout->addWidget(removeFromBlacklistEdit, 2, 0);
   layout->addWidget(buttonRemove, 2, 1);
-  layout->addWidget(blackListList, 3, 0, 1, 2);
+  layout->addWidget(blacklistList, 3, 0, 1, 2);
 
-  blackListList->setAlignment(Qt::AlignTop);
+  blacklistList->setAlignment(Qt::AlignTop);
   setLayout(layout);
 
   for (const auto &item : monitor->getProcessGraph().topicTreeItems) {
     comboBox->addItem(QString::fromStdString(item.processName) +
                       " (PID: " + QString::number(item.processID) + ")");
   }
-
+  comboBox->setCurrentIndex(-1);
   show();
 
-  QObject::connect(buttonAdd, &QPushButton::clicked, this, &ProcessGraphFilter::addToBlackList);
-  QObject::connect(addToBlackListEdit, &QLineEdit::returnPressed, this,
-                   &ProcessGraphFilter::addToBlackList);
+  QObject::connect(buttonAdd, &QPushButton::clicked, this, [this]() {
+    addToBlacklist(addToBlacklistEdit->text().toStdString());
+    addToBlacklistEdit->clear();
+    updateBlacklistList();
+  });
 
-  QObject::connect(buttonRemove, &QPushButton::clicked, this,
-                   &ProcessGraphFilter::removeFromBlackList);
-  QObject::connect(removeFromBlackListEdit, &QLineEdit::returnPressed, this,
-                   &ProcessGraphFilter::removeFromBlackList);
+  QObject::connect(addToBlacklistEdit, &QLineEdit::returnPressed, this, [this]() {
+    addToBlacklist(addToBlacklistEdit->text().toStdString());
+    addToBlacklistEdit->clear();
+    updateBlacklistList();
+  });
+
+  QObject::connect(buttonRemove, &QPushButton::clicked, this, [this]() {
+    removeFromBlacklist(removeFromBlacklistEdit->text().toStdString());
+    removeFromBlacklistEdit->clear();
+    updateBlacklistList();
+  });
+
+  QObject::connect(removeFromBlacklistEdit, &QLineEdit::returnPressed, [this]() {
+    removeFromBlacklist(removeFromBlacklistEdit->text().toStdString());
+    removeFromBlacklistEdit->clear();
+    updateBlacklistList();
+  });
 
   QObject::connect(monitor, &Monitoring::updateTopicTree, this,
                    &ProcessGraphFilter::updateComboBox);
@@ -57,7 +72,7 @@ ProcessGraphFilter::ProcessGraphFilter(Monitoring *monitor_) : monitor(monitor_)
 void ProcessGraphFilter::updateComboBox() {
 
   auto newTopicTree = monitor->getProcessGraph().topicTreeItems;
-
+  int centralProcessSave = centralProcess;
   for (int index = 0; index < comboBox->count();) {
     bool found = false;
     for (auto treeItem : newTopicTree)
@@ -75,6 +90,7 @@ void ProcessGraphFilter::updateComboBox() {
     if (comboBox->findText(newItem, Qt::MatchExactly) == -1)
       comboBox->addItem(newItem);
   }
+  centralProcess = centralProcessSave;
 }
 
 void ProcessGraphFilter::updateCentralProcess() {
@@ -89,34 +105,38 @@ void ProcessGraphFilter::updateCentralProcess() {
   }
 }
 
-void ProcessGraphFilter::updateBlackListList() {
-  QStringList qBlackList;
-  std::transform(blackList.begin(), blackList.end(), std::back_inserter(qBlackList),
+void ProcessGraphFilter::updateBlacklistList() {
+  QStringList qBlacklist;
+  std::transform(blacklist.begin(), blacklist.end(), std::back_inserter(qBlacklist),
                  [](const std::string &str) { return QString::fromStdString(str); });
-  blackListList->setText(qBlackList.join("\n"));
+  blacklistList->setText(qBlacklist.join("\n"));
 }
 
-void ProcessGraphFilter::addToBlackList() {
-  blackList.insert(addToBlackListEdit->text().toStdString());
-  addToBlackListEdit->clear();
-  updateBlackListList();
+void ProcessGraphFilter::addToBlacklist(std::string entry) {
+  blacklist.insert(entry);
+  addToBlacklistEdit->clear();
+  updateBlacklistList();
 }
 
-void ProcessGraphFilter::removeFromBlackList() {
-  blackList.erase(removeFromBlackListEdit->text().toStdString());
-  removeFromBlackListEdit->clear();
-  updateBlackListList();
+void ProcessGraphFilter::removeFromBlacklist(std::string entry) {
+  blacklist.erase(entry);
+  removeFromBlacklistEdit->clear();
+  updateBlacklistList();
 }
 
-int ProcessGraphFilter::getCentralProcess() { return centralProcess; }
-
-bool ProcessGraphFilter::isInBlackList(const std::string &id) {
-  return std::find(blackList.begin(), blackList.end(), id) != blackList.end();
+int ProcessGraphFilter::getCentralProcess() {
+  return centralProcess;
 }
 
-bool ProcessGraphFilter::isInBlackList(const int &id) { return isInBlackList(std::to_string(id)); }
+bool ProcessGraphFilter::isInBlacklist(const std::string &id) {
+  return std::find(blacklist.begin(), blacklist.end(), id) != blacklist.end();
+}
 
-bool ProcessGraphFilter::isInBlackList(const eCAL::ProcessGraph::SProcessGraphEdge &edge) {
-  return (isInBlackList(edge.edgeID.first) || isInBlackList(edge.edgeID.first) ||
-          isInBlackList(edge.publisherName) || isInBlackList(edge.subscriberName));
+bool ProcessGraphFilter::isInBlacklist(const int &id) {
+  return isInBlacklist(std::to_string(id));
+}
+
+bool ProcessGraphFilter::isInBlacklist(const eCAL::ProcessGraph::SProcessGraphEdge &edge) {
+  return (isInBlacklist(edge.edgeID.first) || isInBlacklist(edge.edgeID.first) ||
+          isInBlacklist(edge.publisherName) || isInBlacklist(edge.subscriberName));
 }

@@ -23,8 +23,9 @@ public:
 
   void itemMoved();
   int random(int from, int to);
-  void addNodeToScene(Node *node);
-  void applyBlackList(eCAL::ProcessGraph::SProcessGraph &processGraph);
+  void addNodeToScene(Node *node, std::optional<double> xHint = std::nullopt,
+                      std::optional<double> yHint = std::nullopt);
+  void applyBlacklist();
   void updateCentralProcess(int newCentralProcess);
 
 public slots:
@@ -54,5 +55,5 @@ private:
   ViewType viewType;
   QString title;
   ProcessGraphFilter *filter;
-  int centralProcess;
+  int centralProcess = -1;
 };

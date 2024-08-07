@@ -23,9 +23,13 @@
 
 namespace eCAL {
 
-  CProcessGraph::CProcessGraph() { Create(); }
+  CProcessGraph::CProcessGraph() {
+    Create();
+  }
 
-  CProcessGraph::~CProcessGraph() { Destroy(); }
+  CProcessGraph::~CProcessGraph() {
+    Destroy();
+  }
 
   void CProcessGraph::Create() {}
   void CProcessGraph::Destroy() {}

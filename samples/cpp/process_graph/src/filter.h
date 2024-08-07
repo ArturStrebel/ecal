@@ -44,30 +44,31 @@ public:
   ProcessGraphFilter(Monitoring *monitor_);
   ~ProcessGraphFilter() = default;
 
-  bool isInBlackList(const std::string &id);
-  bool isInBlackList(const int &id);
-  bool isInBlackList(const eCAL::ProcessGraph::SProcessGraphEdge &edge);
+  bool isInBlacklist(const std::string &id);
+  bool isInBlacklist(const int &id);
+  bool isInBlacklist(const eCAL::ProcessGraph::SProcessGraphEdge &edge);
   int getCentralProcess();
+
+  void addToBlacklist(std::string entry);
+  void removeFromBlacklist(std::string entry);
 
   // QT elements
   QComboBox *comboBox = new QComboBox();
-  QLineEdit *addToBlackListEdit = new QLineEdit();
+  QLineEdit *addToBlacklistEdit = new QLineEdit();
   QPushButton *buttonAdd = new QPushButton("Add to filter");
-  QLineEdit *removeFromBlackListEdit = new QLineEdit();
+  QLineEdit *removeFromBlacklistEdit = new QLineEdit();
   QPushButton *buttonRemove = new QPushButton("Remove from filter");
-  QLabel *blackListList = new QLabel();
+  QLabel *blacklistList = new QLabel();
 
 public slots:
-  void addToBlackList();
-  void removeFromBlackList();
   void updateCentralProcess();
   void updateComboBox();
 
 private:
   Monitoring *monitor;
-  std::set<std::string> blackList;
-  int centralProcess;
+  std::set<std::string> blacklist;
+  int centralProcess = -1;
   QGridLayout *layout = new QGridLayout();
 
-  void updateBlackListList();
+  void updateBlacklistList();
 };

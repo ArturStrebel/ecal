@@ -1,5 +1,4 @@
 #include "monitoring.h"
-#include <ecal/ecal.h>
 
 Monitoring::Monitoring() {
   timer = new QTimer(this);

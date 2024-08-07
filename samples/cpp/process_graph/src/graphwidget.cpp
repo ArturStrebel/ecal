@@ -42,39 +42,57 @@ GraphWidget::GraphWidget(Monitoring *monitor_, ProcessGraphFilter *filter_,
   });
 }
 
-void GraphWidget::applyBlackList(eCAL::ProcessGraph::SProcessGraph &processGraph) {
-  for (auto it = processGraph.processEdges.begin(); it != processGraph.processEdges.end();) {
-    if (filter->isInBlackList(*it))
-      it = processGraph.processEdges.erase(it);
+void GraphWidget::applyBlacklist() {
+  for (auto it : nodeMap) {
+    if (filter->isInBlacklist(it.first) == true)
+      it.second->setVisible(false);
     else
-      ++it;
+      it.second->setVisible(true);
   }
+
+  for (auto it : edgeMap) {
+    if (it.second->sourceNode()->isVisible() == false ||
+        it.second->destNode()->isVisible() == false)
+      it.second->setVisible(false);
+    else
+      it.second->setVisible(true);
+  }
+
+  graphicsScene->update(sceneRect());
+  this->update();
+  this->viewport()->update();
 }
 
 void GraphWidget::updateCentralProcess(int newCentralProcess) {
   if (centralProcess == newCentralProcess)
     return;
 
-  for (auto it = nodeMap.begin(); it != nodeMap.end(); it++) {
-    if (it->second->getId() == newCentralProcess) {
-      it->second->setPosition(sceneRect().center());
-      graphicsScene->update(sceneRect());
-      it->second->setFlag(QGraphicsItem::ItemIsMovable, false);
+  for (auto it = nodeMap.begin(); it != nodeMap.end(); it++)
+    filter->addToBlacklist(std::to_string(it->second->getId()));
+
+  filter->removeFromBlacklist(std::to_string(newCentralProcess));
+  nodeMap[newCentralProcess]->setPosition(sceneRect().center());
+  nodeMap[newCentralProcess]->setFlag(QGraphicsItem::ItemIsMovable, false);
+
+  if (centralProcess != -1) // dont update old process at the very first time
+    nodeMap[centralProcess]->setFlag(QGraphicsItem::ItemIsMovable, true);
+
+  for (auto it = edgeMap.begin(); it != edgeMap.end(); it++) {
+    if (it->second->sourceNode()->getId() == newCentralProcess) {
+      filter->removeFromBlacklist(std::to_string(it->second->destNode()->getId()));
     }
-    if (it->second->getId() == centralProcess) {
-      it->second->setFlag(QGraphicsItem::ItemIsMovable, true);
+    if (it->second->destNode()->getId() == newCentralProcess) {
+      filter->removeFromBlacklist(std::to_string(it->second->sourceNode()->getId()));
     }
   }
   centralProcess = newCentralProcess;
+  graphicsScene->update(sceneRect());
   this->update();
   this->viewport()->update();
 }
 
 void GraphWidget::updateProcessGraph() {
   eCAL::ProcessGraph::SProcessGraph processGraph = monitor->getProcessGraph();
-  applyBlackList(processGraph);
-
-  updateCentralProcess(filter->getCentralProcess());
   if (viewType == GraphWidget::ViewType::HostView) {
     // Add new Edges
     for (auto edge : processGraph.hostEdges) {
@@ -150,6 +168,10 @@ void GraphWidget::updateProcessGraph() {
       }
     }
   } else if (viewType == GraphWidget::ViewType::ProcessView) {
+
+    updateCentralProcess(filter->getCentralProcess());
+    applyBlacklist();
+
     for (auto edge : processGraph.processEdges) {
       if (!(edgeMap.find(edge.edgeID) != edgeMap.end())) {
         // Add new node if incoming Host does not exist
@@ -208,29 +230,41 @@ void GraphWidget::updateProcessGraph() {
   this->viewport()->update();
 }
 
-void GraphWidget::addNodeToScene(Node *node) {
+void GraphWidget::addNodeToScene(Node *node, std::optional<qreal> xHint,
+                                 std::optional<qreal> yHint) {
   graphicsScene->addItem(node);
   node->setGraph(this);
-  QPointF pos;
+  const qreal sceneWidth = this->sceneRect().width();
+  const qreal sceneHeight = this->sceneRect().height();
+  qreal xpos;
+  qreal ypos;
 
-  switch (node->nodeType) {
-  case Node::NodeType::Publisher:
-    pos = QPointF(-50, GraphWidget::random(-50, 50));
-    break;
-  case Node::NodeType::Subscriber:
-    pos = QPointF(50, GraphWidget::random(-50, 50));
-    break;
-  case Node::NodeType::Process:
-    pos = QPointF(0, 0);
-    break;
-  default:
-    pos = QPointF(GraphWidget::random(-50, 50), GraphWidget::random(-50, 50));
-    break;
+  if (!xHint.has_value()) {
+    switch (node->nodeType) {
+    case Node::NodeType::Publisher:
+      xHint = std::round(1.0 / 4.0);
+      break;
+    case Node::NodeType::Subscriber:
+      xHint = std::round(3.0 / 4.0);
+      break;
+    default:
+      xHint = 0;
+      break;
+    }
   }
-  node->setPos(pos);
+  xpos = std::round((2 * xHint.value() - 1) * sceneWidth) + GraphWidget::random(-10, 10);
+
+  if (yHint.has_value())
+    ypos = std::round((2 * yHint.value() - 1) * sceneHeight) + GraphWidget::random(-10, 10);
+  else
+    ypos = GraphWidget::random(-sceneHeight / 2, sceneHeight / 2);
+
+  node->setPos(QPointF(xpos, ypos));
 }
 
-int GraphWidget::random(int from, int to) { return rand() % (to - from + 1) + from; }
+int GraphWidget::random(int from, int to) {
+  return rand() % (to - from + 1) + from;
+}
 
 void GraphWidget::itemMoved() {
   if (!timerId)
@@ -339,6 +373,10 @@ void GraphWidget::shuffle() {
   }
 }
 
-void GraphWidget::zoomIn() { scaleView(qreal(1.2)); }
+void GraphWidget::zoomIn() {
+  scaleView(qreal(1.2));
+}
 
-void GraphWidget::zoomOut() { scaleView(1 / qreal(1.2)); }
+void GraphWidget::zoomOut() {
+  scaleView(1 / qreal(1.2));
+}

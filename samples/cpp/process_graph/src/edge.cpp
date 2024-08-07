@@ -20,9 +20,13 @@ Edge::~Edge() {
   dest->removeEdge(this);
 }
 
-Node *Edge::sourceNode() const { return source; }
+Node *Edge::sourceNode() const {
+  return source;
+}
 
-Node *Edge::destNode() const { return dest; }
+Node *Edge::destNode() const {
+  return dest;
+}
 
 void Edge::adjust() {
   if (!source || !dest)
@@ -117,7 +121,7 @@ void Edge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
       painter->drawText(QRectF(-width / 2, -height / 2 + excentricity - 15, width, height),
                         Qt::AlignCenter, label + "\n" + printHumanReadableBandwidth(bandwidth));
   } else {
-    painter->drawText(QRectF(-width / 2, -height / 2 + 5, width, height), Qt::AlignCenter,
+    painter->drawText(QRectF(-width / 2, -height / 2 - 2, width, height), Qt::AlignCenter,
                       label + "\n" + printHumanReadableBandwidth(bandwidth));
   }
   painter->restore();
@@ -143,4 +147,6 @@ QString Edge::printHumanReadableBandwidth(qreal &internalBandwidth_) {
   }
 }
 
-void Edge::setCurvedArrow(bool newState) { curvedArrow = newState; }
+void Edge::setCurvedArrow(bool newState) {
+  curvedArrow = newState;
+}

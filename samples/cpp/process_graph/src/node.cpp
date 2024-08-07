@@ -19,35 +19,45 @@ Node::Node(NodeType nodeType_, QString name_, int nodeId_, std::optional<qreal> 
 
   QString text_label = name;
   if (internalBandwidth.has_value()) {
-    text_label += "\n  🗘" + printHumanReadableBandwidth(internalBandwidth.value());
+    text_label += "\n        🗘" + printHumanReadableBandwidth(internalBandwidth.value());
   }
 
   // Erstellen des label-Widgets und Einstellen des Textes
   label = new QGraphicsTextItem(this);
   label->setPlainText(text_label);
-  label->setPos(5, -30); // Position relativ zum Knoten
+  label->setPos(-15, -30); // Position relativ zum Knoten
 }
 
 void Node::setInternalBandwidth(qreal internalBandwidth_) {
   QString text_label = name;
-  text_label += "\n  🗘" + printHumanReadableBandwidth(internalBandwidth_);
+  text_label += "\n        🗘" + printHumanReadableBandwidth(internalBandwidth_);
   label->setPlainText(text_label);
 }
 
-QString Node::getName() { return name; }
+QString Node::getName() {
+  return name;
+}
 
-int Node::getId() { return nodeId; }
+int Node::getId() {
+  return nodeId;
+}
 
 void Node::addEdge(Edge *edge) {
   edgeList << edge;
   edge->adjust();
 }
 
-QList<Edge *> Node::edges() const { return edgeList; }
+QList<Edge *> Node::edges() const {
+  return edgeList;
+}
 
-void Node::removeEdge(Edge *edge) { edgeList.removeOne(edge); }
+void Node::removeEdge(Edge *edge) {
+  edgeList.removeOne(edge);
+}
 
-void Node::setPosition(QPointF pos) { newPos = pos; }
+void Node::setPosition(QPointF pos) {
+  newPos = pos;
+}
 
 void Node::calculateForces() {
   if (!scene() || scene()->mouseGrabberItem() == this) {
@@ -57,7 +67,7 @@ void Node::calculateForces() {
 
   // Relevant physics parameters
   qreal charge = 1000.0;         // How strong nodes repel each other
-  qreal weightFactor = 20.0;      // How strong edges pull nodes together
+  qreal weightFactor = 20.0;     // How strong edges pull nodes together
   qreal velocityThreshold = 3.0; // Lower velocities than this get set to zero
 
   // Sum up all forces pushing this item away
@@ -66,7 +76,7 @@ void Node::calculateForces() {
   const QList<QGraphicsItem *> items = scene()->items();
   for (QGraphicsItem *item : items) {
     Node *node = qgraphicsitem_cast<Node *>(item);
-    if (!node)
+    if (!node || node->isVisible() == false )
       continue;
 
     QPointF vec = mapToItem(node, 0, 0);
@@ -129,7 +139,9 @@ bool Node::advancePosition() {
   return true;
 }
 
-void Node::setGraph(GraphWidget *newGraphWidget) { graph = newGraphWidget; }
+void Node::setGraph(GraphWidget *newGraphWidget) {
+  graph = newGraphWidget;
+}
 
 QRectF Node::boundingRect() const {
   qreal adjust = 2;
