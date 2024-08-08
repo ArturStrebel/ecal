@@ -56,4 +56,9 @@ private:
   QString title;
   ProcessGraphFilter *filter;
   int centralProcess = -1;
+
+  void tryInsertNode(int Id, Node::NodeType nodeType, std::string nodeName);
+  void insertEdge(std::pair<int, int> edgeID, std::string edgeName, double edgeBandwidth);
+  void updateEdge(std::pair<int, int> edgeID, double edgeBandwidth);
+  void deleteInactiveElements();
 };

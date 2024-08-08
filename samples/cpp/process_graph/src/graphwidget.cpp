@@ -32,30 +32,29 @@ GraphWidget::GraphWidget(Monitoring *monitor_, ProcessGraphFilter *filter_,
   timer->start(500);
   connect(timer, SIGNAL(timeout()), this, SLOT(updateProcessGraph()));
   connect(pauseButton, &QPushButton::toggled, this, [this](bool checked) {
-    if (checked == false) {
-      connect(timer, SIGNAL(timeout()), this, SLOT(updateProcessGraph()));
-      pauseButton->setText("Pause");
-    } else {
+    if (checked) {
       disconnect(timer, SIGNAL(timeout()), this, SLOT(updateProcessGraph()));
       pauseButton->setText("Resume");
+    } else {
+      connect(timer, SIGNAL(timeout()), this, SLOT(updateProcessGraph()));
+      pauseButton->setText("Pause");
     }
   });
 }
 
 void GraphWidget::applyBlacklist() {
   for (auto it : nodeMap) {
-    if (filter->isInBlacklist(it.first) == true)
+    if (filter->isInBlacklist(it.first))
       it.second->setVisible(false);
     else
       it.second->setVisible(true);
   }
 
   for (auto it : edgeMap) {
-    if (it.second->sourceNode()->isVisible() == false ||
-        it.second->destNode()->isVisible() == false)
-      it.second->setVisible(false);
-    else
+    if (it.second->sourceNode()->isVisible() && it.second->destNode()->isVisible())
       it.second->setVisible(true);
+    else
+      it.second->setVisible(false);
   }
 
   graphicsScene->update(sceneRect());
@@ -67,8 +66,8 @@ void GraphWidget::updateCentralProcess(int newCentralProcess) {
   if (centralProcess == newCentralProcess)
     return;
 
-  for (auto it = nodeMap.begin(); it != nodeMap.end(); it++)
-    filter->addToBlacklist(std::to_string(it->second->getId()));
+  for (auto it : nodeMap)
+    filter->addToBlacklist(std::to_string(it.second->getId()));
 
   filter->removeFromBlacklist(std::to_string(newCentralProcess));
   nodeMap[newCentralProcess]->setPosition(sceneRect().center());
@@ -77,12 +76,12 @@ void GraphWidget::updateCentralProcess(int newCentralProcess) {
   if (centralProcess != -1) // dont update old process at the very first time
     nodeMap[centralProcess]->setFlag(QGraphicsItem::ItemIsMovable, true);
 
-  for (auto it = edgeMap.begin(); it != edgeMap.end(); it++) {
-    if (it->second->sourceNode()->getId() == newCentralProcess) {
-      filter->removeFromBlacklist(std::to_string(it->second->destNode()->getId()));
+  for (auto it : edgeMap) {
+    if (it.second->sourceNode()->getId() == newCentralProcess) {
+      filter->removeFromBlacklist(std::to_string(it.second->destNode()->getId()));
     }
-    if (it->second->destNode()->getId() == newCentralProcess) {
-      filter->removeFromBlacklist(std::to_string(it->second->sourceNode()->getId()));
+    if (it.second->destNode()->getId() == newCentralProcess) {
+      filter->removeFromBlacklist(std::to_string(it.second->sourceNode()->getId()));
     }
   }
   centralProcess = newCentralProcess;
@@ -91,140 +90,93 @@ void GraphWidget::updateCentralProcess(int newCentralProcess) {
   this->viewport()->update();
 }
 
+void GraphWidget::tryInsertNode(int nodeId, Node::NodeType nodeType, std::string nodeName) {
+  if (nodeMap.find(nodeId) != nodeMap.end())
+    return;
+  Node *newNode = new Node(nodeType, QString::fromStdString(nodeName), nodeId);
+  nodeMap.insert(std::make_pair(nodeId, newNode));
+  addNodeToScene(newNode);
+}
+
+void GraphWidget::insertEdge(std::pair<int, int> edgeID, std::string edgeName,
+                             double edgeBandwidth) {
+  if (edgeID.first == edgeID.second) {
+    nodeMap[edgeID.first]->setInternalBandwidth(edgeBandwidth);
+    edgeMap.insert(std::make_pair(edgeID, nullptr));
+  } else {
+    Edge *newEdge = new Edge(nodeMap[edgeID.first], nodeMap[edgeID.second],
+                             QString::fromStdString(edgeName), edgeBandwidth);
+    auto reverseEdge = edgeMap.find(std::make_pair(edgeID.second, edgeID.first));
+    if (reverseEdge != edgeMap.end()) { // if reverse edge exists, change edges to curved
+      reverseEdge->second->setCurvedArrow(true);
+      newEdge->setCurvedArrow(true);
+    }
+    edgeMap.insert(std::make_pair(edgeID, newEdge));
+    graphicsScene->addItem(newEdge);
+  }
+}
+
+void GraphWidget::updateEdge(std::pair<int, int> edgeID, double edgeBandwidth) {
+  if (edgeID.first == edgeID.second) {
+    nodeMap[edgeID.first]->setInternalBandwidth(edgeBandwidth);
+  } else {
+    edgeMap[edgeID]->bandwidth = edgeBandwidth;
+    edgeMap[edgeID]->isAlive = true;
+  }
+  nodeMap[edgeID.first]->isAlive = true;
+  nodeMap[edgeID.second]->isAlive = true;
+}
+
+void GraphWidget::deleteInactiveElements() {
+  for (auto edge = edgeMap.begin(); edge != edgeMap.end();) {
+    if (edge->second == nullptr) {
+      ++edge;
+      continue;
+    }
+    if (edge->second->isAlive) {
+      edge->second->isAlive = false;
+      ++edge;
+    } else {
+      graphicsScene->removeItem(edge->second);
+      edgeMap.erase(edge++);
+    }
+  }
+  for (auto node = nodeMap.begin(); node != nodeMap.end();) {
+    if (node->second->isAlive) {
+      node->second->isAlive = false;
+      ++node;
+    } else {
+      graphicsScene->removeItem(node->second);
+      nodeMap.erase(node++);
+    }
+  }
+}
+
 void GraphWidget::updateProcessGraph() {
   eCAL::ProcessGraph::SProcessGraph processGraph = monitor->getProcessGraph();
   if (viewType == GraphWidget::ViewType::HostView) {
-    // Add new Edges
     for (auto edge : processGraph.hostEdges) {
-      if (!(edgeMap.find(edge.edgeID) != edgeMap.end())) {
-        // Add new node if incoming Host does not exist
-        if (!(nodeMap.find(edge.edgeID.second) != nodeMap.end())) {
-          Node *newNode = new Node(Node::Host, QString::fromStdString(edge.incomingHostName),
-                                   edge.edgeID.second);
-          nodeMap.insert(std::make_pair(edge.edgeID.second, newNode));
-          addNodeToScene(newNode);
-        }
-        // Add new node if outgoing Host does not exist
-        if (!(nodeMap.find(edge.edgeID.first) != nodeMap.end())) {
-          Node *newNode = new Node(Node::Host, QString::fromStdString(edge.outgoingHostName),
-                                   edge.edgeID.first);
-          nodeMap.insert(std::make_pair(edge.edgeID.first, newNode));
-          addNodeToScene(newNode);
-        }
-
-        // Finally add the edge
-        if (edge.edgeID.first == edge.edgeID.second) {
-          nodeMap[edge.edgeID.first]->setInternalBandwidth(edge.bandwidth);
-          edgeMap.insert(std::make_pair(edge.edgeID, nullptr));
-        } else {
-          Edge *newEdge =
-              new Edge(nodeMap[edge.edgeID.first], nodeMap[edge.edgeID.second], "", edge.bandwidth);
-          auto reverseEdge = edgeMap.find(std::make_pair(edge.edgeID.second, edge.edgeID.first));
-          if (reverseEdge != edgeMap.end()) // if reverse edge exists, change edges to curved
-          {
-            reverseEdge->second->setCurvedArrow(true);
-            newEdge->setCurvedArrow(true);
-          }
-          edgeMap.insert(std::make_pair(edge.edgeID, newEdge));
-          graphicsScene->addItem(newEdge);
-        }
-      } else {
-        if (edge.edgeID.first == edge.edgeID.second) {
-          nodeMap[edge.edgeID.first]->setInternalBandwidth(edge.bandwidth);
-        } else {
-          edgeMap[edge.edgeID]->bandwidth = edge.bandwidth;
-          edgeMap[edge.edgeID]->isAlive = true;
-        }
-        nodeMap[edge.edgeID.first]->isAlive = true;
-        nodeMap[edge.edgeID.second]->isAlive = true;
-      }
+      if (edgeMap.find(edge.edgeID) == edgeMap.end()) {
+        tryInsertNode(edge.edgeID.first, Node::Host, edge.outgoingHostName);
+        tryInsertNode(edge.edgeID.second, Node::Host, edge.incomingHostName);
+        insertEdge(edge.edgeID, "", edge.bandwidth);
+      } else
+        updateEdge(edge.edgeID, edge.bandwidth);
     }
-
-    // Delete Edges that do not exist anymore
-    for (auto edge = edgeMap.begin(); edge != edgeMap.end();) {
-      if (edge->second == nullptr) {
-        ++edge;
-        continue; // Skip over "internal edges" TODO: edgeMap shouldnt need nullptr edges
-                  // checkout commit bc72e076c2bda8d3cb5d090087d3bf12a1ed34f9 and fix behaviour
-                  // there
-      }
-
-      if (edge->second->isAlive) {
-        edge->second->isAlive = false;
-        ++edge;
-      } else {
-        graphicsScene->removeItem(edge->second);
-        edgeMap.erase(edge++);
-      }
-    }
-
-    for (auto node = nodeMap.begin(); node != nodeMap.end();) {
-      if (node->second->isAlive) {
-        node->second->isAlive = false;
-        ++node;
-      } else {
-        graphicsScene->removeItem(node->second);
-        nodeMap.erase(node++);
-      }
-    }
-  } else if (viewType == GraphWidget::ViewType::ProcessView) {
-
+    deleteInactiveElements();
+  }
+  if (viewType == GraphWidget::ViewType::ProcessView) {
     updateCentralProcess(filter->getCentralProcess());
     applyBlacklist();
-
     for (auto edge : processGraph.processEdges) {
-      if (!(edgeMap.find(edge.edgeID) != edgeMap.end())) {
-        // Add new node if incoming Host does not exist
-        if (!(nodeMap.find(edge.edgeID.first) != nodeMap.end())) {
-          Node *newNode = new Node(Node::Publisher, QString::fromStdString(edge.publisherName),
-                                   edge.edgeID.first);
-          nodeMap.insert(std::make_pair(edge.edgeID.first, newNode));
-          addNodeToScene(newNode);
-        }
-
-        // Add new node if outgoing Host does not exist
-        if (!(nodeMap.find(edge.edgeID.second) != nodeMap.end())) {
-          Node *newNode = new Node(Node::Subscriber, QString::fromStdString(edge.subscriberName),
-                                   edge.edgeID.second);
-          nodeMap.insert(std::make_pair(edge.edgeID.second, newNode));
-          addNodeToScene(newNode);
-        }
-
-        // Finally add the edge
-        Edge *newEdge = new Edge(nodeMap[edge.edgeID.first], nodeMap[edge.edgeID.second],
-                                 QString::fromStdString(edge.topicName), edge.bandwidth);
-        edgeMap.insert(std::make_pair(edge.edgeID, newEdge));
-        graphicsScene->addItem(newEdge);
-      } else {
-        edgeMap[edge.edgeID]->bandwidth = edge.bandwidth;
-        edgeMap[edge.edgeID]->label = QString::fromStdString(edge.topicName);
-
-        nodeMap[edge.edgeID.first]->isAlive = true;
-        nodeMap[edge.edgeID.second]->isAlive = true;
-        edgeMap[edge.edgeID]->isAlive = true;
-      }
+      if (edgeMap.find(edge.edgeID) == edgeMap.end()) {
+        tryInsertNode(edge.edgeID.first, Node::Publisher, edge.publisherName);
+        tryInsertNode(edge.edgeID.second, Node::Subscriber, edge.subscriberName);
+        insertEdge(edge.edgeID, edge.topicName, edge.bandwidth);
+      } else
+        updateEdge(edge.edgeID, edge.bandwidth);
     }
-
-    // Delete Edges that do not exist anymore
-    for (auto edge = edgeMap.begin(); edge != edgeMap.end();) {
-      if (edge->second->isAlive) {
-        edge->second->isAlive = false;
-        ++edge;
-      } else {
-        graphicsScene->removeItem(edge->second);
-        edgeMap.erase(edge++);
-      }
-    }
-
-    for (auto node = nodeMap.begin(); node != nodeMap.end();) {
-      if (node->second->isAlive) {
-        node->second->isAlive = false;
-        ++node;
-      } else {
-        graphicsScene->removeItem(node->second);
-        nodeMap.erase(node++);
-      }
-    }
+    deleteInactiveElements();
   }
   this->update();
   this->viewport()->update();
