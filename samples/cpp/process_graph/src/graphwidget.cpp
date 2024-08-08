@@ -18,14 +18,14 @@ GraphWidget::GraphWidget(Monitoring *monitor_, ProcessGraphFilter *filter_,
   // Setup the Scene/UI
   graphicsScene = new QGraphicsScene(this);
   graphicsScene->setItemIndexMethod(QGraphicsScene::NoIndex);
-  graphicsScene->setSceneRect(-300, -300, 550, 350);
+  graphicsScene->setSceneRect(-500, -500, 1050, 550);
   setScene(graphicsScene);
   setCacheMode(CacheBackground);
   setViewportUpdateMode(BoundingRectViewportUpdate);
   setRenderHint(QPainter::Antialiasing);
   setTransformationAnchor(AnchorUnderMouse);
-  scale(qreal(0.95), qreal(0.95));
-  setMinimumSize(400, 400);
+  // scale(qreal(0.95), qreal(0.95));
+  // setMinimumSize(400, 400);
 
   // Recurrent update.
   timer = new QTimer(this);

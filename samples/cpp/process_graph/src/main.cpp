@@ -12,9 +12,9 @@
 #include <map>
 
 #include <QApplication>
-#include <QGridLayout>
 #include <QMainWindow>
 #include <QPushButton>
+#include <QTabWidget>
 #include <QTime>
 
 int main(int argc, char **argv) {
@@ -27,6 +27,7 @@ int main(int argc, char **argv) {
 
   QWidget *centralWidget = new QWidget;
   QGridLayout *layout = new QGridLayout(centralWidget);
+  QTabWidget *tabLayout = new QTabWidget();
   QGridLayout *subLayout = new QGridLayout();
 
   Monitoring *Monitor = new Monitoring();
@@ -43,11 +44,11 @@ int main(int argc, char **argv) {
   GraphWidget *ProcessGraphView = new GraphWidget(
       Monitor, filter, PauseButton, GraphWidget::ViewType::ProcessView, nullptr, "Process Graph");
 
-  layout->addWidget(HostTrafficView, 1, 1);
-  layout->addWidget(TopicTreeView, 0, 0);
-  layout->addWidget(ProcessGraphView, 0, 1);
+  tabLayout->addTab(ProcessGraphView, "Process Graph");
+  tabLayout->addTab(HostTrafficView, "Host Traffic");
   subLayout->addWidget(PauseButton, 0, 0);
   subLayout->addWidget(filter, 1, 0);
+  layout->addWidget(tabLayout, 0, 0);
   layout->addLayout(subLayout, 1, 0);
 
   mainWindow.setCentralWidget(centralWidget);

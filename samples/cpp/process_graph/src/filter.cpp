@@ -23,11 +23,11 @@ ProcessGraphFilter::ProcessGraphFilter(Monitoring *monitor_) : monitor(monitor_)
 
   layout->addWidget(comboBox, 0, 0);
   layout->addWidget(new QLabel("Central Process", this), 0, 1);
-  layout->addWidget(addToBlacklistEdit, 1, 0);
-  layout->addWidget(buttonAdd, 1, 1);
-  layout->addWidget(removeFromBlacklistEdit, 2, 0);
-  layout->addWidget(buttonRemove, 2, 1);
-  layout->addWidget(blacklistList, 3, 0, 1, 2);
+  // layout->addWidget(addToBlacklistEdit, 1, 0);
+  // layout->addWidget(buttonAdd, 1, 1);
+  // layout->addWidget(removeFromBlacklistEdit, 2, 0);
+  // layout->addWidget(buttonRemove, 2, 1);
+  // layout->addWidget(blacklistList, 3, 0, 1, 2);
 
   blacklistList->setAlignment(Qt::AlignTop);
   setLayout(layout);
