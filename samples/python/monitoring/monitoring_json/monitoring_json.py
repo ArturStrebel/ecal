@@ -322,10 +322,46 @@ def main():
   def create_host_graph_list(edge_list, node_list):
     ecal_mon = ecal_core.mon_monitoring()
     topics = ecal_mon[1]['topics']
+    #insert fake topics here
+    fakepub = dict(rclock = 0, # not important for fake
+                hname = 'fakehost1',
+                pid = -1, # should be a unique number 
+                pname = '', # not important for fake
+                uname = '', # not important for fake
+                tid = -1, # not important for fake
+                tname = 'faketopic1',
+                direction = 'publisher', 
+                ttype = '', # not important for fake
+                tdesc = '', # not important for fake
+                tsize = 13, # used to compute bandwidth
+                dclock = 0, # not important for fake
+                dfreq = 2000) # used to compute bandwidth
+    fakesub = dict(rclock = 0, # not important for fake
+                hname = 'fakehost1',
+                pid = -1, # should be a unique number 
+                pname = '', # not important for fake
+                uname = '', # not important for fake
+                tid = -1, # not important for fake
+                tname = 'faketopic1',
+                direction = 'subscriber', 
+                ttype = '', # not important for fake
+                tdesc = '', # not important for fake
+                tsize = 13, # used to compute bandwidth
+                dclock = 0, # not important for fake
+                dfreq = 2000) # used to compute bandwidth
+
+    topics.append(fakepub)
+    topics.append(fakesub)
+    
     pub_list = [pub for pub in topics if pub['direction'] == 'publisher']
     sub_list = [sub for sub in topics if sub['direction'] == 'subscriber']
     for pub in pub_list:
-      for sub in sub_list:        
+      for sub in sub_list:
+        
+        # check that pub and sub have same topic
+        if pub['tname'] != sub['tname'] :
+          continue
+                
         if pub['hname'] == sub['hname'] : # if process is within one host
           update_intrahost_process(pub, node_list)
           continue # do not create an edge from a node to itself
