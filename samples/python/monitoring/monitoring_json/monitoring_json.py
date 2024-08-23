@@ -20,6 +20,7 @@ import base64
 import sys
 import time
 import sqlite3
+import random
 import ecal.core.core as ecal_core
 
 
@@ -88,8 +89,9 @@ def main():
   cursor = conn.cursor()
   
   def create_process_table(table_name):
+    cursor.execute('DROP TABLE IF EXISTS ' + table_name)
     cursor.execute('''
-      CREATE TABLE IF NOT EXISTS ''' + table_name + '''(
+      CREATE TABLE ''' + table_name + '''(
       time_stamp TEXT,
       pid INTEGER,
       rclock INTEGER,
@@ -111,8 +113,9 @@ def main():
     ''')
     
   def create_service_table(table_name):
+    cursor.execute('DROP TABLE IF EXISTS ' + table_name)
     cursor.execute('''
-      CREATE TABLE IF NOT EXISTS ''' + table_name + '''( 
+      CREATE TABLE ''' + table_name + '''( 
       time_stamp TEXT,
       pid INTEGER,
       rclock INTEGER,
@@ -123,8 +126,9 @@ def main():
     ''')
       
   def create_topic_table(table_name):
+    cursor.execute('DROP TABLE IF EXISTS ' + table_name)
     cursor.execute('''
-      CREATE TABLE IF NOT EXISTS ''' + table_name + '''(
+      CREATE TABLE ''' + table_name + '''(
       time_stamp TEXT,
       pid INTEGER,
       rclock INTEGER,
@@ -138,7 +142,10 @@ def main():
       tdesc TEXT,
       tsize INTEGER,
       dclock INTEGER,
-      dfreq INTEGER)
+      dfreq INTEGER,
+      latency_min INTEGER,
+      latency_avg INTEGER,
+      latency_max INTEGER)
     ''')
       
   # Create tables 
@@ -155,34 +162,33 @@ def main():
   create_topic_table('current_topics')
   create_topic_table('previous_topics')
   
-  # host graph tables
+  # host graph tables (dont change any names in these two tables!)
+  cursor.execute('DROP TABLE IF EXISTS edges')
+  cursor.execute('DROP TABLE IF EXISTS nodes')
   cursor.execute('''
-    CREATE TABLE IF NOT EXISTS edges (
+    CREATE TABLE edges (
     id TEXT PRIMARY KEY,
     source TEXT,
     target TEXT,
-    mainstat REAL,
+    mainstat TEXT,
+    secondarystat TEXT,
     thickness INTEGER, 
     color TEXT)
   ''')
   
   cursor.execute('''
-    CREATE TABLE IF NOT EXISTS nodes (
+    CREATE TABLE nodes (
     id TEXT PRIMARY KEY,
-    mainstat INTEGER,
+    title TEXT,
+    mainstat TEXT,
+    color TEXT, 
+    icon TEXT,
     nodeRadius INTEGER)
   ''')
   
-  # Clear db for a new start
-  cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-  tables = cursor.fetchall()
-  for table_name in tables:
-    cursor.execute(f'DELETE FROM {table_name[0]};')
-  conn.commit()
-  
-  def insert_process(process, processes):
+  def insert_process(process, table_name):
     cursor.execute('''
-      INSERT INTO ''' + processes + ''' (
+      INSERT INTO ''' + table_name + ''' (
       time_stamp,
       pid,
       rclock,
@@ -206,9 +212,9 @@ def main():
             process['pmemory'], process['pcpu'], process['usrptime'], process['datawrite'], process['state_severity'], process['state_severity_level'], 
             process['state_info'], process['tsync_state'], process['tsync_mod_name'], process['component_init_state'], process['component_init_info']))
   
-  def insert_service(service, services):
+  def insert_service(service, table_name):
     cursor.execute('''
-      INSERT INTO ''' + services + ''' (
+      INSERT INTO ''' + table_name + ''' (
       time_stamp,
       pid,
       rclock,
@@ -219,9 +225,9 @@ def main():
       VALUES (datetime('now', 'localtime'), ?, ?, ?, ?, ?, ?)
       ''', (service['pid'], service['rclock'], service['hname'], service['pname'], service['uname'], service['sname']))
   
-  def insert_topic(topic, topics):
+  def insert_topic(topic, table_name):
     cursor.execute('''
-      INSERT INTO ''' + topics + ''' (
+      INSERT INTO ''' + table_name + ''' (
       time_stamp,
       pid,
       rclock,
@@ -235,29 +241,127 @@ def main():
       tdesc,
       tsize,
       dclock,
-      dfreq)
-      VALUES (datetime('now', 'localtime'), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      dfreq,
+      latency_min,
+      latency_avg,
+      latency_max)
+      VALUES (datetime('now', 'localtime'), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )
       ''', (topic['pid'], topic['rclock'], topic['hname'], topic['pname'], topic['uname'], topic['tid'],
-            topic['tname'], topic['direction'], topic['ttype'], topic['tdesc'], topic['tsize'], topic['dclock'], topic['dfreq']))
+            topic['tname'], topic['direction'], topic['ttype'], topic['tdesc'], topic['tsize'], 
+            topic['dclock'], topic['dfreq'], random.randint(1,20), random.randint(21,50), random.randint(51,120)))
   
-  # Test graph
-  cursor.execute('''INSERT INTO edges (id, source, target) VALUES ('e1', 'host1', 'host2')''')
-  cursor.execute('''INSERT INTO nodes (id, mainstat) VALUES ('host1', 10)''')
-  cursor.execute('''INSERT INTO nodes (id, mainstat) VALUES ('host2', 100)''')
+  def insert_edge(edge, table_name) :
+    cursor.execute('''INSERT INTO ''' + table_name +'''(id, source, target, mainstat, secondarystat, thickness, color) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?)''', 
+                 (edge['id'], edge['source'], edge['target'], edge['mainstat'], 
+                 edge['secondarystat'], edge['thickness'], edge['color']))
   
-  def create_edge_list():
+  def insert_node(node, table_name) :
+    cursor.execute('''INSERT INTO ''' + table_name + '''(id, title, mainstat, color, icon, nodeRadius)
+                 VALUES (?, ?, ?, ?, ?, ?)''', 
+                 (node['id'], node['title'], node['mainstat'], node['color'], 
+                 node['icon'], node['nodeRadius']))
+    
+  # Test graph (comment out live updates in while loop to show this)
+  cursor.execute('''INSERT INTO edges (id, source, target, mainstat, secondarystat, thickness, color) 
+                 VALUES ('e1', 'Rear View', 'HPC Controller' , '3.14 Mbit/s', 'Camera Stream', 9, '#F07D00')''')
+  cursor.execute('''INSERT INTO edges (id, source, target, mainstat, secondarystat, thickness, color) 
+                 VALUES ('e2', 'HPC Controller', 'Info', '749 Kbit/s', 'System metrics', 5, '#F07D00')''')
+  cursor.execute('''INSERT INTO edges (id, source, target, mainstat, secondarystat, thickness, color) 
+                 VALUES ('e3', 'Radio', 'Info', '128 Kbit/s', 'Music', 2, '#F07D00')''')
+  cursor.execute('''INSERT INTO edges (id, source, target, mainstat, secondarystat, thickness, color) 
+                VALUES ('e4', 'Phone', 'Info', '1.50 Mbit/s', 'Navigation', 7, '#F07D00')''')
+  cursor.execute('''INSERT INTO edges (id, source, target, mainstat, secondarystat, thickness, color) 
+                VALUES ('e5', 'Rear View', 'Info', '3.14 Mbit/s', 'Rear view camera', 9, '#F07D00')''')
+  cursor.execute('''INSERT INTO edges (id, source, target, mainstat, secondarystat, thickness, color) 
+                VALUES ('e6', 'Sensor', 'HPC Controller', '941 Bit/s', 'Health parameters', 2, '#F07D00')''') 
+   
+  cursor.execute('''INSERT INTO nodes (id, title, mainstat, color, icon, nodeRadius) 
+                 VALUES ('Info', 'Infotainment system', '0 Bit/s', '#1E9BD7', 'home-alt', 60)''')
+  cursor.execute('''INSERT INTO nodes (id, title, mainstat, color, icon, nodeRadius) 
+                 VALUES ('Phone', 'Smartphone', '300.65 Mit/s', '#1E9BD7', 'mobile-android', 50)''')
+  cursor.execute('''INSERT INTO nodes (id, title, mainstat, color, icon, nodeRadius) 
+                 VALUES ('Radio', 'Radio', '0 Bit/s', '#1E9BD7', 'rss', 40)''')
+  cursor.execute('''INSERT INTO nodes (id, title, mainstat, color, icon, nodeRadius) 
+                 VALUES ('Rear View', 'Rear View', '42 Bit/s', '#1E9BD7', 'camera', 40)''')
+  cursor.execute('''INSERT INTO nodes (id, title, mainstat, color, icon, nodeRadius) 
+                 VALUES ('HPC Controller', 'HPC Controller','140 Mbit/s', '#1E9BD7', 'calculator-alt', 50)''')
+  cursor.execute('''INSERT INTO nodes (id, title, mainstat, color, icon, nodeRadius) 
+                 VALUES ('Sensor', 'Multiple Sensors', '0 Bit/s', '#1E9BD7', 'exclamation', 40)''')
+  
+  def create_edge(pub, sub, edge_list) :
+    edge = dict(id = pub['hname'] + '_' + sub['hname'],
+              source = pub['pid'], # unique id of pub
+              target = sub['pid'], # unique id of sub
+              mainstat = pub['tsize'], # package size of this connection
+              secondarystat = '', # free parameter, maybe show latency, once available? (or max bandwidth)
+              thickness = 1,
+              color = '#F07D00') # d-fine orange
+    edge_list.append(edge)
+    insert_edge(edge, 'edges') # add edge to database
+    
+  def create_node(process, node_list) :
+    node = dict(id = process['hname'],
+                  title = process['hname'], 
+                  mainstat = process['tsize'], # bandwidth of intrahost communication
+                  color = '#1E9BD7', # d-fine light blue
+                  icon = '', # only for "nice pictures" of nodes, otherwise show mainstat 
+                  nodeRadius = 50) # could scale with "importance" of this host
+    node_list.append(node)
+    insert_node(node, 'nodes') # add node to database
+  
+  def update_intrahost_process(pub, node_list) :
+    found_host = 0
+    for node in node_list :
+      if node['id'] == pub['hname'] : # if the host already exists update bandwidth
+        node['mainstat'] += pub['tsize']
+        found_host = 1
+    if found_host == 0 : # else create node
+      create_node(pub, node_list)
+   
+  def create_host_graph_list(edge_list, node_list):
     ecal_mon = ecal_core.mon_monitoring()
     topics = ecal_mon[1]['topics']
-    for pub in topics:
-      for sub in topics:
-        edgeID = pub['hname'] + '_' + sub['hname']
-        
-  
+    pub_list = [pub for pub in topics if pub['direction'] == 'publisher']
+    sub_list = [sub for sub in topics if sub['direction'] == 'subscriber']
+    for pub in pub_list:
+      for sub in sub_list:        
+        if pub['hname'] == sub['hname'] : # if process is within one host
+          update_intrahost_process(pub, node_list)
+          continue # do not create an edge from a node to itself
+          
+        edgeID = pub['hname'] + '_' + sub['hname'] # unique name for each host edge
+        found_edge = 0
+        for edge in edge_list:
+          if edge['id'] == edgeID:
+            edge['mainstat'] += pub['tsize'] # if edge already exists, update bandwidth of this edge
+            edge['thickness'] = min( 20, edge['thickness'] + 1) # make edge thicker for each connection, but cap at 20
+            found_edge = 1
+
+        if found_edge == 0 : # found a new edge
+          create_edge(pub, sub, edge_list)
+          
+          # either pub or sub (or both) is a new node, which needs to be added to node list          
+          found_pub = 0
+          for node in node_list :
+            if node['id'] == pub['pid'] :
+              found_pub = 1
+          if found_pub == 0 :
+            create_node(pub, node_list)
+              
+          found_sub = 0
+          for node in node_list :
+            if node['id'] == sub['pid'] :
+              found_sub = 1
+          if found_sub == 0 :
+            create_node(sub, node_list)
+
   # print eCAL entities
   while ecal_core.ok():
     # convert 'bytes' type elements of the the monitoring dictionary
     monitoring_d = convert_bytes_to_str(ecal_core.mon_monitoring(), handle_bytes = 'decode')
     monitoring = monitoring_d[1]
+    print(monitoring)
     
     # save previous process state
     cursor.execute('DELETE FROM previous_processes')
@@ -290,9 +394,16 @@ def main():
                   SELECT previous_processes.* FROM previous_processes 
                   LEFT JOIN current_processes ON previous_processes.pid = current_processes.pid
                   WHERE current_processes.pid IS NULL''')
+    
+    # update host traffic table
+    cursor.execute('DELETE FROM edges')
+    cursor.execute('DELETE FROM nodes')
+    edge_list = []
+    node_list = []
+    create_host_graph_list(edge_list, node_list)
       
     conn.commit()
-    time.sleep(5)
+    time.sleep(1)
           
   # finalize eCAL monitoring API
   ecal_core.mon_finalize()
