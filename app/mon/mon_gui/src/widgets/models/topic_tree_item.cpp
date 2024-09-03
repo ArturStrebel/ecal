@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,7 +95,7 @@ QVariant TopicTreeItem::data(Columns column, Qt::ItemDataRole role) const
         if (!monitor_topic_name.empty())
         {
           eCAL::SDataTypeInformation topic_info;
-          eCAL::Registration::GetTopicDataTypeInformation(monitor_topic_name, topic_info);
+          eCAL::Util::GetTopicDataTypeInformation(monitor_topic_name, topic_info);
           return topic_info.encoding.c_str();
         }
       }
@@ -115,7 +115,7 @@ QVariant TopicTreeItem::data(Columns column, Qt::ItemDataRole role) const
         if (!monitor_topic_name.empty())
         {
           eCAL::SDataTypeInformation topic_info;
-          eCAL::Registration::GetTopicDataTypeInformation(monitor_topic_name, topic_info);
+          eCAL::Util::GetTopicDataTypeInformation(monitor_topic_name, topic_info);
           return topic_info.name.c_str();
         }
       }
@@ -209,25 +209,22 @@ QVariant TopicTreeItem::data(Columns column, Qt::ItemDataRole role) const
       for (const auto& layer : layer_pb)
       {
         QString this_layer_string;
-        if (layer.active())
+        switch (layer.type())
         {
-          switch (layer.type())
-          {
-          case eCAL::pb::eTLayerType::tl_ecal_tcp:
-            this_layer_string = "tcp";
-            break;
-          case eCAL::pb::eTLayerType::tl_ecal_udp_mc:
-            this_layer_string = "udp_mc";
-            break;
-          case eCAL::pb::eTLayerType::tl_ecal_shm:
-            this_layer_string = "shm";
-            break;
-          case eCAL::pb::eTLayerType::tl_all:
-            this_layer_string = "all";
-            break;
-          default:
-            this_layer_string = ("Unknown (" + QString::number((int)layer.type()) + ")");
-          }
+        case eCAL::pb::eTLayerType::tl_ecal_tcp:
+          this_layer_string = "tcp";
+          break;
+        case eCAL::pb::eTLayerType::tl_ecal_udp_mc:
+          this_layer_string = "udp_mc";
+          break;
+        case eCAL::pb::eTLayerType::tl_ecal_shm:
+          this_layer_string = "shm";
+          break;
+        case eCAL::pb::eTLayerType::tl_all:
+          this_layer_string = "all";
+          break;
+        default:
+          this_layer_string = ("Unknown (" + QString::number((int)layer.type()) + ")");
         }
 
         if (!layer_string.isEmpty() && !this_layer_string.isEmpty())

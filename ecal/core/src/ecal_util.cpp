@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,14 @@
  * ========================= eCAL LICENSE =================================
 */
 
-#include "ecal_def.h"
 #include "ecal_globals.h"
 #include "ecal_event.h"
 #include "registration/ecal_registration_receiver.h"
 #include "pubsub/ecal_pubgate.h"
 
 #include <map>
-#include <set>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -168,6 +167,48 @@ namespace eCAL
       }
     }
 #endif // ECAL_CORE_MONITORING
+
+    void GetTopics(std::unordered_map<std::string, SDataTypeInformation>& topic_info_map_)
+    {
+      if (g_descgate() == nullptr) return;
+      g_descgate()->GetTopics(topic_info_map_);
+    }
+
+    void GetTopicNames(std::vector<std::string>& topic_names_)
+    {
+      if (g_descgate() == nullptr) return;
+      g_descgate()->GetTopicNames(topic_names_);
+    }
+
+    bool GetTopicDataTypeInformation(const std::string& topic_name_, SDataTypeInformation& topic_info_)
+    {
+      if (g_descgate() == nullptr) return(false);
+      return(g_descgate()->GetDataTypeInformation(topic_name_, topic_info_));
+    }
+
+    void GetServices(std::map<std::tuple<std::string, std::string>, SServiceMethodInformation>& service_info_map_)
+    {
+      if (g_descgate() == nullptr) return;
+      g_descgate()->GetServices(service_info_map_);
+    }
+
+    void GetServiceNames(std::vector<std::tuple<std::string, std::string>>& service_method_names_)
+    {
+      if (g_descgate() == nullptr) return;
+      g_descgate()->GetServiceNames(service_method_names_);
+    }
+
+    bool GetServiceTypeNames(const std::string& service_name_, const std::string& method_name_, std::string& req_type_, std::string& resp_type_)
+    {
+      if (g_descgate() == nullptr) return(false);
+      return(g_descgate()->GetServiceTypeNames(service_name_, method_name_, req_type_, resp_type_));
+    }
+
+    bool GetServiceDescription(const std::string& service_name_, const std::string& method_name_, std::string& req_desc_, std::string& resp_desc_)
+    {
+      if (g_descgate() == nullptr) return(false);
+      return(g_descgate()->GetServiceDescription(service_name_, method_name_, req_desc_, resp_desc_));
+    }
 
     std::pair<std::string, std::string> SplitCombinedTopicType(const std::string& combined_topic_type_)
     {

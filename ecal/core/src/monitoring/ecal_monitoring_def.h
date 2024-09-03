@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@
 #pragma once
 
 #include <ecal/types/monitoring.h>
-#include <ecal/config/monitoring.h>
 
 #include <memory>
 #include <string>
@@ -32,17 +31,17 @@
 namespace eCAL
 {
   ////////////////////////////////////////
-  // global monitoring class
+  // global database class
   ////////////////////////////////////////
   class CMonitoringImpl;
   class CMonitoring
   {
   public:
-    CMonitoring(const Monitoring::Configuration& config_);
+    CMonitoring();
     ~CMonitoring();
     
-    void Start();
-    void Stop();
+    void Create();
+    void Destroy();
 
     void SetExclFilter(const std::string& filter_);
     void SetInclFilter(const std::string& filter_);

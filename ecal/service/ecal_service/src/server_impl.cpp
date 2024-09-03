@@ -24,15 +24,8 @@
 #include <memory>
 #include <mutex>
 
-#include <asio.hpp>
-
-#include "server_session_impl_base.h"
 #include "server_session_impl_v1.h"
 #include "server_session_impl_v0.h"
-
-#include <ecal/service/logger.h>
-#include <ecal/service/server_session_types.h>
-#include <ecal/service/state.h>
 
 #include "log_defs.h"
 
@@ -144,7 +137,7 @@ namespace eCAL
 
         {
           const std::lock_guard<std::mutex> acceptor_lock(acceptor_mutex_);
-          acceptor_.open(endpoint.protocol(), ec); // NOLINT(bugprone-unused-return-value) -> We already get the return value  rom the ec parameter
+          acceptor_.open(endpoint.protocol(), ec);
         }
         if (ec)
         {
@@ -159,7 +152,7 @@ namespace eCAL
       {
         asio::error_code ec;
         {
-          acceptor_.set_option(asio::ip::tcp::acceptor::reuse_address(true), ec); // NOLINT(bugprone-unused-return-value) -> We already get the value from the ec parameter
+          acceptor_.set_option(asio::ip::tcp::acceptor::reuse_address(true), ec);
           const std::lock_guard<std::mutex> acceptor_lock(acceptor_mutex_);
         }
         if (ec)
@@ -175,7 +168,7 @@ namespace eCAL
         asio::error_code ec;
         {
           const std::lock_guard<std::mutex> acceptor_lock(acceptor_mutex_);
-          acceptor_.bind(endpoint, ec); // NOLINT(bugprone-unused-return-value) -> We already get the return value  rom the ec parameter
+          acceptor_.bind(endpoint, ec);
         }
         if (ec)
         {
@@ -190,7 +183,7 @@ namespace eCAL
         asio::error_code ec;
         {
           const std::lock_guard<std::mutex> acceptor_lock(acceptor_mutex_);
-          acceptor_.listen(asio::socket_base::max_listen_connections, ec); // NOLINT(bugprone-unused-return-value) -> We already get the return value  rom the ec parameter
+          acceptor_.listen(asio::socket_base::max_listen_connections, ec);
         }
         if (ec)
         {
@@ -303,7 +296,7 @@ namespace eCAL
         if (acceptor_.is_open())
         {
           asio::error_code ec;
-          acceptor_.close(ec); // NOLINT(bugprone-unused-return-value) -> We already get the return value  rom the ec parameter
+          acceptor_.close(ec);
         }
       }
       

@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -108,10 +108,10 @@ namespace eCAL
 
   CLog::~CLog()
   {
-    Stop();
+    Destroy();
   }
 
-  void CLog::Start()
+  void CLog::Create()
   {
     m_hname = Process::GetHostName();
     m_pid   = Process::GetProcessID();
@@ -139,25 +139,25 @@ namespace eCAL
     if(m_filter_mask_udp != 0)
     {
       // set logging send network attributes
-      eCAL::UDP::SSenderAttr attr;
+      IO::UDP::SSenderAttr attr;
       attr.address   = UDP::GetLoggingAddress();
       attr.port      = UDP::GetLoggingPort();
       attr.ttl       = UDP::GetMulticastTtl();
       attr.broadcast = UDP::IsBroadcast();
       attr.loopback  = true;
-      attr.sndbuf    = UDP::GetSendBufferSize();
+      attr.sndbuf    = Config::GetUdpMulticastSndBufSizeBytes();
 
       // create udp logging sender
       m_udp_logging_sender = std::make_unique<UDP::CSampleSender>(attr);
     }
 
     // set logging receive network attributes
-    eCAL::UDP::SReceiverAttr attr;
+    IO::UDP::SReceiverAttr attr;
     attr.address   = UDP::GetLoggingAddress();
     attr.port      = UDP::GetLoggingPort();
     attr.broadcast = UDP::IsBroadcast();
     attr.loopback  = true;
-    attr.rcvbuf    = UDP::GetReceiveBufferSize();
+    attr.rcvbuf    = Config::GetUdpMulticastRcvBufSizeBytes();
 
     // start logging receiver
     m_log_receiver = std::make_shared<UDP::CSampleReceiver>(attr, std::bind(&CLog::HasSample, this, std::placeholders::_1), std::bind(&CLog::ApplySample, this, std::placeholders::_1, std::placeholders::_2));
@@ -165,7 +165,7 @@ namespace eCAL
     m_created = true;
   }
 
-  void CLog::Stop()
+  void CLog::Destroy()
   {
     if(!m_created) return;
 

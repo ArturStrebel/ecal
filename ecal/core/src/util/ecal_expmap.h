@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,62 +37,29 @@ namespace eCAL
   namespace Util
   {
     /**
-     * @brief A map that stores key-value pairs and the time at which they have last been updated.
-     *
-     * @tparam Key       The type of the keys.
-     * @tparam T         The type of the values.
-     * @tparam ClockType The type of the clock based on which the Map expires its elements
-     * 
-     * This class is *not* threadsafe and needs to be protected by locks / mutexes in multithreaded environments.
-     * 
-     * From the outside / for the user, this class acts as a regular std::map.
-     * However, it provides one additional function (erase_expired) that removes expired elements from this map.
-     * Elements are considered to be expired, if they have not been accessed (via `operator[]`) within a given timeout period.
-     * 
-     * Internally, this is realized by storing both a map and a list.
-     * The map stores the regular key, and then the actual value and additional an iterator into the timestamp list.
-     * The timestamp list stores together a timestamp and the key which was inserted into the list at that given timestamp.
-     * It is always kept in a sorted order.
-     * 
-     * Whenever a map element is accessed, the responding timestamp is updated and moved to the end of the list.
-     * This happens in constant time.
-     */
+    * @brief A time expiration map
+    **/
     template<class Key,
       class T,
-      class ClockType = std::chrono::steady_clock,
       class Compare = std::less<Key>,
       class Alloc   = std::allocator<std::pair<const Key, T> > >
-    class CExpirationMap
+    class CExpMap
     {
     public:
-      // Type declarations necessary to be compliant to a regular map.
+      using clock_type = std::chrono::steady_clock;
+
+      // Key access history, most recent at back 
+      using key_tracker_type = std::list<std::pair<clock_type::time_point, Key>>;
+
+      // Key to value and key history iterator 
+      using key_to_value_type = std::map<Key, std::pair<T, typename key_tracker_type::iterator>>;
+
       using allocator_type  = Alloc;
       using value_type      = std::pair<const Key, T>;
       using reference       = typename Alloc::reference;
       using size_type       = typename Alloc::size_type;
       using key_type        = Key;
       using mapped_type     = T;
-
-    private:
-      struct AccessTimestampListEntry
-      {
-        typename ClockType::time_point timestamp;
-        Key corresponding_map_key;
-      };
-
-      // Key access history, most recent at back 
-      using AccessTimestampListType = std::list<AccessTimestampListEntry>;
-
-      struct InternalMapEntry
-      {
-        T map_value;
-        typename AccessTimestampListType::iterator timestamp_list_iterator;
-      };
-
-      // Key to value and key history iterator 
-      using InternalMapType = std::map<Key, InternalMapEntry>;
-
-    public:
 
       class iterator
       {
@@ -105,7 +72,7 @@ namespace eCAL
         using pointer           = std::pair<Key, T>*;
         using reference         = std::pair<Key, T>&;
 
-        explicit iterator(const typename InternalMapType::iterator _it)
+        explicit iterator(const typename key_to_value_type::iterator _it)
           : it(_it)
         {}
 
@@ -123,7 +90,7 @@ namespace eCAL
 
         std::pair<Key, T> operator*() const
         {
-          return std::make_pair(it->first, it->second.map_value);
+          return std::make_pair(it->first, it->second.first);
         }
 
         //friend void swap(iterator& lhs, iterator& rhs); //C++11 I think
@@ -131,7 +98,7 @@ namespace eCAL
         bool operator!=(const iterator& rhs) const { return it != rhs.it; }
 
       private:
-        typename InternalMapType::iterator it;
+        typename key_to_value_type::iterator it;
       };
 
       class const_iterator
@@ -147,7 +114,7 @@ namespace eCAL
           : it(other.it)
         {}
 
-        explicit const_iterator(const typename InternalMapType::const_iterator _it)
+        explicit const_iterator(const typename key_to_value_type::const_iterator _it)
           : it(_it)
         {}
 
@@ -166,7 +133,7 @@ namespace eCAL
 
         std::pair<Key, T> operator*() const
         {
-          return std::make_pair(it->first, it->second.map_value);
+          return std::make_pair(it->first, it->second.first);
         }
 
         //friend void swap(iterator& lhs, iterator& rhs); //C++11 I think
@@ -174,79 +141,74 @@ namespace eCAL
         bool operator!=(const const_iterator& rhs) const { return it != rhs.it; }
 
       private:
-        typename InternalMapType::const_iterator it;
+        typename key_to_value_type::const_iterator it;
       };
 
 
       // Constructor specifies the timeout of the map
-      CExpirationMap() : _timeout(std::chrono::milliseconds(5000)) {};
-      explicit CExpirationMap(typename ClockType::duration t) : _timeout(t) {};
+      CExpMap() : _timeout(std::chrono::milliseconds(5000)) {};
+      explicit CExpMap(clock_type::duration t) : _timeout(t) {};
 
       /**
       * @brief  set expiration time
       **/
-      void set_expiration(typename ClockType::duration t) { _timeout = t; };
+      void set_expiration(clock_type::duration t) { _timeout = t; };
 
       // Iterators:
       iterator begin() noexcept
       {
-        return iterator(_internal_map.begin());
+        return iterator(_key_to_value.begin());
       }
 
       iterator end() noexcept
       {
-        return iterator(_internal_map.end());
+        return iterator(_key_to_value.end());
       }
 
       const_iterator begin() const noexcept
       {
-        return const_iterator(_internal_map.begin());
+        return const_iterator(_key_to_value.begin());
       }
 
       const_iterator end() const noexcept
       {
-        return const_iterator(_internal_map.end());
+        return const_iterator(_key_to_value.end());
       }
 
       // Const begin and end functions
       const_iterator cbegin() const noexcept {
-        return const_iterator(_internal_map.cbegin());
+        return const_iterator(_key_to_value.cbegin());
       }
 
       const_iterator cend() const noexcept {
-        return const_iterator(_internal_map.cend());
+        return const_iterator(_key_to_value.cend());
       }
 
       // Capacity
       bool empty() const noexcept
       {
-        return _internal_map.empty();
+        return _key_to_value.empty();
       }
 
       size_type size() const noexcept
       {
-        return _internal_map.size();
+        return _key_to_value.size();
       }
 
       size_type max_size() const noexcept
       {
-        return  _internal_map.max_size();
+        return  _key_to_value.max_size();
       }
 
-      /**
-       * @brief Accesses the value associated with the given key, resetting its expiration time.
-       *
-       * @param key  The key to access the value for.
-       *
-       * @return     The value associated with the key.
-       */
+      // Element access
+      // Obtain value of the cached function for k 
       T& operator[](const Key& k)
       {
         // Attempt to find existing record 
-        typename InternalMapType::iterator it
-          = _internal_map.find(k);
+        typename key_to_value_type::iterator it
+          = _key_to_value.find(k);
 
-        if (it == _internal_map.end())
+        if (it == _key_to_value.end())
         {
           // We don't have it: 
           // Evaluate function and create new record 
@@ -263,17 +225,17 @@ namespace eCAL
         }
 
         // Return the retrieved value 
-        return (*it).second.map_value;
+        return (*it).second.first;
       };
 
       mapped_type& at(const key_type& k)
       {
-        return _internal_map.at(k).first;
+        return _key_to_value.at(k).first;
       }
 
       const mapped_type& at(const key_type& k) const
       {
-        return _internal_map.at(k).first;
+        return _key_to_value.at(k).first;
       }
 
       // Modifiers
@@ -286,42 +248,39 @@ namespace eCAL
       // Operations
       iterator find(const key_type& k)
       {
-        return iterator(_internal_map.find(k));
+        return iterator(_key_to_value.find(k));
       }
 
       const_iterator find(const Key& k) const
       {
-        return const_iterator(_internal_map.find(k));
+        return const_iterator(_key_to_value.find(k));
       }
 
-      /**
-       * @brief Erase all expired key-value pairs from the map.
-       * 
-       * This function erases all expired key-value pairs from the internal map / timestamp list.
-       * The CExpirationMap class does not call this function internally, it has to be called explicitly by the user.
-       */
-      void erase_expired(std::list<Key>* keys_erased_from_expired_map = nullptr) //-V826
+      // Purge the timed out elements from the cache 
+      void remove_deprecated(std::list<Key>* key_erased = nullptr) //-V826
       {
-        // To erase timestamps from the map, the time point of the last access is calculated, all older entries will be erased.
-        // Since the list is sorted, we need to remove everything from the first element until the eviction limit.
-        typename ClockType::time_point eviction_limit = get_curr_time() - _timeout;
-        auto it(_access_timestamps_list.begin());
-        while (it != _access_timestamps_list.end() && it->timestamp < eviction_limit)
+        // Assert method is never called when cache is empty 
+        //assert(!_key_tracker.empty());
+        clock_type::time_point eviction_limit = get_curr_time() - _timeout;
+
+        auto it(_key_tracker.begin());
+
+        while (it != _key_tracker.end() && it->first < eviction_limit)
         {
-          if (keys_erased_from_expired_map != nullptr) keys_erased_from_expired_map->push_back(it->corresponding_map_key);
-          _internal_map.erase(it->corresponding_map_key); // erase the element from the map 
-          it = _access_timestamps_list.erase(it);         // erase the element from the list
+          if (key_erased != nullptr) key_erased->push_back(it->second);
+          _key_to_value.erase(it->second); // erase the element from the map 
+          it = _key_tracker.erase(it);     // erase the element from the list
         }
       }
 
       // Remove specific element from the cache
       bool erase(const Key& k)
       {
-        auto it = _internal_map.find(k);
-        if (it != _internal_map.end())
+        auto it = _key_to_value.find(k);
+        if (it != _key_to_value.end())
         {
-          _access_timestamps_list.erase(it->second.timestamp_list_iterator); // erase the element from the list
-          _internal_map.erase(k);                // erase the element from the map
+          _key_tracker.erase(it->second.second); // erase the element from the list
+          _key_to_value.erase(k);                // erase the element from the map
           return true;
         }
         return false;
@@ -330,8 +289,15 @@ namespace eCAL
       // Remove all elements from the cache 
       void clear()
       {
-        _internal_map.clear(); // erase all elements from the map 
-        _access_timestamps_list.clear();  // erase all elements from the list
+        // Assert method is never called when cache is empty 
+        //assert(!_key_tracker.empty());
+        auto it(_key_tracker.begin());
+
+        while (it != _key_tracker.end())
+        {
+          _key_to_value.erase(it->second); // erase the element from the map 
+          it = _key_tracker.erase(it);     // erase the element from the list
+        }
       }
 
     private:
@@ -339,49 +305,41 @@ namespace eCAL
       // Maybe pass the iterator instead of the key? or at least only get k once
       void update_timestamp(const Key& k)
       {
-        auto it_in_map = _internal_map.find(k);
-        if (it_in_map != _internal_map.end())
-        {
-          auto& it_in_list = it_in_map->second.timestamp_list_iterator;
-
-          // move the element to the end of the list
-          _access_timestamps_list.splice(_access_timestamps_list.end(), _access_timestamps_list, it_in_list);
-
-          // update the timestamp
-          it_in_list->timestamp = get_curr_time();
-        }
+        _key_tracker.erase(_key_to_value.at(k).second);
+        auto new_iterator = _key_tracker.emplace(_key_tracker.end(), std::make_pair(get_curr_time(), k));
+        _key_to_value.at(k).second = new_iterator;
       }
-      
-      // Record a fresh key-value pair in the cache
-      std::pair<typename InternalMapType::iterator, bool> insert(const Key& k, const T& v)
+
+      // Record a fresh key-value pair in the cache 
+      std::pair<typename key_to_value_type::iterator, bool> insert(const Key& k, const T& v)
       {
         // sorted list, containing (pair ( timestamp, K))
-        auto it = _access_timestamps_list.emplace(_access_timestamps_list.end(), AccessTimestampListEntry{ get_curr_time(), k });
+        auto it = _key_tracker.emplace(_key_tracker.end(), std::make_pair(get_curr_time(), k));
 
         // entry mapping k -> pair (T, iterator(pair(timestamp, K)))
-        auto ret = _internal_map.emplace(
+        auto ret = _key_to_value.emplace(
           std::make_pair(
             k,
-            InternalMapEntry{ v, it }
+            std::make_pair(v, it)
           )
         );
         // return iterator to newly inserted element.
         return ret;
       }
 
-      typename ClockType::time_point get_curr_time()
+      clock_type::time_point get_curr_time()
       {
-        return ClockType::now();
+        return clock_type::now();
       }
 
       // Key access history 
-      AccessTimestampListType _access_timestamps_list;
+      key_tracker_type _key_tracker;
 
       // Key-to-value lookup 
-      InternalMapType _internal_map;
+      key_to_value_type _key_to_value;
 
       // Timeout of map
-      typename ClockType::duration _timeout;
+      clock_type::duration _timeout;
     };
   }
 }

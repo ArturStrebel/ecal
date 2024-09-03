@@ -1,6 +1,6 @@
 # ========================= eCAL LICENSE =================================
 #
-# Copyright (C) 2016 - 2024 Continental Corporation
+# Copyright (C) 2016 - 2019 Continental Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,13 +28,8 @@ add_subdirectory(c/core_test)
 # --------------------------------------------------------
 add_subdirectory(cpp/core_test)
 
-add_subdirectory(cpp/descgate_test)
 
-add_subdirectory(cpp/config_test)
 
-if(ECAL_CORE_REGISTRATION)
-  add_subdirectory(cpp/registration_test_2)
-endif()
 
 add_subdirectory(cpp/event_test)
 add_subdirectory(cpp/expmap_test)
@@ -47,17 +42,17 @@ if(ECAL_CORE_REGISTRATION_SHM OR ECAL_CORE_TRANSPORT_SHM)
 endif()
 
 if(ECAL_CORE_REGISTRATION AND ECAL_CORE_PUBLISHER AND ECAL_CORE_SUBSCRIBER)
-  if(ECAL_CORE_TRANSPORT_SHM OR ECAL_CORE_TRANSPORT_UDP) # pubsub tests are running for shm and udp layer only, needs to be fixed for tcp
+  if(ECAL_CORE_TRANSPORT_SHM OR ECAL_CORE_TRANSPORT_UDP) # this test is running for shm and udp layer only, needs to be fixed for tcp
     add_subdirectory(cpp/pubsub_test)
-    if(ECAL_CORE_HAS_PROTOBUF)
-      add_subdirectory(cpp/pubsub_proto_test)
-    endif()
+  endif()
+  if(ECAL_CORE_BUILD_TESTS_PROTOBUF)
+    add_subdirectory(cpp/pubsub_proto_test)
   endif()
 endif()
 
 if(ECAL_CORE_SERVICE)
   add_subdirectory(cpp/clientserver_test)
-  if(ECAL_CORE_HAS_PROTOBUF)
+  if(ECAL_CORE_BUILD_TESTS_PROTOBUF)
     add_subdirectory(cpp/clientserver_proto_test)
   endif()
 endif()

@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,16 +37,16 @@ namespace eCAL
 
   CServiceGate::~CServiceGate()
   {
-    Stop();
+    Destroy();
   }
 
-  void CServiceGate::Start()
+  void CServiceGate::Create()
   {
     if(m_created) return;
     m_created = true;
   }
 
-  void CServiceGate::Stop()
+  void CServiceGate::Destroy()
   {
     if(!m_created) return;
 
@@ -54,7 +54,7 @@ namespace eCAL
     const std::shared_lock<std::shared_timed_mutex> lock(m_service_set_sync);
     for (const auto& service : m_service_set)
     {
-      service->Stop();
+      service->Destroy();
     }
 
     m_created = false;
@@ -94,15 +94,15 @@ namespace eCAL
     return(ret_state);
   }
 
-  void CServiceGate::GetRegistrations(Registration::SampleList& reg_sample_list_)
+  void CServiceGate::RefreshRegistrations()
   {
     if (!m_created) return;
 
-    // read service registrations
+    // refresh service registrations
     std::shared_lock<std::shared_timed_mutex> const lock(m_service_set_sync);
     for (const auto& service_server_impl : m_service_set)
     {
-      reg_sample_list_.samples.emplace_back(service_server_impl->GetRegistration());
+      service_server_impl->RefreshRegistration();
     }
   }
 }

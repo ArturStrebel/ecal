@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,10 +33,10 @@ namespace eCAL
 {
   CMemFileMap::~CMemFileMap()
   {
-    Stop();
+    Destroy();
   }
 
-  void CMemFileMap::Stop()
+  void CMemFileMap::Destroy()
   {
     // lock memory map access
     const std::lock_guard<std::mutex> lock(m_memfile_map_mtx);

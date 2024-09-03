@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +20,13 @@
 
 #include <string>
 #include <functional>
-#include <memory>
 #include <mutex>
 
 #include <ecal/ecal.h>
 #include <ecal/msg/string/subscriber.h>
 
 #include <ecal/msg/protobuf/dynamic_subscriber.h>
-#include <ecal/msg/protobuf/ecal_proto_decoder.h>
+#include <ecal/protobuf/ecal_proto_decoder.h>
 
 #include "tui/viewmodel/message_visualization/message_visualization.hpp"
 
@@ -36,13 +35,15 @@ class ProtoMessageVisualizationViewModel : public MessageVisualizationViewModel
   eCAL::protobuf::CDynamicSubscriber subscriber;
 
   mutable std::mutex message_mtx;
-  std::shared_ptr<google::protobuf::Message> latest_message = nullptr;
+  google::protobuf::Message *latest_message = nullptr;
 
-  void OnMessage(const std::shared_ptr<google::protobuf::Message>& message, long long send_time_usecs)
+  void OnMessage(const google::protobuf::Message& message, long long send_time_usecs)
   {
     {
       std::lock_guard<std::mutex> lock(message_mtx);
-      latest_message = message;
+      delete latest_message;
+      latest_message = message.New();
+      latest_message->CopyFrom(message);
 
       message_timestamp = send_time_usecs;
     }
@@ -55,7 +56,7 @@ public:
   //NOTE: Use with caution!
   struct ProtectedMessage
   {
-    std::shared_ptr<google::protobuf::Message> message;
+    google::protobuf::Message *message;
     std::unique_lock<std::mutex> lock;
   };
 

@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,14 +100,13 @@ namespace eCAL
        * @brief  Constructor.
        *
        * @param topic_name_  Unique topic name.
-       * @param config_      Optional configuration parameters.
       **/
 
       // call the function via its class because it's a virtual function that is called in constructor/destructor,-
       // where the vtable is not created yet, or it's destructed.
       // Probably we can handle the Message publishers differently. One message publisher class and then one class for payloads and getting type
       // descriptor information.
-      explicit CPublisher(const std::string& topic_name_, const eCAL::Publisher::Configuration& config_ = {}) : eCAL::CPublisher(topic_name_, CPublisher::GetDataTypeInformation(), config_)
+      explicit CPublisher(const std::string& topic_name_) : eCAL::CPublisher(topic_name_, CPublisher::GetDataTypeInformation())
       {
       }
 
@@ -140,13 +139,12 @@ namespace eCAL
        * @brief  Creates this object.
        *
        * @param topic_name_  Unique topic name.
-       * @param config_      Optional configuration parameters.
        *
        * @return  True if it succeeds, false if it fails.
       **/
-      bool Create(const std::string& topic_name_, const eCAL::Publisher::Configuration& config_ = {})
+      bool Create(const std::string& topic_name_)
       {
-        return(eCAL::CPublisher::Create(topic_name_, GetDataTypeInformation(), config_));
+        return(eCAL::CPublisher::Create(topic_name_, GetDataTypeInformation()));
       }
 
       /**
@@ -160,7 +158,8 @@ namespace eCAL
       size_t Send(const T& msg_, long long time_ = DEFAULT_TIME_ARGUMENT)
       {
         CPayload payload{ msg_ };
-        return eCAL::CPublisher::Send(payload, time_);
+        eCAL::CPublisher::Send(payload, time_);
+        return(0);
       }
 
     private:
@@ -171,12 +170,12 @@ namespace eCAL
       **/
       struct SDataTypeInformation GetDataTypeInformation() const
       {
-        struct SDataTypeInformation data_type_info;
+        struct SDataTypeInformation topic_info;
         static T msg{};
-        data_type_info.encoding   = "proto";
-        data_type_info.name       = msg.GetTypeName();
-        data_type_info.descriptor = protobuf::GetProtoMessageDescription(msg);
-        return data_type_info;
+        topic_info.encoding   = "proto";
+        topic_info.name       = msg.GetTypeName();
+        topic_info.descriptor = protobuf::GetProtoMessageDescription(msg);
+        return topic_info;
       }
 
     };

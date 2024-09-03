@@ -52,19 +52,6 @@ namespace eCAL
   }
 
   /**
-   * @brief Constructor.
-   *
-   * @param service_name_  Service name.
-   * @param method_information_map_  Map of method names and corresponding datatype information.
-  **/
-  CServiceClient::CServiceClient(const std::string& service_name_, const ServiceMethodInformationMapT& method_information_map_) :
-    m_service_client_impl(nullptr),
-    m_created(false)
-  {
-    Create(service_name_, method_information_map_);
-  }
-
-  /**
    * @brief Destructor. 
   **/
   CServiceClient::~CServiceClient()
@@ -81,30 +68,16 @@ namespace eCAL
   **/
   bool CServiceClient::Create(const std::string& service_name_)
   {
-    return Create(service_name_, ServiceMethodInformationMapT());
-  }
+    if(m_created) return(false);
 
-  /**
-   * @brief Creates this object.
-   *
-   * @param service_name_  Service name.
-   * @param method_information_map_  Map of method names and corresponding datatype information.
-   *
-   * @return  True if successful.
-  **/
-  bool CServiceClient::Create(const std::string& service_name_, const ServiceMethodInformationMapT& method_information_map_)
-  {
-    if (m_created) return(false);
+    m_service_client_impl = CServiceClientImpl::CreateInstance(service_name_);
+    m_service_client_impl->Create(service_name_);
 
-    // create client
-    m_service_client_impl = CServiceClientImpl::CreateInstance(service_name_, method_information_map_);
-
-    // register client
+    // register this client
     if (g_clientgate() != nullptr) g_clientgate()->Register(m_service_client_impl.get());
 
-    // we made it :-)
     m_created = true;
-    return(m_created);
+    return(true);
   }
 
   /**
@@ -117,12 +90,11 @@ namespace eCAL
     if(!m_created) return(false);
     m_created = false;
 
-    // unregister client
+    // unregister this client
     if (g_clientgate() != nullptr) g_clientgate()->Unregister(m_service_client_impl.get());
 
-    // stop & destroy client
-    m_service_client_impl->Stop();
-    m_service_client_impl.reset();
+    m_service_client_impl->Destroy();
+    m_service_client_impl = nullptr;
 
     return(true);
   }

@@ -79,8 +79,7 @@ endif()
 target_include_directories(${PROJECT_NAME} PRIVATE src)
 
 target_link_libraries(${PROJECT_NAME}
-  PRIVATE
-    eCAL::core_protobuf
+    eCAL::core
     eCAL::app_pb
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Widgets

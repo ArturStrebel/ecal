@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,8 +45,8 @@ namespace eCAL
     CClientGate();
     ~CClientGate();
 
-    void Start();
-    void Stop();
+    void Create();
+    void Destroy();
 
     bool Register  (CServiceClientImpl* client_);
     bool Unregister(CServiceClientImpl* client_);
@@ -55,7 +55,7 @@ namespace eCAL
 
     std::vector<SServiceAttr> GetServiceAttr(const std::string& service_name_);
 
-    void GetRegistrations(Registration::SampleList& reg_sample_list_);
+    void RefreshRegistrations();
 
   protected:
     static std::atomic<bool>    m_created;
@@ -64,7 +64,7 @@ namespace eCAL
     std::shared_timed_mutex     m_client_set_sync;
     ServiceNameServiceImplSetT  m_client_set;
 
-    using ConnectedMapT = Util::CExpirationMap<std::string, SServiceAttr>;
+    using ConnectedMapT = Util::CExpMap<std::string, SServiceAttr>;
     std::shared_timed_mutex     m_service_register_map_sync;
     ConnectedMapT               m_service_register_map;
   };

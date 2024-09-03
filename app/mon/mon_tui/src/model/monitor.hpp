@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -204,10 +204,7 @@ class MonitorModel
       topic.type_descriptor = std::move(*t.mutable_tdatatype()->mutable_desc());
       for(auto &tl: t.tlayer())
       {
-        if (tl.active())
-        {
-          topic.transport_layers.emplace_back(TopicTransportLayer(tl.type()));
-        }
+        topic.transport_layers.emplace_back(TopicTransportLayer(tl.type()));
       }
       topic.size = t.tsize();
       topic.local_connections_count = t.connections_loc();

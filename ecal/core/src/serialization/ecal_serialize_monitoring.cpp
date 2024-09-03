@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -126,7 +126,7 @@ namespace
       eCAL_pb_TLayer pb_layer = eCAL_pb_TLayer_init_default;
       pb_layer.type = static_cast<eCAL_pb_eTLayerType>(layer.type);
       pb_layer.version = layer.version;
-      pb_layer.active = layer.active;
+      pb_layer.confirmed = layer.confirmed;
 
       if (!pb_encode_submessage(stream, eCAL_pb_TLayer_fields, &pb_layer))
       {
@@ -365,8 +365,6 @@ namespace
     eCAL::nanopb::encode_string(pb_client_.sname, client_.sname);
     // sid
     eCAL::nanopb::encode_string(pb_client_.sid, client_.sid);
-    // methods
-    encode_mon_service_methods(pb_client_.methods, client_.methods);
     // version
     pb_client_.version = client_.version;
   }
@@ -572,7 +570,7 @@ namespace
     // apply layer values
     layer.type = static_cast<eCAL::Monitoring::eTLayerType>(pb_layer.type);
     layer.version = pb_layer.version;
-    layer.active  = pb_layer.active;
+    layer.confirmed = pb_layer.confirmed;
 
     // add layer
     auto* tgt_vector = static_cast<std::vector<eCAL::Monitoring::TLayer>*>(*arg);
@@ -807,8 +805,6 @@ namespace
     eCAL::nanopb::decode_string(pb_client_.sname, client_.sname);
     // sid
     eCAL::nanopb::decode_string(pb_client_.sid, client_.sid);
-    // methods
-    decode_mon_service_methods(pb_client_.methods, client_.methods);
   }
 
   void AssignValues(const eCAL_pb_Client& pb_client_, eCAL::Monitoring::SClientMon& client_)
@@ -894,7 +890,6 @@ namespace
     if (!pb_decode(&pb_istream, eCAL_pb_Monitoring_fields, &pb_mon_message))
     {
       std::cerr << "NanoPb eCAL::Monitoring::SMonitoring decode failed: " << pb_istream.errmsg << '\n';
-      return false;
     }
 
     return true;

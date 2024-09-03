@@ -1,6 +1,6 @@
 # ========================= eCAL LICENSE =================================
 #
-# Copyright (C) 2016 - 2024 Continental Corporation
+# Copyright (C) 2016 - 2019 Continental Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -42,10 +42,11 @@ target_compile_definitions(${PROJECT_NAME}
 create_targets_protobuf()
 
 target_link_libraries(${PROJECT_NAME}
+  protobuf::libprotobuf
   tclap::tclap
-  eCAL::core_protobuf
+  eCAL::core
   eCAL::core_pb)
-target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17) 
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_14) 
 
 ecal_install_app(${PROJECT_NAME})
 

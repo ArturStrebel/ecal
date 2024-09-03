@@ -74,15 +74,13 @@ namespace eCAL
   {
     if(m_created) return(false);
 
-    // create service
     m_service_server_impl = CServiceServerImpl::CreateInstance(service_name_);
 
-    // register service
+    // register this service
     if (g_servicegate() != nullptr) g_servicegate()->Register(m_service_server_impl.get());
 
-    // we made it :-)
     m_created = true;
-    return(m_created);
+    return(true);
   }
 
   /**
@@ -95,12 +93,11 @@ namespace eCAL
     if(!m_created) return(false);
     m_created = false;
 
-    // unregister service
+    // unregister this service
     if (g_servicegate() != nullptr) g_servicegate()->Unregister(m_service_server_impl.get());
 
-    // stop & destroy service
-    m_service_server_impl->Stop();
-    m_service_server_impl.reset();
+    m_service_server_impl->Destroy();
+    m_service_server_impl = nullptr;
 
     return(true);
   }
@@ -119,15 +116,12 @@ namespace eCAL
   bool CServiceServer::AddDescription(const std::string& method_, const std::string& req_type_, const std::string& req_desc_, const std::string& resp_type_, const std::string& resp_desc_)
   {
     if (!m_created) return false;
-
     SDataTypeInformation request_type_information;
-    request_type_information.name       = req_type_;
+    request_type_information.name = req_type_;
     request_type_information.descriptor = req_desc_;
-
     SDataTypeInformation response_type_information;
-    response_type_information.name       = resp_type_;
+    response_type_information.name = resp_type_;
     response_type_information.descriptor = resp_desc_;
-
     return m_service_server_impl->AddDescription(method_, request_type_information, response_type_information);
   }
 

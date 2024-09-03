@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,7 @@ package eCAL.pb;
 
 message Content                                // topic content
 {
-  // Reserved fields in enums are not supported in protobuf 3.0
-  // reserved 5;
+  reserved 5;
 
   int64        id                    =  1;     // sample id
   int64        clock                 =  2;     // internal used clock
@@ -41,8 +40,7 @@ message Content                                // topic content
 
 enum eCmdType                                  // command type
 {
-  // Reserved fields in enums are not supported in protobuf 3.0
-  // reserved 7 to 11;
+  reserved 7 to 11;
 
   bct_none             =  0;                   // undefined command
   bct_set_sample       =  1;                   // set sample content

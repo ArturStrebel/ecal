@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@
 #include <utility>
 
 #include <ecal/ecal_os.h>
-#include <ecal/config/configuration.h>
 
 namespace eCAL
 {
@@ -84,22 +83,13 @@ namespace eCAL
   ECAL_API int Initialize(std::vector<std::string> args_, const char *unit_name_ = nullptr, unsigned int components_ = Init::Default);
 
   /**
-   * @brief Initialize eCAL API.
-   *
-   * @param config_      User defined configuration object.
-   * @param unit_name_   Defines the name of the eCAL unit.
-   * @param components_  Defines which component to initialize.     
-   * 
-   * @return Zero if succeeded, 1 if already initialized, -1 if failed.
-  **/
-  ECAL_API int Initialize(eCAL::Configuration& config_, const char *unit_name_ = nullptr, unsigned int components_ = Init::Default);
-
-  /**
    * @brief Finalize eCAL API.
+   *
+   * @param components_  Defines which component to finalize (not yet supported).
    *
    * @return Zero if succeeded, 1 if already finalized, -1 if failed.
   **/
-  ECAL_API int Finalize();
+  ECAL_API int Finalize(unsigned int components_ = Init::Default);
 
   /**
    * @brief Check eCAL initialize state.

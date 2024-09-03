@@ -33,10 +33,8 @@ ecal_add_sample(${PROJECT_NAME} ${ecalrecorder_client_src})
 target_include_directories(${PROJECT_NAME} PRIVATE .)
 
 target_link_libraries(${PROJECT_NAME}
-  PRIVATE
-    eCAL::core_protobuf
-    eCAL::app_pb
-)
+  eCAL::core
+  eCAL::app_pb)
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_14)
 

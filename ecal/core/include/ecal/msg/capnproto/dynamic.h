@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,67 +32,177 @@
 #pragma warning(pop)
 #endif /*_MSC_VER*/
 
-#include <ecal/msg/dynamic.h>
+#include <ecal/ecal_deprecate.h>
+#include <ecal/msg/capnproto/subscriber.h>
 #include <ecal/msg/capnproto/helper.h>
 
 namespace eCAL
 {
 
-  namespace internal
-  {
-    class CapnprotoDynamicDeserializer
-    {
-    public:
-      // This function is NOT threadsafe!!!
-      // what about the lifetime of the objects?
-      // It's totally unclear to me :/
-      capnp::DynamicStruct::Reader Deserialize(const void* buffer_, size_t size_, const SDataTypeInformation& datatype_info_)
-      {
-        try
-        {
-          // Put the pointer into a capnp::MallocMessageBuilder, it holds the memory to later access the object via a capnp::Dynami
-          kj::ArrayPtr<const capnp::word> words = kj::arrayPtr(reinterpret_cast<const capnp::word*>(buffer_), size_ / sizeof(capnp::word));
-          kj::ArrayPtr<const capnp::word> rest = initMessageBuilderFromFlatArrayCopy(words, m_msg_builder);
-
-          capnp::Schema schema = GetSchema(datatype_info_);
-          capnp::DynamicStruct::Builder root_builder = m_msg_builder.getRoot<capnp::DynamicStruct>(schema.asStruct());
-          return root_builder.asReader();
-        }
-        catch (...)
-        {
-          throw new DynamicReflectionException("Error deserializing Capnproto data.");
-        }
-      }
-
-    private:
-      capnp::Schema GetSchema(const SDataTypeInformation& datatype_info_)
-      {
-        auto schema = m_schema_map.find(datatype_info_);
-        if (schema != m_schema_map.end())
-        {
-          m_schema_map[datatype_info_] = ::eCAL::capnproto::SchemaFromDescriptor(datatype_info_.descriptor, m_loader);
-        }
-        return m_schema_map[datatype_info_];
-      }
-
-      capnp::MallocMessageBuilder                   m_msg_builder;
-      std::map<SDataTypeInformation, capnp::Schema> m_schema_map;
-      capnp::SchemaLoader                           m_loader;
-    };
-  }
-
   namespace capnproto
   {
-    /**
-     * @brief  eCAL capnp subscriber class.
-     *
-     * Subscriber template  class for capnp messages. For details see documentation of CSubscriber class.
-     *
-    **/
-    using CDynamicSubscriber = CDynamicMessageSubscriber<typename capnp::DynamicStruct::Reader, internal::CapnprotoDynamicDeserializer>;
+    class CDynamicSubscriber
+    {
+    public:
+      /**
+      * @brief  Constructor.
+      **/
+      CDynamicSubscriber()
+        : subscriber()
+        , builder()
+        , initialized(false)
+      {
+      }
 
-    /** @example addressbook_rec.cpp
-    * This is an example how to use eCAL::capnproto::CSubscriber to receive capnp data with eCAL. To receive the data, see @ref addressbook_rec.cpp .
-    */
+      /**
+      * @brief  Constructor.
+      *
+      * @param topic_name_  Unique topic name.
+      **/
+      CDynamicSubscriber(const std::string& topic_name_)
+        : subscriber(topic_name_, GetDataTypeInformation())
+        , builder()
+        , initialized(false)
+      {
+      }
+
+      /**
+      * @brief  Copy Constructor is not available.
+      **/
+      CDynamicSubscriber(const CDynamicSubscriber&) = delete;
+
+      /**
+      * @brief  Copy Constructor is not available.
+      **/
+      CDynamicSubscriber& operator=(const CDynamicSubscriber&) = delete;
+
+      /**
+      * @brief  Move Constructor
+      **/
+      CDynamicSubscriber(CDynamicSubscriber&&) = default;
+
+      /**
+      * @brief  Move assignment
+      **/
+      CDynamicSubscriber& operator=(CDynamicSubscriber&&) = default;
+
+      /**
+      * @brief eCAL protobuf message receive callback function
+      *
+      * @param topic_name_  Topic name of the data source (publisher).
+      * @param msg_         Protobuf message content.
+      * @param time_        Message time stamp.
+      **/
+      typedef std::function<void(const char* topic_name_, typename capnp::DynamicStruct::Reader msg_, long long time_, long long clock_, long long id_)> CapnpDynamicMsgCallbackT;
+
+      /**
+      * @brief Add callback function for incoming receives.
+      *
+      * @param callback_  The callback function to add.
+      *
+      * @return  True if succeeded, false if not.
+      **/
+      bool AddReceiveCallback(CapnpDynamicMsgCallbackT callback_)
+      {
+        msg_callback = callback_;
+        return subscriber.AddReceiveCallback(std::bind(&CDynamicSubscriber::OnReceive, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5));
+      }
+
+      bool RemReceiveCallback()
+      {
+        auto ret = subscriber.RemReceiveCallback();
+        msg_callback = nullptr;
+        return ret;
+      }
+
+      void OnReceive(const char* topic_name_, const capnp::MallocMessageBuilder& msg_, long long time_, long long clock_, long long id_)
+      {
+        if (!initialized)
+        {
+          SDataTypeInformation topic_info_;
+          eCAL::Util::GetTopicDataTypeInformation(topic_name_, topic_info_);
+          std::string topic_desc = topic_info_.descriptor;
+          if (!topic_desc.empty())
+          {
+            // We initialize the builder from the string
+            schema = eCAL::capnproto::SchemaFromDescriptor(topic_desc, loader);
+            initialized = true;
+          }
+          else
+          {
+            return;
+          }
+        }
+
+        auto root = const_cast<capnp::MallocMessageBuilder&>(msg_).getRoot<capnp::DynamicStruct>(schema.asStruct());
+        msg_callback(topic_name_, root.asReader(), time_, clock_, id_);
+      }
+
+      /**
+      * @brief get a Pointer to a temporary message that can be passed to receive
+      **/
+      typename capnp::DynamicStruct::Reader getReader()
+      {
+        return root_builder.asReader();
+      }
+
+      /**
+      * @brief Manually receive the next sample
+      **/
+      bool Receive(long long* time_ = nullptr, int rcv_timeout_ = 0)
+      {
+        return  subscriber.Receive(builder, time_, rcv_timeout_);
+      }
+
+      /**
+      * @brief  Creates this object.
+      *
+      * @param topic_name_  Unique topic name.
+      *
+      * @return  True if it succeeds, false if it fails.
+      **/
+      bool Create(const std::string& topic_name_)
+      {
+        return(subscriber.Create(topic_name_, GetDataTypeInformation()));
+      }
+
+      /**
+      * @brief  Get type name of the capnp message.
+      *
+      * @return  Type name.
+      **/
+      ECAL_DEPRECATE_SINCE_5_13("Please use the method SDataTypeInformation GetDataTypeInformation() instead. You can extract the typename from the STopicInformation variable. This function will be removed in eCAL6.")
+      std::string GetTypeName() const
+      {
+        return ("");
+      }
+    private:
+      /**
+       * @brief   Get topic information of the message.
+       *
+       * @return  Topic information.
+      **/
+      SDataTypeInformation GetDataTypeInformation() const
+      {
+        SDataTypeInformation topic_info;
+        // this is dynamic information. what should we return now?
+        return topic_info;
+      }
+
+
+      CBuilderSubscriber subscriber;
+      capnp::MallocMessageBuilder builder;
+      capnp::DynamicStruct::Builder root_builder;
+      CapnpDynamicMsgCallbackT msg_callback;
+
+      capnp::schema::Node::Reader reader;
+      capnp::SchemaLoader loader;
+      capnp::Schema schema;
+
+      bool initialized;
+
+    };
+
   }
+  
 }

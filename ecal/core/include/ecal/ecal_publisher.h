@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,16 +24,14 @@
 
 #pragma once
 
+#include <cstddef>
 #include <ecal/ecal_callback.h>
 #include <ecal/ecal_deprecate.h>
 #include <ecal/ecal_os.h>
 #include <ecal/ecal_payload_writer.h>
-#include <ecal/ecal_config.h>
 #include <ecal/ecal_types.h>
-#include <ecal/config/publisher.h>
 
 #include <chrono>
-#include <cstddef>
 #include <memory>
 #include <string>
 
@@ -71,6 +69,7 @@ namespace eCAL
   class CPublisher
   {
   public:
+
     ECAL_API static constexpr long long DEFAULT_TIME_ARGUMENT = -1;  /*!< Use DEFAULT_TIME_ARGUMENT in the `Send()` function to let eCAL determine the send timestamp */
 
     /**
@@ -81,19 +80,17 @@ namespace eCAL
     /**
      * @brief Constructor.
      *
-     * @param topic_name_      Unique topic name.
-     * @param data_type_info_  Topic data type information (encoding, type, descriptor).
-     * @param config_          Optional configuration parameters.
+     * @param topic_name_   Unique topic name.
+     * @param topic_info_   Topic information (encoding, type, descriptor)
     **/
-    ECAL_API CPublisher(const std::string& topic_name_, const SDataTypeInformation& data_type_info_, const Publisher::Configuration& config_ = {});
+    ECAL_API CPublisher(const std::string& topic_name_, const SDataTypeInformation& topic_info_);
 
     /**
      * @brief Constructor.
      *
      * @param topic_name_   Unique topic name.
-     * @param config_       Optional configuration parameters.
     **/
-    ECAL_API explicit CPublisher(const std::string& topic_name_, const Publisher::Configuration& config_ = {});
+    ECAL_API explicit CPublisher(const std::string& topic_name_);
 
     /**
      * @brief Destructor. 
@@ -123,13 +120,12 @@ namespace eCAL
     /**
      * @brief Creates this object.
      *
-     * @param topic_name_      Unique topic name.
-     * @param data_type_info_  Topic data type information (encoding, type, descriptor).
-     * @param config_          Optional configuration parameters.
+     * @param topic_name_   Unique topic name.
+     * @param topic_info_   Topic information (encoding, type, descriptor)
      *
      * @return  True if it succeeds, false if it fails.
     **/
-    ECAL_API bool Create(const std::string& topic_name_, const SDataTypeInformation& data_type_info_, const Publisher::Configuration& config_ = {});
+    ECAL_API bool Create(const std::string& topic_name_, const SDataTypeInformation& topic_info_);
 
     /**
      * @brief Creates this object.
@@ -150,11 +146,11 @@ namespace eCAL
     /**
      * @brief Setup topic information.
      *
-     * @param data_type_info_  Topic data type information attributes.
+     * @param topic_info_  Topic information attributes.
      *
      * @return  True if it succeeds, false if it fails.
     **/
-    ECAL_API bool SetDataTypeInformation(const SDataTypeInformation& data_type_info_);
+    ECAL_API bool SetDataTypeInformation(const SDataTypeInformation& topic_info_);
 
     /**
      * @brief Sets publisher attribute. 
@@ -177,6 +173,24 @@ namespace eCAL
     ECAL_API bool ClearAttribute(const std::string& attr_name_);
 
     /**
+     * @brief Share topic type.
+     *
+     * @param state_  Set type share mode (true == share type).
+     *
+     * @return  True if it succeeds, false if it fails.
+    **/
+    ECAL_API bool ShareType(bool state_ = true);
+
+    /**
+     * @brief Share topic description.
+     *
+     * @param state_  Set description share mode (true == share description).
+     *
+     * @return  True if it succeeds, false if it fails.
+    **/
+    ECAL_API bool ShareDescription(bool state_ = true);
+
+    /**
      * @brief Set the specific topic id.
      *
      * @param id_     The topic id for subscriber side filtering (0 == no id).
@@ -194,7 +208,7 @@ namespace eCAL
      *
      * @return  Number of bytes sent. 
     **/
-    ECAL_API size_t Send(const void* buf_, size_t len_, long long time_ = DEFAULT_TIME_ARGUMENT);
+    ECAL_API size_t Send(const void* buf_, size_t len_, long long time_ = DEFAULT_TIME_ARGUMENT) const;
 
     /**
      * @brief Send a message to all subscribers.
@@ -204,7 +218,7 @@ namespace eCAL
      *
      * @return  Number of bytes sent.
     **/
-    ECAL_API size_t Send(CPayloadWriter& payload_, long long time_ = DEFAULT_TIME_ARGUMENT);
+    ECAL_API size_t Send(CPayloadWriter& payload_, long long time_ = DEFAULT_TIME_ARGUMENT) const;
 
     /**
      * @brief Send a message to all subscribers.
@@ -214,7 +228,7 @@ namespace eCAL
      *
      * @return  Number of bytes sent.
     **/
-    ECAL_API size_t Send(const std::string& s_, long long time_ = DEFAULT_TIME_ARGUMENT);
+    ECAL_API size_t Send(const std::string& s_, long long time_ = DEFAULT_TIME_ARGUMENT) const;
 
     /**
      * @brief Add callback function for publisher events.
@@ -281,8 +295,9 @@ namespace eCAL
 
   protected:
     // class members
-    std::shared_ptr<CDataWriter> m_datawriter;
-    long long                    m_id;
-    bool                         m_created;
+    std::shared_ptr<CDataWriter>     m_datawriter;
+    long long                        m_id;
+    bool                             m_created;
+    bool                             m_initialized;
   };
 }

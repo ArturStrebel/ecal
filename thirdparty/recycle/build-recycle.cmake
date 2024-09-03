@@ -1,4 +1,4 @@
-include_guard(GLOBAL)
+add_subdirectory(thirdparty/recycle/recycle EXCLUDE_FROM_ALL)
+add_library(steinwurf::recycle ALIAS recycle)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/recycle thirdparty/recycle EXCLUDE_FROM_ALL SYSTEM)
-
+list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/Modules)

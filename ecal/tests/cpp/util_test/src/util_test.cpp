@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,13 @@
  * ========================= eCAL LICENSE =================================
 */
 
+#include <vector>
 #include <ecal/ecal.h>
+#include <gtest/gtest.h>
 #include <util/frequency_calculator.h>
 
-#include <vector>
 
-#include <gtest/gtest.h>
-
-namespace
-{
+namespace {
   void TestCombinedTopicEncodingAndType(const std::string& encoding, const std::string& type, const std::string& expected_result)
   {
     auto combined = eCAL::Util::CombinedTopicEncodingAndType(encoding, type);
@@ -40,7 +38,7 @@ namespace
   }
 }
 
-TEST(core_cpp_util, Topic_CombinedTopicEncodingAndType)
+TEST(core_cpp_util, Util_CombineTopicEncodingAndType)
 {
   TestCombinedTopicEncodingAndType("", "", "");
   TestCombinedTopicEncodingAndType("proto", "pb.Person.People", "proto:pb.Person.People");
@@ -48,7 +46,7 @@ TEST(core_cpp_util, Topic_CombinedTopicEncodingAndType)
   TestCombinedTopicEncodingAndType("", "MyType", "MyType");
 }
 
-TEST(core_cpp_util, Topic_SplitCombinedTopicType)
+TEST(core_cpp_util, Util_SplitCombinedTopicType)
 {
   TestSplitCombinedTopicType("", "", "");
   TestSplitCombinedTopicType("proto:pb.Person.People", "proto", "pb.Person.People");
@@ -57,29 +55,27 @@ TEST(core_cpp_util, Topic_SplitCombinedTopicType)
   TestSplitCombinedTopicType("MyType", "", "MyType");
 }
 
-namespace
+struct MillisecondFrequencyPair
 {
-  struct MillisecondFrequencyPair
-  {
-    std::chrono::milliseconds delta_t;
-    double frequency;
-  };
+  std::chrono::milliseconds delta_t;
+  double frequency;
+};
 
-  const std::vector<MillisecondFrequencyPair> frequency_pairs =
-  {
-    {std::chrono::milliseconds(1000),   1.0},
-    {std::chrono::milliseconds(1250),   0.8},
-    {std::chrono::milliseconds(5000),   0.2},
-    {std::chrono::milliseconds(20000),  0.05},
-    {std::chrono::milliseconds(500),    2.0},
-    {std::chrono::milliseconds(200),    5.0},
-    {std::chrono::milliseconds(100),   10.0},
-    {std::chrono::milliseconds(20),    50.0},
-    {std::chrono::milliseconds(2),    500.0},
-  };
-}
+const std::vector<MillisecondFrequencyPair> frequency_pairs =
+{
+  {std::chrono::milliseconds(1000),   1.0},
+  {std::chrono::milliseconds(1250),   0.8},
+  {std::chrono::milliseconds(5000),   0.2},
+  {std::chrono::milliseconds(20000),  0.05},
+  {std::chrono::milliseconds(500),    2.0},
+  {std::chrono::milliseconds(200),    5.0},
+  {std::chrono::milliseconds(100),   10.0},
+  {std::chrono::milliseconds(20),    50.0},
+  {std::chrono::milliseconds(2),    500.0},
+};
 
-TEST(core_cpp_util, Freq_FrequencyCalculator)
+
+TEST(Util, FrequencyCalculator)
 {
   for (const auto& pair : frequency_pairs)
   {
@@ -114,9 +110,10 @@ TEST(core_cpp_util, Freq_FrequencyCalculator)
   }
 }
 
-TEST(core_cpp_util, Freq_ResettableFrequencyCalculator)
+TEST(Util, ResettableFrequencyCalculator)
 {
   const auto check_delta_t = std::chrono::milliseconds(999);
+
 
   for (const auto& pair : frequency_pairs)
   {
@@ -195,55 +192,3 @@ TEST(core_cpp_util, Freq_ResettableFrequencyCalculator)
   }
 }
 
-
-struct command
-{
-  std::string command_type;
-  long long time_point;
-};
-
-std::vector<command> commands =
-{
-command{"getting frequency", 0 },
-command{"ticking", 500         },
-command{"getting frequency", 1000 },
-command{"ticking", 1500         },
-command{"getting frequency", 2000 },
-command{"ticking", 2500         },
-command{"getting frequency", 3000 },
-command{"ticking", 3998         },
-command{"getting frequency", 4000 },
-command{"ticking", 4002         },
-command{"getting frequency", 5000 },
-command{"ticking", 5998         },
-command{"getting frequency", 6000 },
-};
-
-TEST(core_cpp_util, Freq_NoZeroFrequency)
-{
-  eCAL::ResettableFrequencyCalculator<std::chrono::steady_clock> calculator(3.0f);
-  int i = 0;
-
-  for (const auto& command : commands)
-  {
-    std::chrono::steady_clock::time_point time(std::chrono::milliseconds(command.time_point));
-
-    if (command.command_type == "ticking")
-    {
-      calculator.addTick(time);
-    }
-    else if (command.command_type == "getting frequency")
-    {
-      auto frequency = calculator.getFrequency(time);
-      if (i > 1)
-      {
-        ASSERT_GT(frequency, 0.0) << "Iteration " << i;
-      }
-
-      ++i;
-    }
-    else
-    {
-    }
-  }
-}

@@ -49,17 +49,14 @@ void do_run(const int runs, int snd_size /*kB*/, int mem_buffer, bool zero_copy)
   // initialize eCAL API
   eCAL::Initialize(0, nullptr, "latency_snd");
 
-  // create publisher config
-  eCAL::Publisher::Configuration pub_config;
-  // set number of publisher memory buffers
-  pub_config.layer.shm.memfile_buffer_count   = mem_buffer;
-  // enable zero copy mode
-  pub_config.layer.shm.zero_copy_mode = zero_copy;
-  // set acknowledgement timeout to 100ms
-  pub_config.layer.shm.acknowledge_timeout_ms = 100;
+  // create publisher and subscriber
+  eCAL::CPublisher pub("ping");
 
-  // create publisher
-  eCAL::CPublisher pub("ping", pub_config);
+  // set number of publisher memory buffers
+  //pub.ShmSetBufferCount(mem_buffer);  // TODO: NEW PARAMETER API
+
+  // enable zero copy mode
+  //pub.ShmEnableZeroCopy(zero_copy);  // TODO: NEW PARAMETER API
 
   // prepare send buffer
   CBinaryPayload payload(snd_size * 1024);
@@ -73,7 +70,9 @@ void do_run(const int runs, int snd_size /*kB*/, int mem_buffer, bool zero_copy)
   {
     // get microseconds
     auto snd_time  = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-    pub.Send(payload, snd_time);
+    // send message (with receive timeout 100 ms)
+    //pub.Send(payload, snd_time, 100 /*ms*/);
+    pub.Send(payload, snd_time);  // TODO: NEW PARAMETER API
   }
 
   // log test

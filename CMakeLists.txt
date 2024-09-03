@@ -88,6 +88,7 @@ option(BUILD_APPS                              "Build the eCAL applications"    
 option(BUILD_SAMPLES                           "Build the eCAL samples"                                            ON)
 option(BUILD_TIME                              "Build the eCAL time interfaces"                                    ON)
 option(BUILD_PY_BINDING                        "Build eCAL python binding"                                        OFF)
+option(BUILD_STANDALONE_PY_WHEEL               "Build eCAL python binding as standalone wheel"                    OFF)
 option(BUILD_CSHARP_BINDING                    "Build eCAL C# binding"                                            OFF)
 option(BUILD_ECAL_TESTS                        "Build the eCAL google tests"                                      OFF)
 
@@ -100,10 +101,11 @@ option(ECAL_USE_CLOCKLOCK_MUTEX                "Use native mutex with monotonic 
 # --------------------------------------------------------
 # ecal core configuration
 # --------------------------------------------------------
-set(ECAL_CORE_HAS_PROTOBUF                                                                                         ON)
 set(ECAL_CORE_BUILD_SAMPLES                                                                          ${BUILD_SAMPLES})
+set(ECAL_CORE_BUILD_SAMPLES_PROTOBUF                                                                 ${BUILD_SAMPLES})
 set(ECAL_CORE_BUILD_TESTS                                                                         ${BUILD_ECAL_TESTS})
-set(ECAL_CORE_CONFIGURATION                                                                                        ON)
+set(ECAL_CORE_BUILD_TESTS_PROTOBUF                                                                ${BUILD_ECAL_TESTS})
+set(ECAL_CORE_CONFIG_INIFILE                                                                                       ON)
 set(ECAL_CORE_COMMAND_LINE                                                                                         ON)
 set(ECAL_CORE_REGISTRATION                                                                                         ON)
 set(ECAL_CORE_MONITORING                                                                                           ON)
@@ -117,6 +119,39 @@ set(ECAL_CORE_TRANSPORT_UDP                                                     
 set(ECAL_CORE_TRANSPORT_TCP                                                                                        ON)
 set(ECAL_CORE_TRANSPORT_SHM                                                                                        ON)
 
+# Set option regarding third party library builds
+# option(ECAL_THIRDPARTY_BUILD_LIBSSH2           "Build libssh2 with eCAL"                                           ON)
+# option(ECAL_THIRDPARTY_BUILD_ZLIB              "Build zlib with eCAL"                                              ON)
+option(ECAL_THIRDPARTY_BUILD_ASIO              "Build asio with eCAL"                                              ON)
+option(ECAL_THIRDPARTY_BUILD_CMAKE_FUNCTIONS   "Build CMakeFunctions with eCAL"                                    ON)
+option(ECAL_THIRDPARTY_BUILD_FINEFTP           "Build fineFTP with eCAL"                                           ON)
+option(ECAL_THIRDPARTY_BUILD_FTXUI             "Build ftxui with eCAL"                                             ON)
+option(ECAL_THIRDPARTY_BUILD_GTEST             "Build gtest with eCAL"                                            OFF)
+option(ECAL_THIRDPARTY_BUILD_RECYCLE           "Build steinwurf::recylce with eCAL"                                ON)
+option(ECAL_THIRDPARTY_BUILD_SPDLOG            "Build spdlog with eCAL"                                            ON)
+option(ECAL_THIRDPARTY_BUILD_SIMPLEINI         "Build simpleini with eCAL"                                         ON)
+option(ECAL_THIRDPARTY_BUILD_TCLAP             "Build tclap library with eCAL"                                     ON)
+option(ECAL_THIRDPARTY_BUILD_TCP_PUBSUB        "Build tcp_pubsub library with eCAL"                                ON)
+option(ECAL_THIRDPARTY_BUILD_TERMCOLOR         "Build termcolor with eCAL"                                         ON)
+option(ECAL_THIRDPARTY_BUILD_TINYXML2          "Build tinyxml2 with eCAL"                                          ON)
+option(ECAL_THIRDPARTY_BUILD_UDPCAP            "Build udpcap library with eCAL"                                   OFF)
+
+if(WIN32)
+  option(ECAL_THIRDPARTY_BUILD_PROTOBUF        "Build protobuf with eCAL"                                          ON)
+  option(ECAL_THIRDPARTY_BUILD_YAML-CPP        "Build yaml-cpp with eCAL"                                          ON)
+  option(ECAL_THIRDPARTY_BUILD_CURL            "Build CURL with eCAL"                                              ON)
+  option(ECAL_THIRDPARTY_BUILD_HDF5            "Build HDF5 with eCAL"                                              ON)
+  cmake_dependent_option(ECAL_THIRDPARTY_BUILD_QWT "Build qwt::qwt with eCAL"                                      ON  "HAS_QT" OFF)
+  option(BUILD_SHARED_LIBS                     "Build shared libraries; required off on MSVC"                     OFF)
+else()
+  option(ECAL_THIRDPARTY_BUILD_PROTOBUF        "Build protobuf with eCAL"                                         OFF)
+  option(ECAL_THIRDPARTY_BUILD_YAML-CPP        "Build yaml-cpp with eCAL"                                         OFF)
+  option(ECAL_THIRDPARTY_BUILD_CURL            "Build CURL with eCAL"                                             OFF)
+  option(ECAL_THIRDPARTY_BUILD_HDF5            "Build HDF5 with eCAL"                                             OFF)
+  cmake_dependent_option(ECAL_THIRDPARTY_BUILD_QWT "Build qwt::qwt with eCAL"                                     OFF "HAS_QT" OFF)
+  # BUILD_SHARED_LIBS left undefined on non-MSVC to match prior behavior
+endif()
+
 # This should be ON, unless build ecal hdf5 for Matlab usage
 option(ECAL_LINK_HDF5_SHARED                   "Link shared libs of HDF5"                                          ON)
 
@@ -124,18 +159,8 @@ option(CPACK_PACK_WITH_INNOSETUP               "Create Innosetup installer for t
 
 set(ECAL_INSTALL_PYTHON_DIR "bin" CACHE PATH "Location to install the Python extension modules. Might be set by setupdtools install.")
 
-if(DEFINED SKBUILD_PROJECT_VERSION)
-  message(STATUS
-    "Using version from scikit-build-core: ${SKBUILD_PROJECT_VERSION}"
-  )
-  set(ECAL_BUILD_VERSION "${SKBUILD_PROJECT_VERSION}" CACHE STRING
-    "Version provided by scikit-build-core and setuptools-scm" FORCE
-  )
-else()
-  set(ECAL_BUILD_VERSION "0.0.0" CACHE STRING
-    "Inject a build version if not building from a git repository"
-  )
-endif()
+set(ECAL_BUILD_VERSION "0.0.0" CACHE STRING "Inject a build version if not building from a git repository")
+
 
 set(ECAL_CSHARP_BUILD_SAMPLES  ${BUILD_SAMPLES})
 
@@ -145,7 +170,11 @@ if(${CMAKE_CROSSCOMPILING})
   set(THREADS_PTHREAD_ARG "2" CACHE STRING "Forcibly set by CMakeLists.txt." FORCE)
 endif()
 
+
 include(build_location)
+
+# find_project(eCAL calls shall be ignored, eCAL is build as part of the project)
+set(as_subproject eCAL)
 
 if(CMAKE_EXPORT_COMPILE_COMMANDS)
   message(STATUS "Compilation database will be created")
@@ -173,6 +202,59 @@ if(MSVC)
   endif()
 endif()
 
+if(MSVC)
+  message(STATUS "supress thirdparty warnings for windows platform ..")
+  set(CMAKE_CXX_FLAGS_OLD "${CMAKE_CXX_FLAGS}")
+  if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
+    string(REGEX REPLACE "/W[0-4]" "/W0" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+  else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W0")
+  endif()
+endif()
+
+# This is a list of subprojects, that might be build with eCAL
+# according to how options ECAL_BUILD_<SUBPROJECT> are set
+set(possible_subprojects
+  asio
+  CMakeFunctions
+  CURL
+  fineftp
+  ftxui
+  GTest
+  HDF5
+  #libssh2
+  Protobuf
+  qwt
+  recycle
+  simpleini
+  spdlog
+  tclap
+  tcp_pubsub
+  termcolor
+  tinyxml2
+  udpcap
+  yaml-cpp
+  #zlib zlibstatic  
+)
+
+# We should rename the option, but don't know how to do in in a
+# backwards compatible way
+set(ECAL_THIRDPARTY_BUILD_CMAKEFUNCTIONS ${ECAL_THIRDPARTY_BUILD_CMAKE_FUNCTIONS})
+
+# if a package does need to be build, include the cmake file with build instructions
+foreach (dep IN LISTS possible_subprojects)
+  string(TOUPPER ${dep} dep_upper)
+  string(TOLOWER ${dep} dep_lower)
+  if (ECAL_THIRDPARTY_BUILD_${dep_upper})
+    include(thirdparty/${dep_lower}/build-${dep_lower}.cmake)
+  endif ()
+endforeach ()
+
+if(MSVC)
+  message(STATUS "reset thirdparty warnings for windows platform ..")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_OLD}")
+endif()
+
 find_package(CMakeFunctions REQUIRED)
 
 git_revision_information(DEFAULT ${ECAL_BUILD_VERSION})
@@ -182,16 +264,16 @@ set(eCAL_VERSION_PATCH  ${GIT_REVISION_PATCH})
 set(eCAL_VERSION_STRING ${eCAL_VERSION_MAJOR}.${eCAL_VERSION_MINOR}.${eCAL_VERSION_PATCH})
 set(eCAL_VERSION        ${eCAL_VERSION_STRING})
 
-message(STATUS "eCAL version: ${eCAL_VERSION_STRING}")
-message(DEBUG "eCAL git describe tag: ${GIT_DESCRIBE_TAG}")
-
 include(helper_functions/ecal_add_functions)
 include(helper_functions/ecal_helper_functions)
 include(helper_functions/ecal_install_functions)
+include(helper_functions/ecal_python_functions)
 
 if(MSVC)
   set(eCAL_PLATFORM_TOOLSET ${CMAKE_VS_PLATFORM_TOOLSET})
 endif()
+
+
 
 # --------------------------------------------------------
 # offer the user the choice of overriding the installation directories
@@ -244,6 +326,11 @@ if(WIN32)
   set(CMAKE_MINSIZEREL_POSTFIX       minsize)
   set(CMAKE_RELWITHDEBINFO_POSTFIX   reldbg)
 endif()
+
+# --------------------------------------------------------
+# protobuf utilities
+# --------------------------------------------------------
+add_subdirectory(contrib/ecalproto)
 
 # --------------------------------------------------------
 # ecal app protobuf interface
@@ -477,6 +564,7 @@ message(STATUS "BUILD_APPS                                     : ${BUILD_APPS}")
 message(STATUS "BUILD_SAMPLES                                  : ${BUILD_SAMPLES}")
 message(STATUS "BUILD_TIME                                     : ${BUILD_TIME}")
 message(STATUS "BUILD_PY_BINDING                               : ${BUILD_PY_BINDING}")
+message(STATUS "BUILD_STANDALONE_PY_WHEEL                      : ${BUILD_STANDALONE_PY_WHEEL}")
 message(STATUS "BUILD_CSHARP_BINDING                           : ${BUILD_CSHARP_BINDING}")
 message(STATUS "BUILD_ECAL_TESTS                               : ${BUILD_ECAL_TESTS}")
 message(STATUS "ECAL_INCLUDE_PY_SAMPLES                        : ${ECAL_INCLUDE_PY_SAMPLES}")

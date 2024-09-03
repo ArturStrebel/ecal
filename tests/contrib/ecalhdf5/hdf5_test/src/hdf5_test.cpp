@@ -185,7 +185,7 @@ TestingMeasEntry topic_2
   std::vector<char> data;
 }
 
-TEST(contrib, HDF5_EscapeUnescape)
+TEST(HDF5, EscapeUnescape)
 {
   std::string test_string             = "This string contains commata,slashes/ spaces, a percent sign (%), a bell\a, nasty line endings\r\n and a german letter oe from the Latin-1 codepage: \xF8";
   std::string expected_escaped_string = "This string contains commata%2Cslashes%2F spaces%2C a percent sign (%25)%2C a bell%07%2C nasty line endings%0D%0A and a german letter oe from the Latin-1 codepage: %F8";
@@ -202,7 +202,7 @@ TEST(contrib, HDF5_EscapeUnescape)
 
 
 
-TEST(contrib, HDF5_WriteReadIntegrity)
+TEST(HDF5, WriteReadIntegrity)
 {
   // Define data that will be written to the file
 
@@ -258,7 +258,7 @@ TEST(contrib, HDF5_WriteReadIntegrity)
   }
 }
 
-TEST(contrib, HDF5_ReadWrite)
+TEST(HDF5, ReadWrite)
 {
   std::string file_name = "meas_readwrite";
 
@@ -274,7 +274,7 @@ TEST(contrib, HDF5_ReadWrite)
 }
 
 
-TEST(contrib, HDF5_IsOneFilePerChannelEnabled)
+TEST(HDF5, IsOneFilePerChannelEnabled)
 {
   eCAL::eh5::HDF5Meas hdf5_writer;
   std::string base_name = "output";
@@ -296,7 +296,7 @@ TEST(contrib, HDF5_IsOneFilePerChannelEnabled)
   EXPECT_TRUE(!hdf5_writer.IsOneFilePerChannelEnabled());
 }
 
-TEST(contrib, HDF5_SetOneFilePerChannelEnabled)
+TEST(HDF5, SetOneFilePerChannelEnabled)
 {
   std::string base_name = "output";
   
@@ -344,7 +344,7 @@ TEST(contrib, HDF5_SetOneFilePerChannelEnabled)
 
 }
 
-TEST(contrib, HDF5_EscapeFilenamesForOneFilePerChannel)
+TEST(HDF5, EscapeFilenamesForOneFilePerChannel)
 {
   // Define data that will be written to the file
   TestingMeasEntry normal_ascii = topic_1;
@@ -420,7 +420,7 @@ TEST(contrib, HDF5_EscapeFilenamesForOneFilePerChannel)
 }
 
 // This test validates that Datatypinformation is stored to / can be retrieved from the measurement correctly.
-TEST(contrib, HDF5_WriteReadTopicTypeInformation)
+TEST(HDF5, WriteReadTopicTypeInformation)
 {
   // Define data that will be written to the file
   TestingMeasEntry entry;
@@ -457,7 +457,7 @@ TEST(contrib, HDF5_WriteReadTopicTypeInformation)
   }
 }
 
-TEST(contrib, HDF5_WriteReadTopicTypeInformationDeprecated)
+TEST(HDF5, WriteReadTopicTypeInformationDeprecated)
 {
   // Define data that will be written to the file
   TestingMeasEntry entry;

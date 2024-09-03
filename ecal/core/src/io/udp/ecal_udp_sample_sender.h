@@ -23,10 +23,11 @@
 
 #pragma once
 
-#include "io/udp/ecal_udp_sender_attr.h"
+#include "io/udp/sendreceive/udp_sender.h"
 
-#include <ecaludp/socket.h>
-
+#include <cstddef>
+#include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -37,17 +38,15 @@ namespace eCAL
     class CSampleSender
     {
     public:
-      explicit CSampleSender(const SSenderAttr& attr_);
-      virtual ~CSampleSender();
-
+      explicit CSampleSender(const IO::UDP::SSenderAttr& attr_);
       size_t Send(const std::string& sample_name_, const std::vector<char>& serialized_sample_);
 
     private:
-      void InitializeSocket(const SSenderAttr& attr_);
+      IO::UDP::SSenderAttr                 m_attr;
+      std::shared_ptr<IO::UDP::CUDPSender> m_udp_sender;
 
-      std::unique_ptr<asio::io_context>       m_io_context;
-      std::unique_ptr<ecaludp::Socket>        m_socket;
-      asio::ip::udp::endpoint                 m_destination_endpoint;
+      std::mutex                           m_payload_mutex;
+      std::vector<char>                    m_payload;
     };
   }
 }

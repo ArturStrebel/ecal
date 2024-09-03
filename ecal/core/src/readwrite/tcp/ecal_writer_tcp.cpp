@@ -21,9 +21,10 @@
  * @brief  tcp writer
 **/
 
-#include <ecal/ecal_config.h>
-
+#include "config/ecal_config_reader_hlp.h"
 #include "serialization/ecal_serialize_sample_payload.h"
+
+#include <ecal/ecal_config.h>
 
 #include "ecal_writer_tcp.h"
 #include "ecal_tcp_pubsub_logger.h"
@@ -37,8 +38,31 @@ namespace eCAL
   std::mutex                            CDataWriterTCP::g_tcp_writer_executor_mtx;
   std::shared_ptr<tcp_pubsub::Executor> CDataWriterTCP::g_tcp_writer_executor;
 
-  CDataWriterTCP::CDataWriterTCP(const std::string& host_name_, const std::string& topic_name_, const std::string& topic_id_, const Publisher::Layer::TCP::Configuration& tcp_config_) :
-    m_config(tcp_config_)
+  CDataWriterTCP::CDataWriterTCP() : m_port(0)
+  {
+  }
+
+  CDataWriterTCP::~CDataWriterTCP()
+  {
+    Destroy();
+  }
+
+  SWriterInfo CDataWriterTCP::GetInfo()
+  {
+    SWriterInfo info_;
+
+    info_.name                 = "tcp";
+    info_.description          = "tcp data writer";
+
+    info_.has_mode_local       = true;
+    info_.has_mode_cloud       = true;
+
+    info_.send_size_max        = -1;
+
+    return info_;
+  }
+
+  bool CDataWriterTCP::Create(const std::string& host_name_, const std::string& topic_name_, const std::string& topic_id_)
   {
     {
       const std::lock_guard<std::mutex> lock(g_tcp_writer_executor_mtx);
@@ -56,21 +80,19 @@ namespace eCAL
     m_host_name  = host_name_;
     m_topic_name = topic_name_;
     m_topic_id   = topic_id_;
+
+    return true;
   }
 
-  SWriterInfo CDataWriterTCP::GetInfo()
+  bool CDataWriterTCP::Destroy()
   {
-    SWriterInfo info_;
+    if(!m_publisher) return true;
 
-    info_.name           = "tcp";
-    info_.description    = "tcp data writer";
+    // destroy publisher
+    m_publisher = nullptr;
+    m_port      = 0;
 
-    info_.has_mode_local = true;
-    info_.has_mode_cloud = true;
-
-    info_.send_size_max  = -1;
-
-    return info_;
+    return true;
   }
 
   bool CDataWriterTCP::Write(const void* const buf_, const SWriterAttr& attr_)

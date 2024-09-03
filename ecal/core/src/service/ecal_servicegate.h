@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@
 #pragma once
 
 #include "ecal_def.h"
-#include "serialization/ecal_struct_sample_registration.h"
 
 #include <atomic>
 #include <shared_mutex>
@@ -40,13 +39,13 @@ namespace eCAL
     CServiceGate();
     ~CServiceGate();
 
-    void Start();
-    void Stop();
+    void Create();
+    void Destroy();
 
     bool Register  (CServiceServerImpl* service_);
     bool Unregister(CServiceServerImpl* service_);
 
-    void GetRegistrations(Registration::SampleList& reg_sample_list_);
+    void RefreshRegistrations();
 
   protected:
     static std::atomic<bool> m_created;

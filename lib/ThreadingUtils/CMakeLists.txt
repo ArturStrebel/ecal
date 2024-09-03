@@ -18,8 +18,6 @@
 
 project(ThreadingUtils)
 
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
 find_package(Threads REQUIRED)
 
 set (threading_utils_includes

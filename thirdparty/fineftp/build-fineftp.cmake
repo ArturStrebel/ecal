@@ -1,4 +1,5 @@
-include_guard(GLOBAL)
+add_subdirectory(thirdparty/fineftp/fineftp-server/fineftp-server EXCLUDE_FROM_ALL)
+set_property(TARGET server PROPERTY FOLDER lib/fineftp)
+add_library(fineftp::server ALIAS server)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/fineftp-server/fineftp-server thirdparty/fineftp EXCLUDE_FROM_ALL SYSTEM)
-set_property(TARGET server PROPERTY FOLDER thirdparty/fineftp)
+list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/Modules)

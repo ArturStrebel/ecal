@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,6 @@
 
 #pragma once
 
-#include <ecal/config/publisher.h>
-
 #include "readwrite/ecal_writer_base.h"
 
 #include <tcp_pubsub/executor.h>
@@ -40,23 +38,27 @@ namespace eCAL
   class CDataWriterTCP : public CDataWriterBase
   {
   public:
-    CDataWriterTCP(const std::string& host_name_, const std::string& topic_name_, const std::string& topic_id_, const Publisher::Layer::TCP::Configuration& tcp_config_);
+    CDataWriterTCP();
+    ~CDataWriterTCP() override;
 
     SWriterInfo GetInfo() override;
+
+    bool Create(const std::string& host_name_, const std::string& topic_name_, const std::string & topic_id_) override;
+    // this virtual function is called during construction/destruction,
+    // so, mark it as final to ensure that no derived classes override it.
+    bool Destroy() final;
 
     bool Write(const void* buf_, const SWriterAttr& attr_) override;
 
     Registration::ConnectionPar GetConnectionParameter() override;
 
   private:
-    Publisher::Layer::TCP::Configuration         m_config;
-
     std::vector<char>                            m_header_buffer;
 
     static std::mutex                            g_tcp_writer_executor_mtx;
     static std::shared_ptr<tcp_pubsub::Executor> g_tcp_writer_executor;
 
     std::shared_ptr<tcp_pubsub::Publisher>       m_publisher;
-    uint16_t                                     m_port = 0;
+    uint16_t                                     m_port;
   };
 }

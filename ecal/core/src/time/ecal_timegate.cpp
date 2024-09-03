@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@
 
 #include <ecal/ecal_config.h>
 
+#include "config/ecal_config_reader_hlp.h"
 #include "ecal_def.h"
 #include "ecal_timegate.h"
 #include "util/getenvvar.h"
@@ -66,10 +67,10 @@ namespace eCAL
 
   CTimeGate::~CTimeGate()
   {
-    Stop();
+    Destroy();
   }
 
-  void CTimeGate::Start(enum eTimeSyncMode sync_mode_)
+  void CTimeGate::Create(enum eTimeSyncMode sync_mode_)
   {
     if(m_created) return;
 
@@ -88,7 +89,7 @@ namespace eCAL
       m_successfully_loaded_rt = LoadModule(m_time_sync_modname, m_time_sync_rt);
       break;
     case eTimeSyncMode::replay:
-      m_time_sync_modname = Config::GetTimesyncModuleReplay();
+      m_time_sync_modname = eCALPAR(TIME, SYNC_MOD_REPLAY);
       m_successfully_loaded_replay = LoadModule(m_time_sync_modname, m_time_sync_replay);
       break;
     }
@@ -108,7 +109,7 @@ namespace eCAL
     m_created = true;
   }
 
-  void CTimeGate::Stop()
+  void CTimeGate::Destroy()
   {
     if(!m_created) return;
     switch (m_sync_mode)

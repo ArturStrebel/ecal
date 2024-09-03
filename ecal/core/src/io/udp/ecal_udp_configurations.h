@@ -23,20 +23,12 @@
 
 #pragma once
 
-#include <array>
 #include <string>
 
 namespace eCAL
 {
   namespace UDP
   {
-    /**
-     * @brief Create eCAL specific UDP datagram header.
-     *
-     * @return The four magic letters :).
-     */
-    std::array<char, 4> GeteCALDatagramHeader();
-
     /**
      * @brief IsBroadcast() retrieves if we communicate via UDP Broadcast or UDP Multicast.
      *
@@ -147,20 +139,5 @@ namespace eCAL
      * @return The TTL value for UDP multicast communication based on the network configuration.
      */    
     int GetMulticastTtl();
-
-    /**
-     * @brief GetReceiveBufferSize retrieves the receive buffer size for UDP multicast communication.
-     * 
-     * @return The receive buffer size in bytes.
-     */
-    int GetReceiveBufferSize();
-
-    /**
-     * @brief GetSendBufferSize retrieves the send buffer size for UDP multicast communication.
-     * 
-     * @return The send buffer size in bytes.
-     */
-    int GetSendBufferSize();
-
   }
 }

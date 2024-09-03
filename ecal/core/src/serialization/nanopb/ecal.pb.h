@@ -14,8 +14,7 @@
 #endif
 
 /* Enum definitions */
-typedef enum _eCAL_pb_eCmdType { /* Reserved fields in enums are not supported in protobuf 3.0
- reserved 7 to 11; */
+typedef enum _eCAL_pb_eCmdType {
     eCAL_pb_eCmdType_bct_none = 0, /* undefined command */
     eCAL_pb_eCmdType_bct_set_sample = 1, /* set sample content */
     eCAL_pb_eCmdType_bct_reg_publisher = 2, /* register publisher */
@@ -31,8 +30,7 @@ typedef enum _eCAL_pb_eCmdType { /* Reserved fields in enums are not supported i
 } eCAL_pb_eCmdType;
 
 /* Struct definitions */
-typedef struct _eCAL_pb_Content { /* Reserved fields in enums are not supported in protobuf 3.0
- reserved 5; */
+typedef struct _eCAL_pb_Content {
     int64_t id; /* sample id */
     int64_t clock; /* internal used clock */
     int64_t time; /* time the content was updated */

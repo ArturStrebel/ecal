@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@
 #include <ecal/ecal_callback.h>
 #include <ecal/ecal_deprecate.h>
 #include <ecal/ecal_os.h>
-#include <ecal/ecal_config.h>
 #include <ecal/ecal_types.h>
 
 #include <memory>
@@ -93,19 +92,17 @@ namespace eCAL
     /**
      * @brief Constructor.
      *
-     * @param topic_name_      Unique topic name.
-     * @param data_type_info_  Topic data type information (encoding, type, descriptor).
-     * @param config_          Optional configuration parameters.
+     * @param topic_name_   Unique topic name.
+     * @param topic_info_   Topic information (encoding, type, descriptor)
     **/
-    ECAL_API CSubscriber(const std::string& topic_name_, const SDataTypeInformation& data_type_info_, const Subscriber::Configuration& config_ = {});
+    ECAL_API CSubscriber(const std::string& topic_name_, const SDataTypeInformation& topic_info_);
 
     /**
      * @brief Constructor.
      * 
-     * @param topic_name_      Unique topic name.
-     * @param config_          Optional configuration parameters.
+     * @param topic_name_   Unique topic name.
     **/
-    ECAL_API explicit CSubscriber(const std::string& topic_name_, const Subscriber::Configuration& config_ = {});
+    ECAL_API explicit CSubscriber(const std::string& topic_name_);
 
     /**
      * @brief Destructor. 
@@ -135,22 +132,21 @@ namespace eCAL
     /**
      * @brief Creates this object.
      *
-     * @param topic_name_      Unique topic name.
-     * @param data_type_info_  Topic data type information (encoding, type, descriptor).
-     * @param config_          Optional configuration parameters.
-     *
-     * @return  True if it succeeds, false if it fails.
-    **/
-    ECAL_API bool Create(const std::string& topic_name_, const SDataTypeInformation& data_type_info_, const Subscriber::Configuration& config_ = {});
-
-    /**
-     * @brief Creates this object.
-     *
      * @param topic_name_   Unique topic name.
      *
      * @return  True if it succeeds, false if it fails.
     **/
     ECAL_API bool Create(const std::string& topic_name_);
+
+    /**
+     * @brief Creates this object.
+     *
+     * @param topic_name_   Unique topic name.
+     * @param topic_info_   Topic information (encoding, type, descriptor)
+     *
+     * @return  True if it succeeds, false if it fails.
+    **/
+    ECAL_API bool Create(const std::string& topic_name_, const SDataTypeInformation& topic_info_);
 
     /**
      * @brief Destroys this object. 
@@ -242,13 +238,6 @@ namespace eCAL
     ECAL_API bool IsCreated() const {return(m_created);}
 
     /**
-     * @brief Query if the subscriber is published.
-     *
-     * @return  true if published, false if not.
-    **/
-    ECAL_API bool IsPublished() const;
-
-    /**
      * @brief Query the number of publishers.
      *
      * @return  Number of publishers.
@@ -280,7 +269,8 @@ namespace eCAL
 
   protected:
     // class members
-    std::shared_ptr<CDataReader> m_datareader;
-    bool                         m_created;
+    std::shared_ptr<CDataReader>     m_datareader;
+    bool                             m_created;
+    bool                             m_initialized;
   };
 }

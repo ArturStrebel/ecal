@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,7 @@
 
 #include <gtest/gtest.h>
 
-enum {
-  CMN_REGISTRATION_REFRESH_MS = 1000
-};
+#define CMN_REGISTRATION_REFRESH 1000
 
 using namespace std::chrono_literals;
 
@@ -78,7 +76,7 @@ TEST(core_cpp_pubsub, TimingSubscriberReceive)
   eCAL::string::CSubscriber<std::string> sub("CLOCK");
 
   // let's match them
-  eCAL::Process::SleepMS(2 * CMN_REGISTRATION_REFRESH_MS);
+  eCAL::Process::SleepMS(2 * CMN_REGISTRATION_REFRESH);
 
   // Send nothing and make sure the functions return as specified
   std::string received;
@@ -175,14 +173,15 @@ TEST(core_cpp_pubsub, SporadicEmptyReceives)
   eCAL::string::CSubscriber<std::string> sub("CLOCK");
 
   // let's match them
-  eCAL::Process::SleepMS(2 * CMN_REGISTRATION_REFRESH_MS);
+  eCAL::Process::SleepMS(2 * CMN_REGISTRATION_REFRESH);
 
   // start publishing thread
   std::atomic<bool> pub_stop(false);
   std::thread pub_t([&pub, &pub_stop]() {
-    const std::string abc{ "abc" };
+    std::string abc{ "abc" };
     while (!pub_stop)
     {
+
       pub.Send(abc);
       std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
@@ -193,8 +192,7 @@ TEST(core_cpp_pubsub, SporadicEmptyReceives)
     std::string received;
     while (!sub_stop)
     {
-      // we define a maximum timeout of 10 sec to not get locked forever here in worst case
-      const bool got_data = sub.Receive(received, nullptr, 10*1000);
+      bool got_data = sub.Receive(received);
       if (got_data && received.empty())
       {
         FAIL() << "received empty string";
@@ -215,98 +213,4 @@ TEST(core_cpp_pubsub, SporadicEmptyReceives)
 
   // finalize eCAL API
   EXPECT_EQ(0, eCAL::Finalize());
-}
-
-TEST(PubSub, TestSubscriberSeen)
-{
-  // initialize eCAL API
-  EXPECT_EQ(0, eCAL::Initialize(0, nullptr, "subscriber_seen"));
-
-  // enable data loopback
-  eCAL::Util::EnableLoopback(true);
-
-  std::atomic<bool> subscriber_seen_at_publication_start(false);
-  std::atomic<bool> subscriber_seen_at_publication_end(false);
-
-  std::atomic<bool> do_start_publication(false);
-  std::atomic<bool> publication_finished(false);
-
-  // publishing thread
-  auto publisher_thread = [&]() {
-    eCAL::Publisher::Configuration pub_config;
-    pub_config.layer.shm.acknowledge_timeout_ms = 500;
-    eCAL::CPublisher pub("blob", pub_config);
-
-    int cnt(0);
-    const auto max_runs(1000);
-    while (eCAL::Ok())
-    {
-      if (do_start_publication && cnt < max_runs)
-      {
-        if (cnt == 0)
-        {
-          subscriber_seen_at_publication_start = pub.IsSubscribed();
-        }
-
-        pub.Send(std::to_string(cnt));
-        cnt++;
-
-        if (cnt == max_runs)
-        {
-          subscriber_seen_at_publication_end = pub.IsSubscribed();
-          publication_finished = true;
-          break;
-        }
-      }
-    }
-    };
-
-  // subscribing thread
-  auto subscriber_thread = [&]() {
-    eCAL::CSubscriber sub("blob");
-    bool received(false);
-    auto max_lines(10);
-    auto receive_lambda = [&received, &max_lines](const char* /*topic_name_*/, const struct eCAL::SReceiveCallbackData* data_)
-      {
-        if (max_lines)
-        {
-          // the final log should look like this
-          // -----------------------------------
-          //  Receiving 0
-          //  Receiving 1
-          //  Receiving 2
-          //  Receiving 3
-          //  Receiving 4
-          //  Receiving 5
-          //  Receiving 6
-          //  Receiving 7
-          //  Receiving 8
-          //  Receiving 9
-          // -----------------------------------
-          std::cout << "Receiving " << std::string(static_cast<const char*>(data_->buf), data_->size) << std::endl;
-          max_lines--;
-        }
-      };
-    sub.AddReceiveCallback(receive_lambda);
-
-    while (eCAL::Ok() && !publication_finished)
-    {
-      if (sub.IsPublished()) do_start_publication = true;
-    }
-    };
-
-  // create threads for publisher and subscriber
-  std::thread pub_thread(publisher_thread);
-  std::thread sub_thread(subscriber_thread);
-
-  // join threads to the main thread
-  pub_thread.join();
-  sub_thread.join();
-
-  // finalize eCAL API
-  eCAL::Finalize();
-
-  // check if the publisher has seen the subscriber
-  EXPECT_TRUE(subscriber_seen_at_publication_start);
-  EXPECT_TRUE(subscriber_seen_at_publication_end);
 }

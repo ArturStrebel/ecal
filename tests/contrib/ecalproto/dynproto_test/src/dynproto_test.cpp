@@ -17,7 +17,7 @@
  * ========================= eCAL LICENSE =================================
 */
 
-#include <ecal/msg/protobuf/ecal_proto_dyn.h>
+#include <ecal/protobuf/ecal_proto_dyn.h>
 
 #include <gtest/gtest.h>
 
@@ -29,7 +29,7 @@
 void ProcProtoMsg(const google::protobuf::Message& msg_, const std::string& prefix_ /* = "" */);
 
 // google test
-TEST(contrib, dynproto)
+TEST(DynProto, dynproto)
 { 
   // generate a class instance of Person
   pb::People::Person person;

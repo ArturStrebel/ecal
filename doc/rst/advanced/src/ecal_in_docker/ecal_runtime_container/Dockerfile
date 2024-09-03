@@ -12,11 +12,11 @@ RUN apt-get install -y ecal
 # You can omit this, if you don't want to build applications in the container.
 RUN apt-get install -y cmake g++ libprotobuf-dev protobuf-compiler
 
-# Set network_enabled = true in ecal.yaml.
+# Set network_enabled = true in ecal.ini.
 # You can omit this, if you only need local communication.
-RUN awk -F"=" '/^network_enabled/{$2="= true"}1' /etc/ecal/ecal.yaml > /etc/ecal/ecal.tmp && \
-	rm /etc/ecal/ecal.yaml && \
-	mv /etc/ecal/ecal.tmp /etc/ecal/ecal.yaml 
+RUN awk -F"=" '/^network_enabled/{$2="= true"}1' /etc/ecal/ecal.ini > /etc/ecal/ecal.tmp && \
+	rm /etc/ecal/ecal.ini && \
+	mv /etc/ecal/ecal.tmp /etc/ecal/ecal.ini 
 
 # Print the eCAL config
 RUN ecal_config

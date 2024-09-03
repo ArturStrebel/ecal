@@ -8,16 +8,9 @@ on:
 
 jobs:
   build-macos:
-    runs-on: macos-13
+    runs-on: macos-latest
 
     steps:
-      # XProtect can cause random failures if it decides that the DMG we create
-      # during the packaging phase is malware.
-      # See https://github.com/actions/runner-images/issues/7522 and https://github.com/servo/servo/pull/30779
-    - name: Kill XProtectBehaviorService
-      run: |
-          echo Killing XProtect.; sudo pkill -9 XProtect >/dev/null || true;
-
     - name: Downgrade Python version
       uses: actions/setup-python@v4
       id: cp39
@@ -63,7 +56,6 @@ jobs:
         mkdir "${{ runner.workspace }}/_build"
         cd "${{ runner.workspace }}/_build"
         cmake $GITHUB_WORKSPACE -G "Ninja" \
-        -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=cmake/submodule_dependencies.cmake \
         -DHAS_HDF5=ON \
         -DHAS_QT5=ON \
         -DHAS_CURL=ON \
@@ -91,22 +83,23 @@ jobs:
         -DECAL_THIRDPARTY_BUILD_RECYCLE=ON \
         -DECAL_THIRDPARTY_BUILD_TCP_PUBSUB=ON \
         -DECAL_THIRDPARTY_BUILD_QWT=ON \
+        -DECAL_THIRDPARTY_BUILD_YAML-CPP=ON \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_PREFIX_PATH=/usr/local/opt/hdf5@1.10 \
         -DCMAKE_CXX_STANDARD=17 \
         -DCMAKE_FIND_PACKAGE_PREFER_CONFIG=ON \
         -DPython_FIND_STRATEGY=LOCATION \
-        -DPython_FIND_REGISTRY=NEVER        
+        -DPython_FIND_REGISTRY=NEVER
+        sudo mkdir /etc/ecal
+        sudo cp "$GITHUB_WORKSPACE/ecal/core/cfg/ecal.ini" /etc/ecal
       shell: bash
 
     - name: Build Release
       run: cmake --build . --config Release
       working-directory: ${{ runner.workspace }}/_build
-    
-    - name: Create config path and copy ecal.yaml
-      run: | 
-           sudo mkdir /etc/ecal
-           sudo cp "./ecal/core/cfg/gen/ecal.yaml" /etc/ecal
+
+    - name: Build Python Wheel
+      run: cmake --build . --target create_python_wheel --config Release
       working-directory: ${{ runner.workspace }}/_build
 
 #    - name: Build Documentation C
@@ -123,15 +116,17 @@ jobs:
 #      working-directory: ${{ runner.workspace }}/_build
 
     - name: Pack
-      uses: nick-fields/retry@v2
-      with:
-        max_attempts: 3
-        retry_on: error
-        timeout_minutes: 3
-        command: cd ${{ runner.workspace }}/_build && cpack -G DragNDrop 
+      run: cpack -G DragNDrop
+      working-directory: ${{ runner.workspace }}/_build
 
     - name: Upload DMG
       uses: actions/upload-artifact@v4
       with:
         name: macos-dmg
         path: ${{ runner.workspace }}/_build/_deploy/*.dmg
+
+    - name: Upload Python Wheel
+      uses: actions/upload-artifact@v4
+      with:
+        name: macos-python-wheel
+        path: ${{ runner.workspace }}/_build/_deploy/*.whl

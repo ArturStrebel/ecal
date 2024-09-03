@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,8 +29,10 @@
 
 #include "ecal_process_stub.h"
 #include "ecal_utils/command_line.h"
+#include "ecal_utils/ecal_utils.h"
 #include "ecal_utils/str_convert.h"
 
+#include "config/ecal_config_reader_hlp.h"
 #include "io/udp/ecal_udp_configurations.h"
 
 #include <algorithm>
@@ -66,7 +68,6 @@
 #include <sys/select.h>
 #include <limits.h>
 #include <netinet/in.h>
-#include <ecal_utils/ecal_utils.h>
 #endif /* ECAL_OS_LINUX */
 
 #ifdef ECAL_OS_MACOS
@@ -81,7 +82,7 @@
 #endif
 
 #ifdef ECAL_CORE_NPCAP_SUPPORT
-#include <ecaludp/npcap_helpers.h>
+#include <udpcap/npcap_helpers.h>
 #endif // ECAL_CORE_NPCAP_SUPPORT
 
 #ifndef NDEBUG
@@ -192,7 +193,7 @@ namespace eCAL
 #if ECAL_CORE_TIMEPLUGIN
       sstream << "------------------------- TIME -----------------------------------" << '\n';
       sstream << "Synchronization realtime : " << Config::GetTimesyncModuleName() << '\n';
-      sstream << "Synchronization replay   : " << Config::GetTimesyncModuleReplay() << '\n';
+      sstream << "Synchronization replay   : " << eCALPAR(TIME, SYNC_MOD_REPLAY) << '\n';
       sstream << "State                    : ";
       if (g_timegate()->IsSynchronized()) sstream << " synchronized " << '\n';
       else                                sstream << " not synchronized " << '\n';
@@ -212,7 +213,7 @@ namespace eCAL
 #endif
 #ifdef ECAL_CORE_NPCAP_SUPPORT
       sstream << "Npcap UDP Reciever       : " << LayerMode(Config::IsNpcapEnabled());
-      if(Config::IsNpcapEnabled() && !ecaludp::npcap::is_initialized())
+      if(Config::IsNpcapEnabled() && !Udpcap::Initialize())
       {
         sstream << " (Init FAILED!)";
       }
@@ -629,7 +630,7 @@ namespace
     // Check whether we are able to use a terminal emulator. The requirements
     // are:
     //   - the DISPLAY variable must be set
-    //   - the terminal_emulator must be set in the ecal.yaml
+    //   - the terminal_emulator must be set in the ecal.ini
     //   - ecal_process_stub bust be available AND print the correct version
 
     // ------------------------ DISPLAY variable check -------------------------
@@ -650,11 +651,11 @@ namespace
     const std::string terminal_emulator_command = eCAL::Config::GetTerminalEmulatorCommand();
     if (!terminal_emulator_command.empty())
     {
-      STD_COUT_DEBUG("[PID " << getpid() << "]: " << "ecal.yaml terminal emulator command is: " << terminal_emulator_command << std::endl);
+      STD_COUT_DEBUG("[PID " << getpid() << "]: " << "ecal.ini terminal emulator command is: " << terminal_emulator_command << std::endl);
     }
     else
     {
-      STD_COUT_DEBUG("[PID " << getpid() << "]: " << "ecal.yaml terminal emulator command is not set. Not using terminal emulator." << std::endl);
+      STD_COUT_DEBUG("[PID " << getpid() << "]: " << "ecal.ini terminal emulator command is not set. Not using terminal emulator." << std::endl);
       return "";
     }
 
@@ -995,7 +996,7 @@ namespace eCAL
       // terminal emulator, when:
       //   - The process_mode_ is not set to hidden
       //   - the DISPLAY variable indicates that we have a display attached
-      //   - the terminal_emulator is set in the ecal.yaml
+      //   - the terminal_emulator is set in the ecal.ini
       //   - ecal_process_stub is available AND prints the correct version
 
       std::string terminal_emulator_command;

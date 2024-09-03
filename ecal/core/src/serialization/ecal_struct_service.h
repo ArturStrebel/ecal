@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,9 +82,12 @@ namespace eCAL
     struct Service
     {
       int32_t              rclock = 0;       // Registration clock
+      std::string          hname;            // Host name
       std::string          pname;            // Process name
       std::string          uname;            // Unit name
+      int32_t              pid = 0;          // Process id
       std::string          sname;            // Service name
+      std::string          sid;              // Service id
       std::vector<Method>  methods;          // List of methods
       uint32_t             version = 0;      // Service protocol version
       uint32_t             tcp_port_v0 = 0;  // The TCP port used for that service (v0)
@@ -95,10 +98,12 @@ namespace eCAL
     struct Client
     {
       int32_t              rclock = 0;       // Registration clock
+      std::string          hname;            // Host name
       std::string          pname;            // Process name
       std::string          uname;            // Unit name
+      int32_t              pid = 0;          // Process id
       std::string          sname;            // Service name
-      std::vector<Method>  methods;          // List of methods
+      std::string          sid;              // Service id
       uint32_t             version = 0;      // Client protocol version
     };
   }

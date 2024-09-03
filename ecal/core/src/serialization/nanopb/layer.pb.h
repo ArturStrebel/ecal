@@ -10,8 +10,7 @@
 #endif
 
 /* Enum definitions */
-typedef enum _eCAL_pb_eTLayerType { /* Reserved fields in enums are not supported in protobuf 3.0
- reserved 2, 3, 42; */
+typedef enum _eCAL_pb_eTLayerType {
     eCAL_pb_eTLayerType_tl_none = 0, /* undefined */
     eCAL_pb_eTLayerType_tl_ecal_udp_mc = 1, /* ecal udp multicast */
     /* 2 = ecal udp unicast (not supported anymore)
@@ -35,8 +34,7 @@ typedef struct _eCAL_pb_LayerParTcp {
     int32_t port; /* tcp writers port number */
 } eCAL_pb_LayerParTcp;
 
-typedef struct _eCAL_pb_ConnnectionPar { /* Reserved fields in enums are not supported in protobuf 3.0
- reserved 3; */
+typedef struct _eCAL_pb_ConnnectionPar {
     bool has_layer_par_udpmc;
     eCAL_pb_LayerParUdpMC layer_par_udpmc; /* parameter for ecal udp multicast */
     bool has_layer_par_shm;
@@ -46,14 +44,12 @@ typedef struct _eCAL_pb_ConnnectionPar { /* Reserved fields in enums are not sup
     eCAL_pb_LayerParTcp layer_par_tcp; /* parameter for ecal tcp */
 } eCAL_pb_ConnnectionPar;
 
-typedef struct _eCAL_pb_TLayer { /* Reserved fields in enums are not supported in protobuf 3.0
- reserved 4; */
+typedef struct _eCAL_pb_TLayer {
     eCAL_pb_eTLayerType type; /* transport layer type */
     int32_t version; /* transport layer version */
-    bool active; /* transport layer in use ? */
+    bool confirmed; /* transport layer used ? */
     bool has_par_layer;
     eCAL_pb_ConnnectionPar par_layer; /* transport layer parameter */
-    bool enabled; /* transport layer enabled ? */
 } eCAL_pb_TLayer;
 
 
@@ -78,12 +74,12 @@ extern "C" {
 #define eCAL_pb_LayerParShm_init_default         {{{NULL}, NULL}}
 #define eCAL_pb_LayerParTcp_init_default         {0}
 #define eCAL_pb_ConnnectionPar_init_default      {false, eCAL_pb_LayerParUdpMC_init_default, false, eCAL_pb_LayerParShm_init_default, false, eCAL_pb_LayerParTcp_init_default}
-#define eCAL_pb_TLayer_init_default              {_eCAL_pb_eTLayerType_MIN, 0, 0, false, eCAL_pb_ConnnectionPar_init_default, 0}
+#define eCAL_pb_TLayer_init_default              {_eCAL_pb_eTLayerType_MIN, 0, 0, false, eCAL_pb_ConnnectionPar_init_default}
 #define eCAL_pb_LayerParUdpMC_init_zero          {0}
 #define eCAL_pb_LayerParShm_init_zero            {{{NULL}, NULL}}
 #define eCAL_pb_LayerParTcp_init_zero            {0}
 #define eCAL_pb_ConnnectionPar_init_zero         {false, eCAL_pb_LayerParUdpMC_init_zero, false, eCAL_pb_LayerParShm_init_zero, false, eCAL_pb_LayerParTcp_init_zero}
-#define eCAL_pb_TLayer_init_zero                 {_eCAL_pb_eTLayerType_MIN, 0, 0, false, eCAL_pb_ConnnectionPar_init_zero, 0}
+#define eCAL_pb_TLayer_init_zero                 {_eCAL_pb_eTLayerType_MIN, 0, 0, false, eCAL_pb_ConnnectionPar_init_zero}
 
 /* Field tags (for use in manual encoding/decoding) */
 #define eCAL_pb_LayerParShm_memory_file_list_tag 1
@@ -93,9 +89,8 @@ extern "C" {
 #define eCAL_pb_ConnnectionPar_layer_par_tcp_tag 4
 #define eCAL_pb_TLayer_type_tag                  1
 #define eCAL_pb_TLayer_version_tag               2
-#define eCAL_pb_TLayer_active_tag                3
+#define eCAL_pb_TLayer_confirmed_tag             3
 #define eCAL_pb_TLayer_par_layer_tag             5
-#define eCAL_pb_TLayer_enabled_tag               6
 
 /* Struct field encoding specification for nanopb */
 #define eCAL_pb_LayerParUdpMC_FIELDLIST(X, a) \
@@ -126,9 +121,8 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  layer_par_tcp,     4)
 #define eCAL_pb_TLayer_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, UENUM,    type,              1) \
 X(a, STATIC,   SINGULAR, INT32,    version,           2) \
-X(a, STATIC,   SINGULAR, BOOL,     active,            3) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  par_layer,         5) \
-X(a, STATIC,   SINGULAR, BOOL,     enabled,           6)
+X(a, STATIC,   SINGULAR, BOOL,     confirmed,         3) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  par_layer,         5)
 #define eCAL_pb_TLayer_CALLBACK NULL
 #define eCAL_pb_TLayer_DEFAULT NULL
 #define eCAL_pb_TLayer_par_layer_MSGTYPE eCAL_pb_ConnnectionPar

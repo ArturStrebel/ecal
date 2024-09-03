@@ -1,6 +1,6 @@
 # ========================= eCAL LICENSE =================================
 #
-# Copyright (C) 2016 - 2024 Continental Corporation
+# Copyright (C) 2016 - 2019 Continental Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,18 +32,6 @@ add_subdirectory(cpp/measurement/benchmark)
 add_subdirectory(cpp/measurement/measurement_read)
 add_subdirectory(cpp/measurement/measurement_write)
 endif(HAS_HDF5)
-
-if (HAS_CAPNPROTO)
-add_subdirectory(cpp/pubsub/capnp/addressbook_rec)
-add_subdirectory(cpp/pubsub/capnp/addressbook_rec_cb)
-add_subdirectory(cpp/pubsub/capnp/addressbook_rec_dynamic)
-add_subdirectory(cpp/pubsub/capnp/addressbook_snd)
-endif(HAS_CAPNPROTO)
-
-if (HAS_FLATBUFFERS)
-add_subdirectory(cpp/pubsub/flatbuffer/monster_rec)
-add_subdirectory(cpp/pubsub/flatbuffer/monster_snd)
-endif(HAS_FLATBUFFERS)
 
 # services
 add_subdirectory(cpp/services/ecalplayer_client)
@@ -77,7 +65,6 @@ if(BUILD_PY_BINDING)
 
     # monitoring
     add_subdirectory(python/monitoring/monitoring)
-    add_subdirectory(python/monitoring/monitoring_json)
 
     # pubsub
     add_subdirectory(python/pubsub/protobuf/person_rec)
@@ -86,9 +73,6 @@ if(BUILD_PY_BINDING)
     add_subdirectory(python/pubsub/string/minimal_rec)
     add_subdirectory(python/pubsub/string/minimal_rec_cb)
     add_subdirectory(python/pubsub/string/minimal_snd)
-    add_subdirectory(python/pubsub/binary/binary_rec)
-    add_subdirectory(python/pubsub/binary/binary_rec_cb)
-    add_subdirectory(python/pubsub/binary/binary_snd)
 
     # services
     add_subdirectory(python/services/minimal_service)

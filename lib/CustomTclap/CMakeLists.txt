@@ -18,8 +18,6 @@
 
 project(CustomTclap)
 
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
 find_package(tclap REQUIRED)
 
 set(include_files

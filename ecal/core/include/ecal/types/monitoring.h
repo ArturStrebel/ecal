@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,9 +64,9 @@ namespace eCAL
 
     struct TLayer
     {
-      eTLayerType  type    = tl_none;                           //<! transport layer type
-      int32_t      version = 0;                                 //<! transport layer version
-      bool         active  = false;                             //<! transport layer used?
+      eTLayerType  type      = tl_none;                         //<! transport layer type
+      int32_t      version   = 0;                               //<! transport layer version
+      bool         confirmed = false;                           //<! transport layer used?
     };
 
     struct STopicMon                                            //<! eCAL Topic struct
@@ -169,8 +169,6 @@ namespace eCAL
 
       std::string  sname;                                       //<! service name
       std::string  sid;                                         //<! service id
-
-      std::vector<SMethodMon>  methods;                         //<! list of methods
 
       uint32_t     version{0};                                  //<! client protocol version
     };

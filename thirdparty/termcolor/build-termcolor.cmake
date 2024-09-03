@@ -1,3 +1,3 @@
-include_guard(GLOBAL)
+add_subdirectory(thirdparty/termcolor/termcolor EXCLUDE_FROM_ALL)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/termcolor thirdparty/termcolor EXCLUDE_FROM_ALL SYSTEM)
+list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/Modules)

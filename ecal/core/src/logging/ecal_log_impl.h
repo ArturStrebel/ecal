@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,14 +58,14 @@ namespace eCAL
     ~CLog();
 
     /**
-     * @brief Start logging.
+     * @brief Create log class.
     **/
-    void Start();
+    void Create();
 
     /**
-     * @brief Stop logging.
+     * @brief Destroy log class.
     **/
-    void Stop();
+    void Destroy();
 
     /**
       * @brief Sets the log level.

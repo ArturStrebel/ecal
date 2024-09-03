@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,10 +31,9 @@
 // Forward declaration of global accessible classes
 namespace eCAL
 {
-  class   CGlobals;
-  class   CLog;
-  struct  Configuration;
-
+  class  CGlobals;
+  class  CConfig;
+  class  CLog;
 #if ECAL_CORE_MONITORING
   class  CMonitoring;
 #endif
@@ -61,11 +60,9 @@ namespace eCAL
   class  CMemFileMap;
 #endif
 
-  void SetGlobalUnitName(const char *unit_name_);
-  void InitGlobals();
-
   // Declaration of getter functions for globally accessible variable instances
   CGlobals*               g_globals();
+  CConfig*                g_config();
   CLog*                   g_log();
 #if ECAL_CORE_MONITORING
   CMonitoring*            g_monitoring();
@@ -91,7 +88,6 @@ namespace eCAL
 #if defined(ECAL_CORE_REGISTRATION_SHM) || defined(ECAL_CORE_TRANSPORT_SHM)
   CMemFileThreadPool*     g_memfile_pool();
   CMemFileMap*            g_memfile_map();
-
 #endif
 
   // declaration of globally accessible variables
@@ -99,7 +95,6 @@ namespace eCAL
   extern std::atomic<int>              g_globals_ctx_ref_cnt;
 
   extern std::string                   g_default_ini_file;
-  extern Configuration                 g_ecal_configuration;
 
   extern std::string                   g_host_name;
   extern std::string                   g_unit_name;

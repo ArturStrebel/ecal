@@ -123,14 +123,11 @@ int main(int argc, char** argv)
   // initialize eCAL API
   eCAL::Initialize(argc, argv, nodeName);
 
-  // create publisher config
-  eCAL::Publisher::Configuration pub_config;
+  // create the publisher
+  eCAL::CPublisher pub(topicName, { "custom", structTypeName, "" });
 
   // turn zero copy mode on
-  pub_config.layer.shm.zero_copy_mode = true;
-
-  // create the publisher
-  eCAL::CPublisher pub(topicName, { "custom", structTypeName, "" }, pub_config);
+  //pub.ShmEnableZeroCopy(true);  // TODO: NEW PARAMETER API
 
   // create the simple struct payload
   CStructPayload struct_payload;

@@ -55,7 +55,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
   Threads::Threads
   spdlog::spdlog
   protobuf::libprotobuf
-  eCAL::core_protobuf
+  eCAL::core
   eCAL::app_pb
   eCAL::ecaltime_pb
   eCAL::measurement_hdf5

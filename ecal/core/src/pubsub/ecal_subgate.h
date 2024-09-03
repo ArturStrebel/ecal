@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,8 +40,8 @@ namespace eCAL
     CSubGate();
     ~CSubGate();
 
-    void Start();
-    void Stop();
+    void Create();
+    void Destroy();
 
     bool Register(const std::string& topic_name_, const std::shared_ptr<CDataReader>& datareader_);
     bool Unregister(const std::string& topic_name_, const std::shared_ptr<CDataReader>& datareader_);
@@ -51,10 +51,13 @@ namespace eCAL
     bool ApplySample(const char* serialized_sample_data_, size_t serialized_sample_size_, eTLayerType layer_);
     bool ApplySample(const std::string& topic_name_, const std::string& topic_id_, const char* buf_, size_t len_, long long id_, long long clock_, long long time_, size_t hash_, eTLayerType layer_);
 
-    void ApplyPubRegistration(const Registration::Sample& ecal_sample_);
-    void ApplyPubUnregistration(const Registration::Sample& ecal_sample_);
+    void ApplyLocPubRegistration(const Registration::Sample& ecal_sample_);
+    void ApplyLocPubUnregistration(const Registration::Sample& ecal_sample_);
 
-    void GetRegistrations(Registration::SampleList& reg_sample_list_);
+    void ApplyExtPubRegistration(const Registration::Sample& ecal_sample_);
+    void ApplyExtPubUnregistration(const Registration::Sample& ecal_sample_);
+
+    void RefreshRegistrations();
 
   protected:
     static std::atomic<bool> m_created;

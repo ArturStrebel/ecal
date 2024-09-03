@@ -1,5 +1,3 @@
-include_guard(GLOBAL)
-
 # Check if Npcap / Pcap++ are available as pre-downloaded .zip files
 if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/npcap/npcap-sdk.zip")
   set(NPCAP_SDK_ARCHIVE_URL "${CMAKE_CURRENT_LIST_DIR}/npcap/npcap-sdk.zip")
@@ -18,11 +16,14 @@ set(UDPCAP_THIRDPARTY_ENABLED          ON)
 set(UDPCAP_THIRDPARTY_USE_BUILTIN_ASIO OFF)
 
 # Add udpcap library from subdirectory
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/udpcap thirdparty/udpcap EXCLUDE_FROM_ALL SYSTEM)
+add_subdirectory(thirdparty/udpcap/udpcap EXCLUDE_FROM_ALL)
+add_library(udpcap::udpcap ALIAS udpcap)
 
 # Reset static / shared libs to old value
 set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_OLD})
 unset(BUILD_SHARED_LIBS_OLD)
 
 # move the udpcap target to a subdirectory in the IDE
-set_property(TARGET udpcap PROPERTY FOLDER thirdparty/udpcap)
+set_property(TARGET udpcap PROPERTY FOLDER lib/udpcap)
+
+list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/Modules)

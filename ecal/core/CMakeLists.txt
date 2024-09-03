@@ -1,6 +1,6 @@
 # ========================= eCAL LICENSE =================================
 #
-# Copyright (C) 2016 - 2024 Continental Corporation
+# Copyright (C) 2016 - 2019 Continental Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,12 +20,9 @@ project(core VERSION ${eCAL_VERSION_STRING})
 
 find_package(asio             REQUIRED)
 find_package(Threads          REQUIRED)
-find_package(ecaludp          REQUIRED)
 
-if (ECAL_CORE_CONFIGURATION)
-  find_package(yaml-cpp       REQUIRED)
-  include(${ECAL_PROJECT_ROOT}/thirdparty/yaml-cpp/compatibility-yaml-cpp.cmake)
-  yaml_cpp_create_compatibility_targets()
+if (ECAL_CORE_CONFIG_INIFILE)
+  find_package(simpleini      REQUIRED)
 endif()
 
 if (ECAL_CORE_COMMAND_LINE)
@@ -34,6 +31,10 @@ endif()
 
 if (ECAL_CORE_TRANSPORT_TCP)
   find_package(tcp_pubsub     REQUIRED)
+endif()
+
+if (ECAL_CORE_NPCAP_SUPPORT)
+  find_package(udpcap         REQUIRED)
 endif()
 
 # If we're currently doing a build within a git repository, we will configure the header files.
@@ -65,18 +66,12 @@ endif()
 # config
 ######################################
 set(ecal_config_src
-    src/config/default_configuration.cpp        
-    src/config/ecal_cmd_parser.cpp
     src/config/ecal_config.cpp
-    src/config/ecal_config_initializer.cpp
-    src/types/ecal_custom_data_types.cpp
+    src/config/ecal_config_reader.cpp
+    src/config/ecal_config_reader.h
+    src/config/ecal_config_reader_hlp.h
 )
-if (ECAL_CORE_CONFIGURATION)
-  list(APPEND ecal_config_src
-      src/config/configuration_to_yaml.cpp
-      src/config/configuration_reader.cpp
-  )
-endif()
+
 ######################################
 # io/mtx
 ######################################
@@ -144,11 +139,45 @@ endif()
 ######################################
 # io/udp
 ######################################
-# io/udp (npcap)
+# io/udp/fragmentation
+set(ecal_io_udp_fragmentation_src
+    src/io/udp/fragmentation/msg_type.h
+    src/io/udp/fragmentation/rcv_fragments.cpp
+    src/io/udp/fragmentation/rcv_fragments.h
+    src/io/udp/fragmentation/snd_fragments.cpp
+    src/io/udp/fragmentation/snd_fragments.h
+)
+
+# io/udp/sendreceive (npcap)
 if(ECAL_CORE_NPCAP_SUPPORT)
-set(ecal_io_udp_src_npcap 
-    src/io/udp/ecal_udp_sample_receiver_npcap.cpp
-    src/io/udp/ecal_udp_sample_receiver_npcap.h
+set(ecal_io_udp_sendreceive_src_npcap 
+   src/io/udp/sendreceive/udp_receiver_npcap.cpp
+   src/io/udp/sendreceive/udp_receiver_npcap.h
+)
+endif()
+
+# io/udp/sendreceive
+set(ecal_io_udp_sendreceive_src
+    src/io/udp/sendreceive/udp_receiver.cpp
+    src/io/udp/sendreceive/udp_receiver.h
+    src/io/udp/sendreceive/udp_receiver_asio.cpp
+    src/io/udp/sendreceive/udp_receiver_asio.h
+    src/io/udp/sendreceive/udp_sender.cpp
+    src/io/udp/sendreceive/udp_sender.h
+    ${ecal_io_udp_sendreceive_src_npcap}
+)
+
+# io/udp/sendreceive/linux
+if(UNIX)
+  set(ecal_io_udp_sendreceive_linux_src
+      src/io/udp/sendreceive/linux/socket_os.h
+)
+endif()
+
+# io/udp/sendreceive/win32
+if (WIN32)
+  set(ecal_io_udp_sendreceive_win_src
+      src/io/udp/sendreceive/win32/socket_os.h
 )
 endif()
 
@@ -156,25 +185,12 @@ endif()
 set(ecal_io_udp_src
     src/io/udp/ecal_udp_configurations.cpp
     src/io/udp/ecal_udp_configurations.h
-    src/io/udp/ecal_udp_receiver_attr.h
     src/io/udp/ecal_udp_sample_receiver.cpp
     src/io/udp/ecal_udp_sample_receiver.h
-    src/io/udp/ecal_udp_sample_receiver_asio.cpp
-    src/io/udp/ecal_udp_sample_receiver_asio.h
-    src/io/udp/ecal_udp_sample_receiver_base.h
     src/io/udp/ecal_udp_sample_sender.cpp
     src/io/udp/ecal_udp_sample_sender.h
-    src/io/udp/ecal_udp_sender_attr.h
     src/io/udp/ecal_udp_topic2mcast.h
-    ${ecal_io_udp_src_npcap}
 )
-
-# io/udp/sendreceive/linux
-if(UNIX)
-  set(ecal_io_udp_linux_src
-      src/io/udp/linux/socket_os.h
-)
-endif()
 
 ######################################
 # logging
@@ -219,10 +235,6 @@ endif()
 ######################################
 # readwrite
 ######################################
-set(ecal_readwrite_src
-    src/readwrite/ecal_transport_layer.h
-)
-
 if(ECAL_CORE_PUBLISHER)
   set(ecal_writer_src
       src/readwrite/ecal_writer.cpp
@@ -234,8 +246,8 @@ if(ECAL_CORE_PUBLISHER)
   )
   if(ECAL_CORE_TRANSPORT_UDP)
     list(APPEND ecal_writer_src
-        src/readwrite/udp/ecal_writer_udp.cpp
-        src/readwrite/udp/ecal_writer_udp.h
+        src/readwrite/udp/ecal_writer_udp_mc.cpp
+        src/readwrite/udp/ecal_writer_udp_mc.h
     )
   endif()
   if(ECAL_CORE_TRANSPORT_TCP)
@@ -261,8 +273,8 @@ if(ECAL_CORE_SUBSCRIBER)
   )
   if(ECAL_CORE_TRANSPORT_UDP)
     list(APPEND ecal_reader_src
-        src/readwrite/udp/ecal_reader_udp.cpp
-        src/readwrite/udp/ecal_reader_udp.h
+        src/readwrite/udp/ecal_reader_udp_mc.cpp
+        src/readwrite/udp/ecal_reader_udp_mc.h
     )
   endif()
   if(ECAL_CORE_TRANSPORT_TCP)
@@ -284,31 +296,15 @@ endif()
 ######################################
 if (ECAL_CORE_REGISTRATION)
   set(ecal_registration_src
-      src/registration/ecal_process_registration.cpp
-      src/registration/ecal_process_registration.h
-      src/registration/ecal_registration.cpp
       src/registration/ecal_registration_provider.cpp
       src/registration/ecal_registration_provider.h
       src/registration/ecal_registration_receiver.cpp
       src/registration/ecal_registration_receiver.h
-      src/registration/ecal_registration_sample_applier.cpp
-      src/registration/ecal_registration_sample_applier.h
-      src/registration/ecal_registration_sample_applier_gates.cpp
-      src/registration/ecal_registration_sample_applier_gates.h      
-      src/registration/ecal_registration_sample_applier_user.cpp
-      src/registration/ecal_registration_sample_applier_user.h
-      src/registration/ecal_registration_sender.h
-      src/registration/udp/ecal_registration_receiver_udp.cpp
-      src/registration/udp/ecal_registration_receiver_udp.h
-      src/registration/udp/ecal_registration_sender_udp.cpp
-      src/registration/udp/ecal_registration_sender_udp.h
   )
   if(ECAL_CORE_REGISTRATION_SHM)
     list(APPEND ecal_registration_src
-        src/registration/shm/ecal_registration_receiver_shm.cpp
-        src/registration/shm/ecal_registration_receiver_shm.h
-        src/registration/shm/ecal_registration_sender_shm.cpp
-        src/registration/shm/ecal_registration_sender_shm.h
+        src/registration/ecal_registration_receiver_shm.cpp
+        src/registration/ecal_registration_receiver_shm.h
         src/registration/shm/ecal_memfile_broadcast.cpp
         src/registration/shm/ecal_memfile_broadcast.h
         src/registration/shm/ecal_memfile_broadcast_reader.cpp
@@ -453,7 +449,6 @@ set(ecal_c_src
     src/cimpl/ecal_monitoring_cimpl.cpp
     src/cimpl/ecal_process_cimpl.cpp
     src/cimpl/ecal_publisher_cimpl.cpp
-    src/cimpl/ecal_registration_cimpl.cpp
     src/cimpl/ecal_server_cimpl.cpp
     src/cimpl/ecal_subscriber_cimpl.cpp
     src/cimpl/ecal_time_cimpl.cpp
@@ -477,12 +472,10 @@ endif()
 set(ecal_header_cmn
     include/ecal/types/logging.h
     include/ecal/types/monitoring.h
-    include/ecal/config/configuration.h
-    include/ecal/config/publisher.h
-    include/ecal/config/subscriber.h
     include/ecal/ecal.h
     include/ecal/ecal_callback.h
     include/ecal/ecal_client.h
+    include/ecal/ecal_config.h
     include/ecal/ecal_core.h
     include/ecal/ecal_deprecate.h
     include/ecal/ecal_init.h
@@ -493,7 +486,6 @@ set(ecal_header_cmn
     include/ecal/ecal_monitoring.h
     include/ecal/ecal_process.h
     include/ecal/ecal_process_severity.h
-    include/ecal/ecal_registration.h
     include/ecal/ecal_publisher.h
     include/ecal/ecal_server.h
     include/ecal/ecal_service_info.h
@@ -514,7 +506,6 @@ set(ecal_header_cimpl
     include/ecal/cimpl/ecal_monitoring_cimpl.h
     include/ecal/cimpl/ecal_process_cimpl.h
     include/ecal/cimpl/ecal_publisher_cimpl.h
-    include/ecal/cimpl/ecal_registration_cimpl.h
     include/ecal/cimpl/ecal_server_cimpl.h
     include/ecal/cimpl/ecal_service_info_cimpl.h
     include/ecal/cimpl/ecal_subscriber_cimpl.h
@@ -529,6 +520,8 @@ set(ecal_header_msg
     include/ecal/msg/protobuf/client.h
     include/ecal/msg/protobuf/dynamic_publisher.h
     include/ecal/msg/protobuf/dynamic_subscriber.h    
+    include/ecal/msg/protobuf/ecal_proto_dyn.h
+    include/ecal/msg/protobuf/ecal_proto_hlp.h
     include/ecal/msg/protobuf/publisher.h
     include/ecal/msg/protobuf/server.h
     include/ecal/msg/protobuf/subscriber.h
@@ -547,13 +540,15 @@ set(ecal_sources
     ${ecal_io_shm_src}
     ${ecal_io_shm_linux_src}
     ${ecal_io_shm_win_src}
+    ${ecal_io_udp_fragmentation_src}
+    ${ecal_io_udp_sendreceive_src}
     ${ecal_io_udp_src}
-    ${ecal_io_udp_linux_src}
+    ${ecal_io_udp_sendreceive_linux_src}
+    ${ecal_io_udp_sendreceive_win_src}
     ${ecal_logging_src}
     ${ecal_monitoring_src}
     ${ecal_pub_src}
     ${ecal_sub_src}
-    ${ecal_readwrite_src}
     ${ecal_writer_src}
     ${ecal_reader_src}
     ${ecal_registration_src}
@@ -570,10 +565,6 @@ ecal_add_ecal_shared_library(${PROJECT_NAME}
     ${ecal_sources}
     ${CMAKE_CURRENT_BINARY_DIR}/include/ecal/ecal_defs.h
 )
-
-if (ECAL_CORE_CONFIGURATION)
-  target_compile_definitions(${PROJECT_NAME} PRIVATE ECAL_CORE_CONFIGURATION)
-endif()
 
 if(UNIX)
   set_source_files_properties(src/util/convert_utf.cpp PROPERTIES COMPILE_FLAGS -Wno-implicit-fallthrough)
@@ -617,7 +608,7 @@ target_compile_definitions(${PROJECT_NAME}
 )
 
 set(ECAL_CORE_FEATURES
-  ECAL_CORE_CONFIGURATION
+  ECAL_CORE_CONFIG_INIFILE
   ECAL_CORE_COMMAND_LINE
   ECAL_CORE_REGISTRATION
   ECAL_CORE_MONITORING
@@ -641,10 +632,10 @@ foreach(CORE_FEATURE ${ECAL_CORE_FEATURES})
   endif()
 endforeach()
 
-if(ECAL_CORE_CONFIGURATION)
+if(ECAL_CORE_CONFIG_INIFILE)
   target_link_libraries(${PROJECT_NAME}
     PRIVATE
-      yaml-cpp::yaml-cpp
+      simpleini::simpleini
   )
 endif()
 
@@ -669,10 +660,12 @@ if(ECAL_CORE_TRANSPORT_TCP)
   )
 endif()
 
-target_link_libraries(${PROJECT_NAME}
-  PRIVATE
-    ecaludp::ecaludp
-)
+if(ECAL_CORE_NPCAP_SUPPORT)
+  target_link_libraries(${PROJECT_NAME}
+    PRIVATE
+      udpcap::udpcap
+  )
+endif()
 
 target_include_directories(${PROJECT_NAME}
   PRIVATE 
@@ -739,22 +732,3 @@ if(UNIX)
 
     set_property(TARGET ${PROJECT_NAME_PROCESS_STUB} PROPERTY FOLDER core)
 endif(UNIX)
-
-if(ECAL_CORE_HAS_PROTOBUF)
-find_package(Protobuf REQUIRED)
-
-add_library(core_protobuf INTERFACE)
-add_library(eCAL::core_protobuf ALIAS core_protobuf)
-
-target_link_libraries(core_protobuf 
-  INTERFACE
-    eCAL::core
-    eCAL::proto
-)
-
-install(
-  TARGETS core_protobuf
-  EXPORT eCALCoreTargets  
-)
-
-endif()

@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,41 +27,10 @@
 
 #include <gtest/gtest.h>
 
-class TestingClock {
-public:
-  // Define the required types for TrivialClock
-  using duration = std::chrono::milliseconds;
-  using rep = duration::rep;
-  using period = duration::period;
-  using time_point = std::chrono::time_point<TestingClock>;
-  static const bool is_steady = false;
-
-  // Function to get the current time
-  static time_point now() noexcept {
-    return time_point(current_time);
-  }
-
-  // Function to manually set the current time
-  static void set_time(const time_point& tp) {
-    current_time = tp.time_since_epoch();
-  }
-
-  // Function to manually increment the current time by a given duration
-  static void increment_time(const duration& d) {
-    current_time += d;
-  }
-
-private:
-  static duration current_time;
-};
-
-// Initialize the static member
-TestingClock::duration TestingClock::current_time{ 0 };
-
-TEST(core_cpp_core, ExpMap_SetGet)
+TEST(core_cpp_util, ExpMap_SetGet)
 {
   // create the map with 2500 ms expiration
-  eCAL::Util::CExpirationMap<std::string, int, TestingClock> expmap(std::chrono::milliseconds(200));
+  eCAL::Util::CExpMap<std::string, int> expmap(std::chrono::milliseconds(200));
 
   // set "A"
   expmap["A"] = 1;
@@ -74,59 +43,52 @@ TEST(core_cpp_core, ExpMap_SetGet)
   EXPECT_EQ(1, expmap.size());
 
   // sleep
-  TestingClock::increment_time(std::chrono::milliseconds(150));
+  std::this_thread::sleep_for(std::chrono::milliseconds(150));
 
   // access and reset timer
   EXPECT_EQ(1, expmap["A"]);
 
   // check size
   //content = expmap.clone();
-  expmap.erase_expired();
+  expmap.remove_deprecated();
   EXPECT_EQ(1, expmap.size());
 
   // sleep
-  TestingClock::increment_time(std::chrono::milliseconds(150));
+  std::this_thread::sleep_for(std::chrono::milliseconds(150));
 
   // check size
   //content = expmap.clone();
-  expmap.erase_expired();
+  expmap.remove_deprecated();
   EXPECT_EQ(1, expmap.size());
 
   // sleep
-  TestingClock::increment_time(std::chrono::milliseconds(150));
+  std::this_thread::sleep_for(std::chrono::milliseconds(150));
 
   // check size
   //content = expmap.clone();
-  expmap.erase_expired();
+  expmap.remove_deprecated();
   EXPECT_EQ(0, expmap.size());
 
   expmap["A"] = 1;
-  TestingClock::increment_time(std::chrono::milliseconds(150));
+  std::this_thread::sleep_for(std::chrono::milliseconds(150));
   expmap["B"] = 2;
   expmap["C"] = 3;
-  expmap.erase_expired();
+  expmap.remove_deprecated();
   EXPECT_EQ(3, expmap.size());
-  TestingClock::increment_time(std::chrono::milliseconds(150));
+  std::this_thread::sleep_for(std::chrono::milliseconds(150));
   expmap["B"] = 4;
-  expmap.erase_expired();
+  expmap.remove_deprecated();
   EXPECT_EQ(2, expmap.size());
-  TestingClock::increment_time(std::chrono::milliseconds(150));
-  expmap.erase_expired();
+  std::this_thread::sleep_for(std::chrono::milliseconds(150));
+  expmap.remove_deprecated();
   EXPECT_EQ(1, expmap.size());
   // sleep
-  TestingClock::increment_time(std::chrono::milliseconds(150));
+  std::this_thread::sleep_for(std::chrono::milliseconds(150));
 }
 
-TEST(core_cpp_core, ExpMap_EraseEmptyMap)
+TEST(core_cpp_util, ExpMap_Insert)
 {
-  eCAL::Util::CExpirationMap<std::string, int, TestingClock> expmap(std::chrono::milliseconds(200));
-  expmap.erase_expired();
-  EXPECT_TRUE(expmap.empty());
-}
-
-TEST(core_cpp_core, ExpMap_Insert)
-{
-  eCAL::Util::CExpirationMap<std::string, int, TestingClock> expmap(std::chrono::milliseconds(200));
+  eCAL::Util::CExpMap<std::string, int> expmap(std::chrono::milliseconds(200));
   auto ret = expmap.insert(std::make_pair("A", 1));
 
   auto key = (*ret.first).first;
@@ -138,15 +100,15 @@ TEST(core_cpp_core, ExpMap_Insert)
 
   EXPECT_EQ(i, 1);
 
-  TestingClock::increment_time(std::chrono::milliseconds(300));
-  expmap.erase_expired();
+  std::this_thread::sleep_for(std::chrono::milliseconds(300));
+  expmap.remove_deprecated();
   EXPECT_EQ(0, expmap.size());
 }
 
 // This tests uses find to find an element
-TEST(core_cpp_core, ExpMap_Find)
+TEST(core_cpp_util, ExpMap_Find)
 {
-  eCAL::Util::CExpirationMap<std::string, int, TestingClock> expmap(std::chrono::milliseconds(200));
+  eCAL::Util::CExpMap<std::string, int> expmap(std::chrono::milliseconds(200));
 
   auto it = expmap.find("A");
   EXPECT_EQ(expmap.end(), it);
@@ -157,15 +119,15 @@ TEST(core_cpp_core, ExpMap_Find)
   int i = (*it).second;
   EXPECT_EQ(i, 1);
 
-  TestingClock::increment_time(std::chrono::milliseconds(300));
-  expmap.erase_expired();
+  std::this_thread::sleep_for(std::chrono::milliseconds(300));
+  expmap.remove_deprecated();
   EXPECT_EQ(0, expmap.size());
 }
 
-// This test assures that find can be called on a const CExpirationMap and returns an CExpirationMap::const_iterator
-TEST(core_cpp_core, ExpMap_FindConst)
+// This test assures that find can be called on a const CExpMap and returns an CExpMap::const_iterator
+TEST(core_cpp_util, ExpMap_FindConst)
 {
-  eCAL::Util::CExpirationMap<std::string, int, TestingClock> expmap(std::chrono::milliseconds(200));
+  eCAL::Util::CExpMap<std::string, int> expmap(std::chrono::milliseconds(200));
 
   auto it = expmap.find("A");
   EXPECT_EQ(expmap.end(), it);
@@ -175,19 +137,19 @@ TEST(core_cpp_core, ExpMap_FindConst)
   const auto& const_ref_exmap = expmap;
   auto const_it = const_ref_exmap.find("A");
   // assert that we are actually getting a const_iterator here!
-  static_assert(std::is_same<decltype(const_it), eCAL::Util::CExpirationMap<std::string, int, TestingClock>::const_iterator>::value, "We're not being returned a const_iterator from find.");
+  static_assert(std::is_same<decltype(const_it), eCAL::Util::CExpMap<std::string, int>::const_iterator>::value, "We're not being returned a const_iterator from find.");
   int i = (*const_it).second;
   EXPECT_EQ(i, 1);
 
-  TestingClock::increment_time(std::chrono::milliseconds(300));
-  expmap.erase_expired();
+  std::this_thread::sleep_for(std::chrono::milliseconds(300));
+  expmap.remove_deprecated();
   EXPECT_EQ(0, expmap.size());
 }
 
-TEST(core_cpp_core, ExpMap_Iterate)
+TEST(core_cpp_util, ExpMap_Iterate)
 {
   // create the map with 2500 ms expiration
-  eCAL::Util::CExpirationMap<std::string, int, TestingClock> expmap(std::chrono::milliseconds(200));
+  eCAL::Util::CExpMap<std::string, int> expmap(std::chrono::milliseconds(200));
   expmap["A"] = 1;
 
   std::string key;
@@ -203,7 +165,7 @@ TEST(core_cpp_core, ExpMap_Iterate)
   EXPECT_EQ(1, value);
 }
 
-void ConstRefIterate(const eCAL::Util::CExpirationMap<std::string, int, TestingClock>& map)
+void ConstRefIterate(const eCAL::Util::CExpMap<std::string, int>& map)
 {
   std::string key;
   int value;
@@ -218,34 +180,34 @@ void ConstRefIterate(const eCAL::Util::CExpirationMap<std::string, int, TestingC
   EXPECT_EQ(1, value);
 }
 
-TEST(core_cpp_core, ExpMap_ConstExpMapIterate)
+TEST(core_cpp_util, ExpMap_ConstExpMapIterate)
 {
   // create the map with 2500 ms expiration
-  eCAL::Util::CExpirationMap<std::string, int, TestingClock> expmap(std::chrono::milliseconds(200));
+  eCAL::Util::CExpMap<std::string, int> expmap(std::chrono::milliseconds(200));
   expmap["A"] = 1;
 
   ConstRefIterate(expmap);
 }
 
-TEST(core_cpp_core, ExpMap_Empty)
+TEST(core_cpp_util, ExpMap_Empty)
 {
-  eCAL::Util::CExpirationMap<std::string, int, TestingClock> expmap(std::chrono::milliseconds(200));
+  eCAL::Util::CExpMap<std::string, int> expmap(std::chrono::milliseconds(200));
   EXPECT_EQ(true, expmap.empty());
   expmap["A"] = 1;
   EXPECT_EQ(false, expmap.empty());
 }
 
-TEST(core_cpp_core, ExpMap_Size)
+TEST(core_cpp_util, ExpMap_Size)
 {
-  eCAL::Util::CExpirationMap<std::string, int, TestingClock> expmap(std::chrono::milliseconds(200));
+  eCAL::Util::CExpMap<std::string, int> expmap(std::chrono::milliseconds(200));
   EXPECT_EQ(0, expmap.size());
   expmap["A"] = 1;
   EXPECT_EQ(1, expmap.size());
 }
 
-TEST(core_cpp_core, ExpMap_Remove)
+TEST(core_cpp_util, ExpMap_Remove)
 {
-  eCAL::Util::CExpirationMap<std::string, int, TestingClock> expmap(std::chrono::milliseconds(200));
+  eCAL::Util::CExpMap<std::string, int> expmap(std::chrono::milliseconds(200));
   expmap["A"] = 1;
   EXPECT_EQ(1, expmap.size());
   EXPECT_TRUE(expmap.erase("A"));

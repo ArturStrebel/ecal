@@ -1,6 +1,6 @@
 # ========================= eCAL LICENSE =================================
 #
-# Copyright (C) 2016 - 2024 Continental Corporation
+# Copyright (C) 2016 - 2019 Continental Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ set(CMAKE_FIND_PACKAGE_PREFER_CONFIG ON)
 project(proto_dyn_json_rec)
 
 find_package(eCAL REQUIRED)
-find_package(Protobuf REQUIRED)
 
 set(proto_dyn_json_rec_src
     src/proto_dyn_json_rec.cpp
@@ -31,12 +30,11 @@ set(proto_dyn_json_rec_src
 
 ecal_add_sample(${PROJECT_NAME} ${proto_dyn_json_rec_src})
 
-target_link_libraries(${PROJECT_NAME}
-  PRIVATE
-    eCAL::core_protobuf
-)
+target_link_libraries(${PROJECT_NAME} eCAL::core)
 
-target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
+find_package(Protobuf REQUIRED)
+target_link_libraries(${PROJECT_NAME} protobuf::libprotobuf)
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_14)
 
 ecal_install_sample(${PROJECT_NAME})
 

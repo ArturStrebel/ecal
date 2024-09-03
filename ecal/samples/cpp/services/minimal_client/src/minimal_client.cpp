@@ -50,7 +50,7 @@ int main(int argc, char **argv)
   eCAL::Initialize(argc, argv, "minimal client");
 
   // create minimal service client
-  eCAL::CServiceClient minimal_client("service1", { {"echo", eCAL::SServiceMethodInformation()} });
+  eCAL::CServiceClient minimal_client("service1");
   minimal_client.AddResponseCallback(OnServiceResponse);
 
   while(eCAL::Ok())

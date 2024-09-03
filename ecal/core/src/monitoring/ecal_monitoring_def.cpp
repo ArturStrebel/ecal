@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,9 +29,9 @@
 
 namespace eCAL
 {
-  CMonitoring::CMonitoring(const Monitoring::Configuration& config_)
+  CMonitoring::CMonitoring()
   {
-    m_monitoring_impl = std::make_unique<CMonitoringImpl>(config_);
+    m_monitoring_impl = std::make_unique<CMonitoringImpl>();
   }
 
   CMonitoring::~CMonitoring()
@@ -39,12 +39,12 @@ namespace eCAL
     m_monitoring_impl.reset();
   }
 
-  void CMonitoring::Start()
+  void CMonitoring::Create()
   {
     m_monitoring_impl->Create();
   }
 
-  void CMonitoring::Stop()
+  void CMonitoring::Destroy()
   {
     m_monitoring_impl->Destroy();
   }

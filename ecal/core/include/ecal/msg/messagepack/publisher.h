@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,9 +54,8 @@ namespace eCAL
        * @brief  Constructor.
        *
        * @param topic_name_  Unique topic name.
-       * @param config_      Optional configuration parameters.
       **/
-      CPublisher(const std::string& topic_name_, const eCAL::Publisher::Configuration& config_ = {}) : CMsgPublisher<T>(topic_name_, GetDataTypeInformation(), config_)
+      CPublisher(const std::string& topic_name_) : CMsgPublisher<T>(topic_name_, GetDataTypeInformation())
       {
       }
 
@@ -84,13 +83,12 @@ namespace eCAL
        * @brief  Creates this object.
        *
        * @param topic_name_  Unique topic name.
-       * @param config_      Optional configuration parameters.
        *
        * @return  True if it succeeds, false if it fails.
       **/
-      bool Create(const std::string& topic_name_, const eCAL::Publisher::Configuration& config_ = {})
+      bool Create(const std::string& topic_name_)
       {
-        return(CMsgPublisher<T>::Create(topic_name_, GetDataTypeInformation(), config_));
+        return(CMsgPublisher<T>::Create(topic_name_, GetDataTypeInformation()));
       }
 
     private:
@@ -101,10 +99,10 @@ namespace eCAL
       **/
       SDataTypeInformation GetDataTypeInformation() const override
       {
-        SDataTypeInformation data_type_info;
-        data_type_info.encoding = "mpack";
+        SDataTypeInformation topic_info;
+        topic_info.encoding = "mpack";
         // empty descriptor, empty descriptor
-        return data_type_info;
+        return topic_info;
       }
 
       /**

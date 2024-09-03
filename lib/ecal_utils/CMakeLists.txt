@@ -17,8 +17,6 @@
 # ========================= eCAL LICENSE =================================
 project(ecal-utils)
 
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
 find_package(Threads REQUIRED)
 
 set (ecal_utils_includes

@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,16 +26,15 @@
 #include <ecal/ecal.h>
 #include <ecal/ecal_callback.h>
 #include <ecal/ecal_service_info.h>
-#include <ecal/service/server.h>
 
-#include "serialization/ecal_serialize_sample_registration.h"
-#include "serialization/ecal_struct_service.h"
-
-#include <atomic>
 #include <map>
 #include <memory>
 #include <mutex>
+
+#include <ecal/service/server.h>
 #include <string>
+
+#include "serialization/ecal_struct_service.h"
 
 namespace eCAL
 {
@@ -60,8 +59,9 @@ namespace eCAL
 
     ~CServiceServerImpl();
 
-    bool Start(const std::string& service_name_);
-    bool Stop();
+    bool Create(const std::string& service_name_);
+
+    bool Destroy();
 
     bool AddDescription(const std::string& method_, const SDataTypeInformation& request_type_information_, const SDataTypeInformation& response_type_information_);
       
@@ -80,16 +80,13 @@ namespace eCAL
     void RegisterClient(const std::string& key_, const SClientAttr& client_);
 
     // called by eCAL:CServiceGate every second to update registration layer
-    Registration::Sample GetRegistration();
+    void RefreshRegistration();
 
     std::string GetServiceName() { return m_service_name; };
 
   protected:
-    void Register();
+    void Register(bool force_);
     void Unregister();
-
-    Registration::Sample GetRegistrationSample();
-    Registration::Sample GetUnregistrationSample();
 
     /**
      * @brief Calls the request callback based on the request and fills the response
@@ -124,10 +121,10 @@ namespace eCAL
     std::mutex            m_event_callback_map_sync;
     EventCallbackMapT     m_event_callback_map;
     
+    bool                  m_created      = false;
+
     mutable std::mutex    m_connected_mutex;          //!< mutex protecting the m_connected_v0 and m_connected_v1 variable, as those are modified by the event callbacks in another thread.
     bool                  m_connected_v0 = false;
     bool                  m_connected_v1 = false;
-
-    std::atomic<bool>     m_created;
   };
 }

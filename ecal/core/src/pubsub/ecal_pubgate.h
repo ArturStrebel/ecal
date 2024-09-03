@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,8 +41,8 @@ namespace eCAL
     CPubGate();
     ~CPubGate();
 
-    void Start();
-    void Stop();
+    void Create();
+    void Destroy();
 
     void ShareType(bool state_);
     bool TypeShared() const { return m_share_type; };
@@ -53,10 +53,13 @@ namespace eCAL
     bool Register(const std::string& topic_name_, const std::shared_ptr<CDataWriter>& datawriter_);
     bool Unregister(const std::string& topic_name_, const std::shared_ptr<CDataWriter>& datawriter_);
 
-    void ApplySubRegistration(const Registration::Sample& ecal_sample_);
-    void ApplySubUnregistration(const Registration::Sample& ecal_sample_);
+    void ApplyLocSubRegistration(const Registration::Sample& ecal_sample_);
+    void ApplyLocSubUnregistration(const Registration::Sample& ecal_sample_);
 
-    void GetRegistrations(Registration::SampleList& reg_sample_list_);
+    void ApplyExtSubRegistration(const Registration::Sample& ecal_sample_);
+    void ApplyExtSubUnregistration(const Registration::Sample& ecal_sample_);
+
+    void RefreshRegistrations();
 
   protected:
     static std::atomic<bool>  m_created;

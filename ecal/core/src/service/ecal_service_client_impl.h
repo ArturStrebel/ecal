@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,10 +25,8 @@
 #include <ecal/ecal_deprecate.h>
 #include <ecal/ecal_callback.h>
 #include <ecal/ecal_service_info.h>
-#include <ecal/service/client_session.h>
 
-#include "serialization/ecal_serialize_sample_registration.h"
-#include "serialization/ecal_struct_service.h"
+#include <ecal/service/client_session.h>
 
 #include <map>
 #include <mutex>
@@ -43,7 +41,7 @@ namespace eCAL
   {
   public:
     static std::shared_ptr<CServiceClientImpl> CreateInstance();
-    static std::shared_ptr<CServiceClientImpl> CreateInstance(const std::string& service_name_, const ServiceMethodInformationMapT& method_information_map_);
+    static std::shared_ptr<CServiceClientImpl> CreateInstance(const std::string& service_name_);
   
   private:
     CServiceClientImpl();
@@ -51,8 +49,9 @@ namespace eCAL
   public:
     ~CServiceClientImpl();
 
-    bool Start(const std::string& service_name_, const ServiceMethodInformationMapT& method_information_map_);
-    bool Stop();
+    bool Create(const std::string& service_name_);
+
+    bool Destroy();
 
     bool SetHostName(const std::string& host_name_);
 
@@ -80,7 +79,7 @@ namespace eCAL
     void RegisterService(const std::string& key_, const SServiceAttr& service_);
 
     // called by eCAL:CClientGate every second to update registration layer
-    Registration::Sample GetRegistration();
+    void RefreshRegistration();
 
     std::string GetServiceName() { return m_service_name; };
 
@@ -96,18 +95,12 @@ namespace eCAL
     static void fromSerializedProtobuf(const std::string& response_pb_, eCAL::SServiceResponse& response_);
     static void fromStruct(const Service::Response& response_struct_, eCAL::SServiceResponse& response_);
 
-    Registration::Sample GetRegistrationSample();
-    Registration::Sample GetUnregistrationSample();
-    
-    void Register();
+    void Register(bool force_);
     void Unregister();
 
     void CheckForNewServices();
-    void CheckForDisconnectedServices();
 
     void ErrorCallback(const std::string &method_name_, const std::string &error_message_);
-
-    void IncrementMethodCallCount(const std::string& method_name_);
 
     using ClientMapT = std::map<std::string, std::shared_ptr<eCAL::service::ClientSession>>;
     std::mutex            m_client_map_sync;
@@ -130,12 +123,6 @@ namespace eCAL
     std::string           m_service_id;
     std::string           m_host_name;
 
-    std::mutex                   m_method_sync;
-    ServiceMethodInformationMapT m_method_information_map;
-
-    using MethodCallCountMapT = std::map<std::string, uint64_t>;
-    MethodCallCountMapT   m_method_call_count_map;
-
-    std::atomic<bool>     m_created;
+    bool                  m_created;
   };
 }

@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@
 #include <iostream>
 #include <string>
 #include <map>
-#include <set>
+#include <vector>
 
 int main(int argc, char **argv)
 {
@@ -38,12 +38,12 @@ int main(int argc, char **argv)
   {
     // GetServices
     {
-      std::map<eCAL::Registration::SServiceMethod, eCAL::SServiceMethodInformation> service_info_map;
+      std::map<std::tuple<std::string, std::string>, eCAL::SServiceMethodInformation> service_info_map;
 
       start_time = std::chrono::steady_clock::now();
       for (run = 0; run < runs; ++run)
       {
-        eCAL::Registration::GetServices(service_info_map);
+        eCAL::Util::GetServices(service_info_map);
       }
 
       auto num_services = service_info_map.size();
@@ -52,14 +52,14 @@ int main(int argc, char **argv)
       std::cout << std::endl;
     }
 
-    // GetServiceMethodNames
+    // GetServiceNames
     {
-      std::set<eCAL::Registration::SServiceMethod> service_method_names;
+      std::vector<std::tuple<std::string, std::string>> service_method_names;
 
       start_time = std::chrono::steady_clock::now();
       for (run = 0; run < runs; ++run)
       {
-        eCAL::Registration::GetServiceMethodNames(service_method_names);
+        eCAL::Util::GetServiceNames(service_method_names);
       }
 
       auto num_services = service_method_names.size();

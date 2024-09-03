@@ -6,10 +6,7 @@
       "displayName": "Default",
       "description": "Common settings for all presets.",
       "binaryDir": "${sourceDir}/out/${presetName}/build",
-      "installDir": "${sourceDir}/out/${presetName}/install",
-      "cacheVariables": {
-        "CMAKE_PROJECT_TOP_LEVEL_INCLUDES": "cmake/submodule_dependencies.cmake"
-      }
+      "installDir": "${sourceDir}/out/${presetName}/install"
     },
     {
       "name": "release",
@@ -50,32 +47,32 @@
         "HAS_FTXUI": "OFF",
         "BUILD_APPS": "OFF",
         "BUILD_SAMPLES": "OFF",
-        "ECAL_CORE_CONFIGURATION": "OFF",
         "ECAL_INSTALL_SAMPLE_SOURCES": "OFF",
         "ECAL_THIRDPARTY_BUILD_FINEFTP": "OFF",
         "ECAL_THIRDPARTY_BUILD_FTXUI": "OFF",
         "ECAL_THIRDPARTY_BUILD_SPDLOG": "OFF",
         "ECAL_THIRDPARTY_BUILD_TERMCOLOR": "OFF",
         "ECAL_THIRDPARTY_BUILD_TINYXML2": "OFF",
+        "ECAL_THIRDPARTY_BUILD_YAML-CPP": "OFF",
         "ECAL_THIRDPARTY_BUILD_CURL": "OFF",
         "ECAL_THIRDPARTY_BUILD_HDF5": "OFF"
       }
     },
     {
-      "name": "python",
+      "name": "wheel",
       "inherits": "core",
-      "displayName": "Python Extensions",
-      "description": "Minimal build for Python extensions",
+      "displayName": "Python Wheel",
+      "description": "Minimal build for standalone python wheel",
       "cacheVariables": {
         "HAS_HDF5": "ON",
         "BUILD_PY_BINDING": "ON",
-        "BUILD_SHARED": "OFF",
-        "ECAL_THIRDPARTY_BUILD_HDF5": "ON"
+        "BUILD_STANDALONE_PY_WHEEL": "ON",
+        "ECAL_THIRDPARTY_BUILD_HDF5": null
       }
     },
     {
       "name": "docs",
-      "inherits": "python",
+      "inherits": "wheel",
       "displayName": "Documentation",
       "description": "Build documentation",
       "cacheVariables": {
@@ -92,12 +89,12 @@
         "HAS_CURL": "ON",
         "HAS_FTXUI": "ON",
         "BUILD_APPS": "ON",
-        "BUILD_SAMPLES": "ON",
         "ECAL_THIRDPARTY_BUILD_FINEFTP": "ON",
         "ECAL_THIRDPARTY_BUILD_FTXUI": "ON",
         "ECAL_THIRDPARTY_BUILD_SPDLOG": "ON",
         "ECAL_THIRDPARTY_BUILD_TERMCOLOR": "ON",
         "ECAL_THIRDPARTY_BUILD_TINYXML2": "ON",
+        "ECAL_THIRDPARTY_BUILD_YAML-CPP": null,
         "ECAL_THIRDPARTY_BUILD_CURL": null,
         "ECAL_THIRDPARTY_BUILD_HDF5": null
       }
@@ -119,16 +116,16 @@
       "configurePreset": "core"
     },
     {
-      "name": "python",
-      "description": "Build python extensions",
-      "configurePreset": "python",
-      "targets": "ecal_python"
+      "name": "wheel",
+      "description": "Build standalone python wheel",
+      "configurePreset": "wheel",
+      "targets": "create_python_wheel"
     },
     {
       "name": "docs",
       "description": "Build sphinx documentation",
       "configurePreset": "docs",
-      "targets": "documentation_sphinx"
+      "targets": "documentation_sphinx" 
     },
     {
       "name": "cli",

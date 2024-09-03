@@ -91,7 +91,7 @@ target_link_libraries(${PROJECT_NAME}
   tinyxml2::tinyxml2
   spdlog::spdlog
   protobuf::libprotobuf
-  eCAL::core_protobuf
+  eCAL::core
   eCAL::core_pb
   eCAL::app_pb
   EcalParser

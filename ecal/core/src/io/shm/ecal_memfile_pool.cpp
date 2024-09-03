@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  * Copyright (C) 2022 Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -211,26 +211,14 @@ namespace eCAL
             // -------------------------------------------------------------------------
             if (zero_copy_allowed)
             {
-              if (m_data_callback)
+              // acquire memory file payload pointer (no copying here)
+              const void* buf(nullptr);
+              if (m_memfile.GetReadAddress(buf, mfile_hdr.data_size) > 0)
               {
-                const char* data_buf = nullptr;
-                if (mfile_hdr.data_size > 0)
-                {
-                  // acquire memory file payload pointer (no copying here)
-                  const void* buf(nullptr);
-                  if (m_memfile.GetReadAddress(buf, mfile_hdr.data_size) > 0)
-                  {
-                    // calculate user payload address
-                    data_buf = static_cast<const char*>(buf) + mfile_hdr.hdr_size;
-                    // call user callback function
-                    m_data_callback(topic_name_, topic_id_, data_buf, mfile_hdr.data_size, (long long)mfile_hdr.id, (long long)mfile_hdr.clock, (long long)mfile_hdr.time, (size_t)mfile_hdr.hash);
-                  }
-                }
-                else
-                {
-                  // call user callback function
-                  m_data_callback(topic_name_, topic_id_, data_buf, mfile_hdr.data_size, (long long)mfile_hdr.id, (long long)mfile_hdr.clock, (long long)mfile_hdr.time, (size_t)mfile_hdr.hash);
-                }
+                // calculate data buffer offset
+                const char* data_buf = static_cast<const char*>(buf) + mfile_hdr.hdr_size;
+                // add sample to data reader (and call user callback function)
+                if (m_data_callback) m_data_callback(topic_name_, topic_id_, data_buf, mfile_hdr.data_size, (long long)mfile_hdr.id, (long long)mfile_hdr.clock, (long long)mfile_hdr.time, (size_t)mfile_hdr.hash);
               }
             }
             // -------------------------------------------------------------------------
@@ -327,10 +315,10 @@ namespace eCAL
 
   CMemFileThreadPool::~CMemFileThreadPool()
   {
-    Stop();
+    Destroy();
   }
 
-  void CMemFileThreadPool::Start()
+  void CMemFileThreadPool::Create()
   {
     if(m_created) return;
 
@@ -341,7 +329,7 @@ namespace eCAL
     m_created = true;
   }
 
-  void CMemFileThreadPool::Stop()
+  void CMemFileThreadPool::Destroy()
   {
     if(!m_created) return;
 

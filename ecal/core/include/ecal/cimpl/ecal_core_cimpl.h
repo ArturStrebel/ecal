@@ -83,9 +83,11 @@ extern "C"
   /**
    * @brief Finalize eCAL API.
    *
+   * @param components_  Defines which component to initialize (not yet supported).
+   *
    * @return Zero if succeeded, 1 if already finalized, -1 if failed.
   **/
-  ECALC_API int eCAL_Finalize();
+  ECALC_API int eCAL_Finalize(unsigned int components_);
 
   /**
    * @brief Check eCAL initialize state.

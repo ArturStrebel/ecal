@@ -20,21 +20,14 @@
 #pragma once
 
 #include "client_session_impl_base.h"
-
 #include <atomic>
-#include <cstddef>
 #include <cstdint>
+#include <ecal/service/logger.h>
+
 #include <deque>
 #include <memory>
 #include <mutex>
 #include <string>
-#include <utility>
-#include <vector>
-
-#include <asio.hpp>
-
-#include <ecal/service/logger.h>
-#include <ecal/service/state.h>
 
 namespace eCAL
 {
@@ -58,16 +51,18 @@ namespace eCAL
     // Constructor, Destructor, Create
     /////////////////////////////////////
     public:
-      static std::shared_ptr<ClientSessionV1> create(const std::shared_ptr<asio::io_context>&                   io_context
-                                                    , const std::vector<std::pair<std::string, std::uint16_t>>& server_list
-                                                    , const EventCallbackT&                                     event_callback
-                                                    , const LoggerT&                                            logger_ = default_logger("Service Client V1"));
+      static std::shared_ptr<ClientSessionV1> create(const std::shared_ptr<asio::io_context>& io_context
+                                                    , const std::string&                      address
+                                                    , std::uint16_t                           port
+                                                    , const EventCallbackT&                   event_callback
+                                                    , const LoggerT&                          logger_ = default_logger("Service Client V1"));
 
     protected:
-      ClientSessionV1(const std::shared_ptr<asio::io_context>&                  io_context
-                    , const std::vector<std::pair<std::string, std::uint16_t>>& server_list
-                    , const EventCallbackT&                                     event_callback
-                    , const LoggerT&                                            logger);
+      ClientSessionV1(const std::shared_ptr<asio::io_context>& io_context
+                    , const std::string&                       address
+                    , std::uint16_t                            port
+                    , const EventCallbackT&                    event_callback
+                    , const LoggerT&                           logger);
 
     public:
       // Delete copy / move constructor and assignment operator
@@ -83,8 +78,8 @@ namespace eCAL
     // Connection establishement
     //////////////////////////////////////
     private:
-      void resolve_endpoint(size_t server_list_index);
-      void connect_to_endpoint(const asio::ip::tcp::resolver::iterator& resolved_endpoints, size_t server_list_index);
+      void resolve_endpoint();
+      void connect_to_endpoint(const asio::ip::tcp::resolver::iterator& resolved_endpoints);
 
       void send_protocol_handshake_request();
       void receive_protocol_handshake_response();
@@ -103,10 +98,8 @@ namespace eCAL
     // Status API
     //////////////////////////////////////
     public:
-      std::string             get_host()            const override;
-      std::uint16_t           get_port()            const override;
-      asio::ip::tcp::endpoint get_remote_endpoint() const override;
-
+      std::string   get_address()                   const override;
+      std::uint16_t get_port()                      const override;
       State         get_state()                     const override;
       std::uint8_t  get_accepted_protocol_version() const override;
       int           get_queue_size()                const override;
@@ -151,10 +144,8 @@ namespace eCAL
       static constexpr std::uint8_t MIN_SUPPORTED_PROTOCOL_VERSION = 1;
       static constexpr std::uint8_t MAX_SUPPORTED_PROTOCOL_VERSION = 1;
 
-      const std::vector<std::pair<std::string, std::uint16_t>> server_list_;    //!< The list of servers that this client was created with. They will be tried in order.
-      
-      mutable std::mutex                    chosen_endpoint_mutex_;             //!< Protects the chosen_endpoint_ variable.
-      std::pair<std::string, std::uint16_t> chosen_endpoint_;                   //!< The endpoint that the client is currently connected to. Protected by chosen_endpoint_mutex_.
+      const std::string         address_;                                       //!< The original address that this client was created with.
+      const std::uint16_t       port_;                                          //!< The original port that this client was created with.
 
       asio::io_context::strand  service_call_queue_strand_;
       asio::ip::tcp::resolver   resolver_;

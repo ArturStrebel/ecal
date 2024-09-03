@@ -33,8 +33,8 @@ set(ping_client_dyn_src
 ecal_add_sample(${PROJECT_NAME} ${ping_client_dyn_src})
 
 target_link_libraries(${PROJECT_NAME}
-  PRIVATE
-    eCAL::core_protobuf
+    eCAL::core
+    protobuf::libprotobuf
 )
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_14)

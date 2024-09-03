@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,14 +25,12 @@
 #include <ecal/ecal_config.h>
 
 #include "io/udp/ecal_udp_configurations.h"
+#include "config/ecal_config_reader_hlp.h"
 #include "ecal_monitoring_impl.h"
-#include "ecal_global_accessors.h"
 
 #include <regex>
 
-#include "registration/ecal_registration_provider.h"
 #include "registration/ecal_registration_receiver.h"
-
 #include "serialization/ecal_serialize_monitoring.h"
 
 
@@ -41,14 +39,13 @@ namespace eCAL
   ////////////////////////////////////////
   // Monitoring Implementation
   ////////////////////////////////////////
-  CMonitoringImpl::CMonitoringImpl(const Monitoring::Configuration& config_) :
+  CMonitoringImpl::CMonitoringImpl() :
     m_init(false),
-    m_process_map   (std::chrono::milliseconds(config_.timeout)),
-    m_publisher_map (std::chrono::milliseconds(config_.timeout)),
-    m_subscriber_map(std::chrono::milliseconds(config_.timeout)),
-    m_server_map    (std::chrono::milliseconds(config_.timeout)),
-    m_clients_map   (std::chrono::milliseconds(config_.timeout)),
-    m_config        (config_) 
+    m_process_map   (std::chrono::milliseconds(Config::GetMonitoringTimeoutMs())),
+    m_publisher_map (std::chrono::milliseconds(Config::GetMonitoringTimeoutMs())),
+    m_subscriber_map(std::chrono::milliseconds(Config::GetMonitoringTimeoutMs())),
+    m_server_map    (std::chrono::milliseconds(Config::GetMonitoringTimeoutMs())),
+    m_clients_map   (std::chrono::milliseconds(Config::GetMonitoringTimeoutMs()))
   {
   }
 
@@ -56,11 +53,15 @@ namespace eCAL
   {
     if (m_init) return;
 
-    // enable loopback to monitor process internal entities as well
-    eCAL::Util::EnableLoopback(true);
+    // get name of this host
+    m_host_name = Process::GetHostName();
 
     // utilize registration receiver to enrich monitor information
-    g_registration_receiver()->SetCustomApplySampleCallback("monitoring", [this](const auto& sample_){this->ApplySample(sample_, tl_none);});    
+    g_registration_receiver()->SetCustomApplySampleCallback([this](const auto& sample_){this->ApplySample(sample_, tl_none);});
+
+    // setup blacklist and whitelist filter strings#
+    m_topic_filter_excl_s = Config::GetMonitoringFilterExcludeList();
+    m_topic_filter_incl_s = Config::GetMonitoringFilterIncludeList();
 
     // setup filtering on by default
     SetFilterState(true);
@@ -70,19 +71,18 @@ namespace eCAL
 
   void CMonitoringImpl::Destroy()
   {
-    // stop registration receiver utilization to enrich monitor information
-    g_registration_receiver()->RemCustomApplySampleCallback("monitoring");
+    g_registration_receiver()->RemCustomApplySampleCallback();
     m_init = false;
   }
 
   void CMonitoringImpl::SetExclFilter(const std::string& filter_)
   {
-    m_config.filter_excl = filter_;
+    m_topic_filter_excl_s = filter_;
   }
 
   void CMonitoringImpl::SetInclFilter(const std::string& filter_)
   {
-    m_config.filter_incl = filter_;
+    m_topic_filter_incl_s = filter_;
   }
 
   void CMonitoringImpl::SetFilterState(bool state_)
@@ -92,13 +92,13 @@ namespace eCAL
       // create excluding filter list
       {
         const std::lock_guard<std::mutex> lock(m_topic_filter_excl_mtx);
-        Tokenize(m_config.filter_excl, m_topic_filter_excl, ",;", true);
+        Tokenize(m_topic_filter_excl_s, m_topic_filter_excl, ",;", true);
       }
 
       // create including filter list
       {
         const std::lock_guard<std::mutex> lock(m_topic_filter_incl_mtx);
-        Tokenize(m_config.filter_incl, m_topic_filter_incl, ",;", true);
+        Tokenize(m_topic_filter_incl_s, m_topic_filter_incl, ",;", true);
       }
     }
     else
@@ -194,17 +194,17 @@ namespace eCAL
   bool CMonitoringImpl::RegisterTopic(const Registration::Sample& sample_, enum ePubSub pubsub_type_)
   {
     const auto& sample_topic = sample_.topic;
-    const int          process_id = sample_.identifier.process_id;
+    const int          process_id = sample_topic.pid;
     const std::string& topic_name = sample_topic.tname;
     const int32_t      topic_size = sample_topic.tsize;
-    bool               topic_tlayer_ecal_udp(false);
+    bool               topic_tlayer_ecal_udp_mc(false);
     bool               topic_tlayer_ecal_shm(false);
     bool               topic_tlayer_ecal_tcp(false);
     for (const auto& layer : sample_topic.tlayer)
     {
-      topic_tlayer_ecal_udp |= (layer.type == tl_ecal_udp) && layer.active;
-      topic_tlayer_ecal_shm |= (layer.type == tl_ecal_shm) && layer.active;
-      topic_tlayer_ecal_tcp |= (layer.type == tl_ecal_tcp) && layer.active;
+      topic_tlayer_ecal_udp_mc    |= (layer.type == tl_ecal_udp_mc)    && layer.confirmed;
+      topic_tlayer_ecal_shm       |= (layer.type == tl_ecal_shm)       && layer.confirmed;
+      topic_tlayer_ecal_tcp       |= (layer.type == tl_ecal_tcp)       && layer.confirmed;
     }
     const int32_t      connections_loc = sample_topic.connections_loc;
     const int32_t      connections_ext = sample_topic.connections_ext;
@@ -250,11 +250,11 @@ namespace eCAL
       const std::lock_guard<std::mutex> lock(pTopicMap->sync);
 
       // common infos
-      const std::string& host_name       = sample_.identifier.host_name;
+      const std::string& host_name       = sample_topic.hname;
       const std::string& host_group_name = sample_topic.hgname;
       const std::string& process_name    = sample_topic.pname;
       const std::string& unit_name       = sample_topic.uname;
-      const std::string& topic_id        = sample_.identifier.entity_id;
+      const std::string& topic_id        = sample_topic.tid;
       std::string        direction;
       switch (pubsub_type_)
       {
@@ -300,22 +300,22 @@ namespace eCAL
       // tlayer udp_mc
       {
         eCAL::Monitoring::TLayer tlayer;
-        tlayer.type   = eCAL::Monitoring::tl_ecal_udp_mc;
-        tlayer.active = topic_tlayer_ecal_udp;
+        tlayer.type      = eCAL::Monitoring::tl_ecal_udp_mc;
+        tlayer.confirmed = topic_tlayer_ecal_udp_mc;
         TopicInfo.tlayer.push_back(tlayer);
       }
       // tlayer shm
       {
         eCAL::Monitoring::TLayer tlayer;
-        tlayer.type   = eCAL::Monitoring::tl_ecal_shm;
-        tlayer.active = topic_tlayer_ecal_shm;
+        tlayer.type      = eCAL::Monitoring::tl_ecal_shm;
+        tlayer.confirmed = topic_tlayer_ecal_shm;
         TopicInfo.tlayer.push_back(tlayer);
       }
       // tlayer tcp
       {
         eCAL::Monitoring::TLayer tlayer;
-        tlayer.type   = eCAL::Monitoring::tl_ecal_tcp;
-        tlayer.active = topic_tlayer_ecal_tcp;
+        tlayer.type      = eCAL::Monitoring::tl_ecal_tcp;
+        tlayer.confirmed = topic_tlayer_ecal_tcp;
         TopicInfo.tlayer.push_back(tlayer);
       }
 
@@ -335,7 +335,7 @@ namespace eCAL
   {
     const auto& sample_topic = sample_.topic;
     const std::string& topic_name = sample_topic.tname;
-    const std::string& topic_id   = sample_.identifier.entity_id;
+    const std::string& topic_id   = sample_topic.tid;
 
     // unregister from topic map
     STopicMonMap* pTopicMap = GetMap(pubsub_type_);
@@ -355,10 +355,10 @@ namespace eCAL
   bool CMonitoringImpl::RegisterProcess(const Registration::Sample& sample_)
   {
     const auto& sample_process = sample_.process;
-    const std::string&    host_name                    = sample_.identifier.host_name;
+    const std::string&    host_name                    = sample_process.hname;
     const std::string&    host_group_name              = sample_process.hgname;
     const std::string&    process_name                 = sample_process.pname;
-    const int             process_id                   = sample_.identifier.process_id;
+    const int             process_id                   = sample_process.pid;
     const std::string&    process_param                = sample_process.pparam;
     const std::string&    unit_name                    = sample_process.uname;
     const auto&           sample_process_state         = sample_process.state;
@@ -406,7 +406,7 @@ namespace eCAL
   {
     const auto& sample_process = sample_.process;
     const std::string& process_name = sample_process.pname;
-    const int          process_id   = sample_.identifier.process_id;
+    const int          process_id   = sample_process.pid;
 
     // create map key
     const std::string process_name_id = process_name + std::to_string(process_id);
@@ -422,16 +422,13 @@ namespace eCAL
 
   bool CMonitoringImpl::RegisterServer(const Registration::Sample& sample_)
   {
-    const auto& sample_identifier = sample_.identifier;
-    const std::string& service_id = sample_identifier.entity_id;
-    const int32_t      process_id = sample_identifier.process_id;
-    const std::string& host_name  = sample_identifier.host_name;
-
     const auto& sample_service = sample_.service;
+    const std::string& host_name    = sample_service.hname;
     const std::string& service_name = sample_service.sname;
+    const std::string& service_id   = sample_service.sid;
     const std::string& process_name = sample_service.pname;
     const std::string& unit_name    = sample_service.uname;
-
+    const int32_t      process_id   = sample_service.pid;
     const uint32_t     tcp_port_v0  = sample_service.tcp_port_v0;
     const uint32_t     tcp_port_v1  = sample_service.tcp_port_v1;
 
@@ -474,12 +471,10 @@ namespace eCAL
 
   bool CMonitoringImpl::UnregisterServer(const Registration::Sample& sample_)
   {
-    const auto& sample_service    = sample_.service;
-    const auto& sample_identifier = sample_.identifier;
-
+    const auto& sample_service = sample_.service;
     const std::string& service_name = sample_service.sname;
-    const std::string& service_id   = sample_identifier.entity_id;
-    const int          process_id   = sample_identifier.process_id;
+    const std::string& service_id   = sample_service.sid;
+    const int          process_id   = sample_service.pid;
 
     // create map key
     const std::string service_name_id = service_name + service_id + std::to_string(process_id);
@@ -495,15 +490,13 @@ namespace eCAL
 
   bool CMonitoringImpl::RegisterClient(const Registration::Sample& sample_)
   {
-    const auto& sample_identifier = sample_.identifier;
-    const std::string& service_id = sample_identifier.entity_id;
-    const int32_t      process_id = sample_identifier.process_id;
-    const std::string& host_name  = sample_identifier.host_name;
-
     const auto& sample_client = sample_.client;
+    const std::string& host_name    = sample_client.hname;
     const std::string& service_name = sample_client.sname;
+    const std::string& service_id   = sample_client.sid;
     const std::string& process_name = sample_client.pname;
     const std::string& unit_name    = sample_client.uname;
+    const int          process_id   = sample_client.pid;
 
     // create map key
     const std::string service_name_id = service_name + service_id + std::to_string(process_id);
@@ -524,30 +517,16 @@ namespace eCAL
 
     // update flexible content
     ClientInfo.rclock++;
-    ClientInfo.methods.clear();
-    for (const auto& sample_client_method : sample_.client.methods)
-    {
-      struct Monitoring::SMethodMon method;
-      method.mname = sample_client_method.mname;
-      method.req_type = sample_client_method.req_type;
-      method.req_desc = sample_client_method.req_desc;
-      method.resp_type = sample_client_method.resp_type;
-      method.resp_desc = sample_client_method.resp_desc;
-      method.call_count = sample_client_method.call_count;
-      ClientInfo.methods.push_back(method);
-    }
 
     return(true);
   }
 
   bool CMonitoringImpl::UnregisterClient(const Registration::Sample& sample_)
   {
-    const auto& sample_identifier = sample_.identifier;
-    const std::string& service_id = sample_identifier.entity_id;
-    const int32_t      process_id = sample_identifier.process_id;
-
     const auto& sample_client = sample_.client;
     const std::string& service_name = sample_client.sname;
+    const std::string& service_id   = sample_client.sid;
+    const int          process_id   = sample_client.pid;
 
     // create map key
     const std::string service_name_id = service_name + service_id + std::to_string(process_id);
@@ -623,7 +602,7 @@ namespace eCAL
       monitoring_.processes.reserve(m_process_map.map->size());
 
       // iterate map
-      m_process_map.map->erase_expired();
+      m_process_map.map->remove_deprecated();
       for (const auto& process : (*m_process_map.map))
       {
         monitoring_.processes.emplace_back(process.second);
@@ -641,7 +620,7 @@ namespace eCAL
       monitoring_.publisher.reserve(m_publisher_map.map->size());
 
       // iterate map
-      m_publisher_map.map->erase_expired();
+      m_publisher_map.map->remove_deprecated();
       for (const auto& publisher : (*m_publisher_map.map))
       {
         monitoring_.publisher.emplace_back(publisher.second);
@@ -659,7 +638,7 @@ namespace eCAL
       monitoring_.subscriber.reserve(m_subscriber_map.map->size());
 
       // iterate map
-      m_subscriber_map.map->erase_expired();
+      m_subscriber_map.map->remove_deprecated();
       for (const auto& subscriber : (*m_subscriber_map.map))
       {
         monitoring_.subscriber.emplace_back(subscriber.second);
@@ -677,7 +656,7 @@ namespace eCAL
       monitoring_.server.reserve(m_server_map.map->size());
 
       // iterate map
-      m_server_map.map->erase_expired();
+      m_server_map.map->remove_deprecated();
       for (const auto& server : (*m_server_map.map))
       {
         monitoring_.server.emplace_back(server.second);
@@ -695,7 +674,7 @@ namespace eCAL
       monitoring_.clients.reserve(m_clients_map.map->size());
 
       // iterate map
-      m_clients_map.map->erase_expired();
+      m_clients_map.map->remove_deprecated();
       for (const auto& client : (*m_clients_map.map))
       {
         monitoring_.clients.emplace_back(client.second);
@@ -709,7 +688,7 @@ namespace eCAL
     const std::lock_guard<std::mutex> lock(m_process_map.sync);
 
     // iterate map
-    m_process_map.map->erase_expired();
+    m_process_map.map->remove_deprecated();
     for (const auto& process : (*m_process_map.map))
     {
       // add process
@@ -723,7 +702,7 @@ namespace eCAL
     const std::lock_guard<std::mutex> lock(m_server_map.sync);
 
     // iterate map
-    m_server_map.map->erase_expired();
+    m_server_map.map->remove_deprecated();
     for (const auto& server : (*m_server_map.map))
     {
       // add service
@@ -737,7 +716,7 @@ namespace eCAL
     const std::lock_guard<std::mutex> lock(m_clients_map.sync);
 
     // iterate map
-    m_clients_map.map->erase_expired();
+    m_clients_map.map->remove_deprecated();
     for (const auto& client : (*m_clients_map.map))
     {
       // add client
@@ -751,7 +730,7 @@ namespace eCAL
     const std::lock_guard<std::mutex> lock(map_.sync);
 
     // iterate map
-    map_.map->erase_expired();
+    map_.map->remove_deprecated();
     for (const auto& topic : (*map_.map))
     {
       if (direction_ == "publisher")

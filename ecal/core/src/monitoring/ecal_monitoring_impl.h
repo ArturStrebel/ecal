@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@
 #pragma once
 
 #include <ecal/types/monitoring.h>
-#include <ecal/config/monitoring.h>
 
 #include "ecal_def.h"
 #include "util/ecal_expmap.h"
@@ -48,7 +47,7 @@ namespace eCAL
   class CMonitoringImpl
   {
   public:
-    CMonitoringImpl(const Monitoring::Configuration& config_);
+    CMonitoringImpl();
     ~CMonitoringImpl() = default;
 
     void Create();
@@ -82,7 +81,7 @@ namespace eCAL
     bool RegisterTopic(const Registration::Sample& sample_, enum ePubSub pubsub_type_);
     bool UnregisterTopic(const Registration::Sample& sample_, enum ePubSub pubsub_type_);
 
-    using TopicMonMapT = Util::CExpirationMap<std::string, Monitoring::STopicMon>;
+    using TopicMonMapT = Util::CExpMap<std::string, Monitoring::STopicMon>;
     struct STopicMonMap
     {
       explicit STopicMonMap(const std::chrono::milliseconds& timeout_) :
@@ -93,7 +92,7 @@ namespace eCAL
       std::unique_ptr<TopicMonMapT>  map;
     };
 
-    using ProcessMonMapT = Util::CExpirationMap<std::string, Monitoring::SProcessMon>;
+    using ProcessMonMapT = Util::CExpMap<std::string, Monitoring::SProcessMon>;
     struct SProcessMonMap
     {
       explicit SProcessMonMap(const std::chrono::milliseconds& timeout_) :
@@ -104,7 +103,7 @@ namespace eCAL
       std::unique_ptr<ProcessMonMapT>  map;
     };
 
-    using ServerMonMapT = Util::CExpirationMap<std::string, Monitoring::SServerMon>;
+    using ServerMonMapT = Util::CExpMap<std::string, Monitoring::SServerMon>;
     struct SServerMonMap
     {
       explicit SServerMonMap(const std::chrono::milliseconds& timeout_) :
@@ -115,7 +114,7 @@ namespace eCAL
       std::unique_ptr<ServerMonMapT>  map;
     };
 
-    using ClientMonMapT = Util::CExpirationMap<std::string, Monitoring::SClientMon>;
+    using ClientMonMapT = Util::CExpMap<std::string, Monitoring::SClientMon>;
     struct SClientMonMap
     {
       explicit SClientMonMap(const std::chrono::milliseconds& timeout_) :
@@ -150,13 +149,14 @@ namespace eCAL
     void Tokenize(const std::string& str, StrICaseSetT& tokens, const std::string& delimiters, bool trimEmpty);
 
     bool                                         m_init;
-
-    Monitoring::Configuration                    m_config;
+    std::string                                  m_host_name;
 
     std::mutex                                   m_topic_filter_excl_mtx;
+    std::string                                  m_topic_filter_excl_s;
     StrICaseSetT                                 m_topic_filter_excl;
 
     std::mutex                                   m_topic_filter_incl_mtx;
+    std::string                                  m_topic_filter_incl_s;
     StrICaseSetT                                 m_topic_filter_incl;
 
     // database

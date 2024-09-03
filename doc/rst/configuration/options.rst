@@ -3,7 +3,7 @@
 .. _configuration_options:
 
 ========
-ecal.yaml
+ecal.ini
 ========
 
 eCAL has many options that can be configured via an .ini file which is located at:
@@ -15,498 +15,278 @@ Loading strategy (Priority)
 ===========================
 
 The eCAL configuration file is loaded based on the following priorities, whereever it is found first.
-If you want a specific eCAL Node to run with another ``ecal.yaml`` than the others, you can set the ``ECAL_DATA`` variable before starting the process, e.g. from a batch or shell skript.
-In addition, some eCAL applications support providing a path from the command line option ``--ecal-config-file``.
+If you want a specific eCAL Node to run with another ``ecal.ini`` than the others, you can set the ``ECAL_DATA`` variable before starting the process, e.g. from a batch or shell skript.
+In addition, some eCAL applications support providing a path from the command line option ``--ecal-ini-file``.
 
 .. important::
    This loading strategy is valid for eCAL 5.10 and up.
 
 - |fa-windows| Windows:
 
-  1. ``%ECAL_DATA%/ecal.yaml``
-  2. ``%ProgramData%/ecal/ecal.yaml``
+  1. ``%ECAL_DATA%/ecal.ini``
+  2. ``%ProgramData%/ecal/ecal.ini``
 
 - |fa-ubuntu| Ubuntu:
 
-  1. ``$ECAL_DATA/ecal.yaml``
-  2. ``/etc/ecal/ecal.yaml`` (from ``CMAKE_INSTALL_SYSCONFDIR``)
-  3. ``/etc/ecal/ecal.yaml`` (fallback)
+  1. ``$ECAL_DATA/ecal.ini``
+  2. ``/etc/ecal/ecal.ini`` (from ``CMAKE_INSTALL_SYSCONFDIR``)
+  3. ``/etc/ecal/ecal.ini`` (fallback)
       
      .. note::
 
-        This second path is set from CMake to ``CMAKE_INSTALL_SYSCONFDIR/ecal/ecal.yaml``.
+        This second path is set from CMake to ``CMAKE_INSTALL_SYSCONFDIR/ecal/ecal.ini``.
         Official builds are configured to use ``/etc``.
-        If you are compiling eCAL yourself and don't provide the SYSCONFDIR, CMake will usually use ``/usr/local/etc/ecal/ecal.yaml``.
+        If you are compiling eCAL yourself and don't provide the SYSCONFDIR, CMake will usually use ``/usr/local/etc/ecal/ecal.ini``.
 
-ecal.yaml options
-=================
+ecal.ini options
+================
 
-Registration settings are listed in the section ``registration``
-----------------------------------------------------------------
+[network]
+---------
 
-.. option:: registration
+The network setting drive how and which ...
 
-  .. option:: registration_refresh 
+.. option:: network_enabled
 
-    ``< registration_timeout/2``, default ``1000``
+   ``true`` / ``false``, default: ``true``
+   
+   ``true``  = all eCAL components communicate over network boundaries
+   
+   ``false`` = local host only communication
+   
+.. option:: multicast_config_version
 
-    topic registration refresh cycle (has to be smaller than registration timeout!)
+   ``v1`` / ``v2``, default: ``v1`` 
 
-  .. option:: registration_timeout
-    
-    ``1000 + (x * 1000)``, default ``60000``
+   UDP configuration version (Since eCAL 5.12.)
+   
+   ``v1`` = default behavior
 
-    timeout for topic registration in ms
+   ``v2`` = new behavior, comes with a bit more intuitive handling regarding masking of the groups
 
-  .. option:: loopback
+.. option:: multicast_group
 
-      ``true`` / ``false``, default ``true``
-    
-      enable to receive registration information on the same local machine
+   IPV4 Adress, default ``239.0.0.1``
 
-  .. option:: host_group_name
+   UDP multicast group base. All registration and logging information is sent on this address.
 
-      ``<hostname>``, default ``""``
+.. option:: multicast_mask
 
-      host group name that enables interprocess mechanisms across (virtual) host borders (e.g. Docker);
-      by default equivalent to local host name
+   ``v1`` **behavior:** 
+   
+   ``0.0.0.1``-``0.0.0.255``
 
-  .. option:: network_enabled
+   Mask maximum number of dynamic multicast group
 
-    ``true`` / ``false``, default: ``true``
-    
-    ``true``  = all eCAL components communicate over network boundaries
-    
-    ``false`` = local host only communication
+   ``v2`` **behavior:** 
+   
+   ``255.0.0.0``-``255.255.255.255`` 
+   
+   Mask for the multicast group. Topic traffic may be set on any of the unmasked addresses.
+   
+   With ``multicast_group``: ``239.0.0.1`` and ``multicast_mask``: ``255.255.255.0``, topic traffic will be sent on addresses ``239.0.0.0``-``239.0.0.255``.
+   
+.. option:: multicast_port     
+   
+   ``14000 + x``
 
-  .. option:: layer
+   UDP multicast port number (eCAL will use at least the 2 following port numbers too, so please modify in steps of 10 (e.g. 1010, 1020 ...)
 
-    .. option:: shm
-    
-      .. option:: enabled
+.. option:: multicast_ttl
+   
+   ``0 + x``              
+   
+   UDP ttl value, also known as hop limit, is used in determining the intermediate routers being traversed towards the destination
 
-        ``true`` / ``false``, default: ``false``
+.. option:: multicast_sndbuf    
+   
+   ``1024 * x``           
+   
+   UDP send buffer in bytes
 
-        enable shared memory layer
+.. option:: multicast_rcvbuf
+   
+   ``1024 * x``
 
-      .. option:: domain
+   UDP receive buffer in bytes
 
-        ``ecal_mon``
+.. option:: bandwidth_max_udp   
+   
+   ``1048576``              
+   
+   UDP bandwidth limit for eCAL udp layer (-1 == unlimited)
 
-        Domain name for shared momory based registration
+.. option:: shm_rec_enabled     
 
-      .. option:: queue_size
+   ``true``
 
-        ``1024``
+   Enable to receive on eCAL shared memory layer
 
-        Queue size of registration events
+.. option:: udp_mc_rec_enabled  
+   
+   ``true``
 
-    .. option:: udp
-      
-      .. option:: enabled
+   Enable to receive on eCAL udp multicast layer
 
-        ``true`` / ``false``, default: ``true``
+.. option:: npcap_enabled       
+   
+   ``false``                
+   
+   Enable to receive UDP traffic with the Npcap based receiver
 
-        enable UDP multicast layer
 
-      .. option:: port
-        
-        ``14000 + x``
+[common]
+--------
 
-        UDP port for registration information if UDP is enabled
+.. option:: registration_timeout
+  
+   ``1000 + (x * 1000)``, default ``60000``
 
+   timeout for topic registration in ms
 
-Monitoring settings are listed in the section ``monitoring``
-----------------------------------------------------------
+.. option:: registration_refresh 
 
-.. option:: monitoring
+   ``< registration_timeout/2``, default ``1000``
 
-  .. option:: timeout          
-            
-    ``1000 + (x * 1000)`` default ``1000``
-    Timeout for topic monitoring in ms
-    If no additional registration information for the topic has be received in that time period, topics will no longer be shown in eCAL Monitor.
-    
+   topic registration refresh cylce (has to be smaller then registration timeout !)
 
-  .. option:: filter_excl
 
-    topics blacklist as regular expression (will not be monitored)
-    Per default includes all eCAL internal topics.
-    
-    default = ``^__.*$`` 
-    
-  .. option:: filter_incl
+[time]
+------
 
-    topics whitelist as regular expression (will be monitored only)
-    
-    default = `` ``
+.. option:: timesync_module_rt        
+   
+   default: ``"ecaltime-localtime"``
+   
+   module (dll / so) name time sync interface. The name will be extended with debug suffix (d) and platform extension (.dll|.so)
 
+   Available modules are:
+   
+   - ecaltime-localtime    local system time without synchronization        
+   - ecaltime-linuxptp     For PTP / gPTP synchronization over ethernet on Linux (device configuration in ecaltime.ini)
+   - ecaltime-simtime      Simulation time as published by the eCAL Player.
 
-Transportlayer settings are listed in the section ``transport_layer``
----------------------------------------------------------------------
+[process]
+---------
 
-.. option:: transport_layer
+.. _ecalini_option_terminal_emulator:
 
-  .. option:: udp 
+.. option:: terminal_emulator        
+   
+   default: ``""``
 
-    .. option:: config_version
+   command for starting applications with an external terminal emulator.
+   If empty, the command will be ignored.
+   Ignored on Windows.
+   
+   e.g:
 
-    ``v1`` / ``v2``, default: ``v2`` 
+   - ``/usr/bin/x-terminal-emulator -e``
+   - ``/usr/bin/gnome-terminal -x``
+   - ``/usr/bin/xterm -e``
 
-    UDP configuration version (Since eCAL 5.12.)
-    
-    ``v1`` = default behavior
+[publisher]
+-----------
+   
+.. option:: use_shm
+   
+   use shared memory transport layer 
+   
+   - 0 = off
+   - 1 = on
+   - 2 = auto
+   
+   default = 2
+   
+.. option:: use_udp_mc
+   
+   use udp multicast transport layer 
+   
+   - 0 = off
+   - 1 = on
+   - 2 = auto
+   
+   default = 2
+   
 
-    ``v2`` = new behavior, comes with a bit more intuitive handling regarding masking of the groups
-    
-    .. option:: mode
 
-      ``local`` / ``network``, default: ``local``
+.. option:: memfile_minsize           = x * 4096 kB            
+   
+   default memory file size for new publisher (``x * 4096 kB``)
+   
+   default = 4096
 
-      ``local``  = use local network settings - not configurable by the user
+.. option:: memfile_reserve           
 
-      ``network`` = use network settings - configurable by the user
-    
-    .. option:: port
-        
-        ``14000 + x``
+   dynamic file size reserve before recreating memory file if topic size changes (``20 .. x``)
 
-        UDP multicast port number
+   default = 50   
 
-    .. option:: mask
+.. option:: memfile_ack_timeout
 
-      ``v1`` **behavior:** 
-      
-      ``0.0.0.1``-``0.0.0.255``
+   Publisher timeout for ack event from subscriber that memory file content is processed
+   
+   default = 0
 
-      Mask maximum number of dynamic multicast group
+.. option:: share_ttype
 
-      ``v2`` **behavior:** 
-      
-      ``255.0.0.0``-``255.255.255.255`` 
-      
-      Mask for the multicast group. Topic traffic may be set on any of the unmasked addresses.
-      
-      With ``group``: ``239.0.0.1`` and ``mask``: ``255.255.255.0``, topic traffic will be sent on addresses ``239.0.0.0``-``239.0.0.255``.
+   share topic type via registration layer ( ``0, 1``)
 
-    .. option:: send_buffer    
-    
-      ``1024 * x`` default ``5242880``       
-      
-      UDP send buffer in bytes
+   default = 1
 
-    .. option:: receive_buffer
-    
-      ``1024 * x`` default ``5242880``
+.. option:: share_tdesc
 
-      UDP receive buffer in bytes
+   share topic description via registration layer ( ``0, 1``)
+   If set to 0, reflection is completely disabled. It is not possible then to monitor the content of messages in the eCAL Monitor.
+   
+   default = 1
 
-    .. option:: join_all_interfaces
+[monitoring]
+------------
 
-      ``true`` / ``false`` default ``false``
+Monitor settings are listed in the section ``monitoring``
 
-      Linux specific setting to join all network interfaces independend of their link state.
-      Enabling ensures that eCAL processes receive data when they are started before the
-      network devices are up and running.
-    
-    .. option:: npcap_enabled       
-    
-      ``true`` / ``false`` default ``false``                
-    
-      Enable to receive UDP traffic with the Npcap based receiver
-
-    .. option:: local
-
-      In local mode the UDP multicast group is set to the local host address ("127.0.0.1") and the multicast TTL is set to 0 by default.
-      This is not configurable.
-
-    .. option:: network
-
-      .. option:: group
-
-        ``xxx.xxx.xxx.xxx`` IP address as text, default ``239.0.0.1`` 
-
-        Multicast group base: all registration and logging is sent on this address 
-
-      .. option:: ttl
-
-        ``0 + x`` default ``3``
-
-        TTL (hop limit) is used to determine the amount of routers being traversed towards the destination
-
-    .. option:: tcp
-
-      .. option:: number_executor_reader
-
-        ``1 + x`` default ``1``
-
-        Number of reader threads that shall execute workload
-
-      .. option:: number_executor_writer
-
-        ``1 + x`` default ``1``
-
-        Number of writer threads that shall execute workload
-
-      .. option:: max_reconnections
+.. option:: timeout          
           
-        ``1 + x`` default ``1``
-
-        Reconnection attemps the session will try to reconnect in case of an issue
-
-    .. option:: shm
-
-      .. option:: memfile_min_size_bytes           
-    
-        ``x * 4096 kB`` default ``4096`` 
-        
-        Default memory file size for new publisher
-              
-
-      .. option:: memfile_reserve_percent           
-
-        ``20 .. x`` default ``50``
-        
-        Dynamic file size reserve before recreating memory file if topic size changes
- 
-
-Publisher settings are listed in the section ``publisher``
-----------------------------------------------------------
-
-.. option:: publisher
-
-  .. option:: layer
-
-    .. option:: shm
-
-      .. option:: enable
-
-        ``true`` / ``false`` default ``true``
-
-        Enable shared memory layer
-
-      .. option:: zero_copy_mode
-
-        ``true`` / ``false`` default ``false``
-
-        Enable zero copy mode for shared memory transport mode
-
-      .. option:: acknowledge_timeout_ms
-
-        ``0 + x`` default ``0``
-
-        Force connected subscribers to send acknowledge event after processing the message.
-        The publisher send call is blocked on this event with this timeout (0 == no handshake).
-
-      .. option:: memfile_buffer_count
-
-        ``1 + x`` default ``1``
-
-        Maximum number of used buffers (needs to be greater than 0, default = 1)
-
-    .. option:: udp
-      
-      .. option:: enable
-
-        ``true`` / ``false`` default ``true``
-
-        Enable UDP multicast layer
-
-    .. option:: tcp
-
-      .. option:: enable
-
-        ``true`` / ``false`` default ``false``
-
-        Enable TCP layer
-
-  .. option:: share_topic_type
-
-      ``true`` / ``false`` default ``true``
-
-      Share topic type via registration layer
-
-    
-
-  .. option:: share_topic_description
-
-    ``true`` / ``false`` default ``true``
-
-    Share topic description via registration layer.
-    If set to false, reflection is completely disabled. It is not possible then to monitor the content of messages in the eCAL Monitor.
-
-  .. option:: priority_local
-
-    ``["shm", "udp", "tcp"]`` default ``["shm", "udp", "tcp"]``
-
-    A list of transport layers as text that specifies the prioritized layer for local communication.
-
-  .. option:: priority_remote
-
-    ``["udp", "tcp"]`` default ``["udp", "tcp"]``
-
-    A list of transport layers as text that specifies the prioritized layer for remote communication. 
-
-
-Subscriber settings are listed in the section ``subscriber``
-------------------------------------------------------------
-
-.. option:: subscriber
-
-  .. option:: layer
-
-    .. option:: shm
-        
-      .. option:: enable
-
-        ``true`` / ``false`` default ``true``
-
-        Enable shared memory layer
-        
-    .. option:: udp
-    
-      .. option:: enable
-      
-        ``true`` / ``false`` default ``true``
-      
-        Enable UDP multicast layer
-
-    .. option:: tcp
-
-      .. option:: enable
-
-        ``true`` / ``false`` default ``false``
-
-        Enable TCP layer
-
-  .. option:: drop_out_of_order_messages
-
-      ``true`` / ``false`` default ``false``
-    
-      Enable dropping of payload messages that arrive out of order
-
-
-Time settings are listed in the section ``time``
-------------------------------------------------
-
-.. option:: time
-
-  .. option:: rt        
-    
-    default: ``"ecaltime-localtime"``
-    
-    Module (dll / so) name time sync interface. The name will be extended with debug suffix (d) and platform extension (.dll|.so)
-
-    Available modules are:
-    
-    - ecaltime-localtime    local system time without synchronization        
-    - ecaltime-linuxptp     For PTP / gPTP synchronization over ethernet on Linux (device configuration in ecaltime.ini)
-    - ecaltime-simtime      Simulation time as published by the eCAL Player.
-
-  .. option:: replay
-
-    default ``""``
-
-    Module name of time plugin for replaying
-
-
-Service settings are listed in the section ``service``
-------------------------------------------------------
-
-.. option:: service
-
-  .. option:: protocol_v0
-    
-    ``true`` / ``false`` default ``true``
-
-    Support service protocol v0, eCAL 5.11 and older
-
-  .. option:: protocol_v1
-    
-    ``true`` / ``false`` default ``false``
-
-    Support service protocol v1, eCAL 5.12 and newer
-
-
-Application settings are listed in the section ``application``
---------------------------------------------------------------
-
-.. option::application
-
-  .. option:: sys
-
-    .. option:: filter_excl      
-
-      Text as regex, default ``"^eCALSysClient$|^eCALSysGUI$|^eCALSys$*"``
-
-      Apps blacklist to be excluded when importing tasks from cloud.
-
-  .. option:: terminal
-
-    .. option:: emulator
-
-      External terminal emulator as text, default ``""``
-
-      Linux only command for starting applications with an external terminal emulator. 
-      e.g. 
-      /usr/bin/x-terminal-emulator -e
-      /usr/bin/gnome-terminal -x
-      /usr/bin/xterm -e
-      
-      If empty, the command will be ignored.
-
-
-Logging settings are listed in the section ``logging``
-------------------------------------------------------
-
-.. option:: logging
-
-  .. option:: sinks
-
-    Log levels are: "info", "warning", "error", "fatal", "debug1", "debug2", "debug3", "debug4"
-
-    .. option:: console
-
-      .. option:: enable
-          
-          ``true`` / ``false`` default ``false``
-    
-          Enable console logging
-
-      .. option:: level
-
-        List of log levels as text, default ``["info", "warning", "error", "fatal"]``
-
-    .. option:: file
-
-      .. option:: enable
-          
-          ``true`` / ``false`` default ``false``
-    
-          Enable file logging
-
-      .. option:: level
-
-        List of log levels as text, default ``[]``
-
-      .. option:: path
-
-        Path as text, default ``ecal.log``
-
-    .. option:: udp
-
-      .. option:: enable
-          
-          ``true`` / ``false`` default ``false``
-    
-          Enable udp logging
-
-      .. option:: level
-
-        List of log levels as text, default ``["info", "warning", "error", "fatal"]``
-
-      .. option:: port
-
-        ``14000 + x`` default ``14001``
-
-        UDP port for logging information
+   timeout for topic monitoring in ms (``1000 + (x * 1000)``)
+   If no additional registration information for the topic has be received in that time period, topics will no longer be shown in eCAL Monitor.
+   
+   default = 5000
+
+.. option:: filter_excl
+
+   topics blacklist as regular expression (will not be monitored)
+   Per default includes all eCAL internal topics.
+   
+   default = ``^__.*$`` 
+   
+.. option:: filter_incl
+
+   topics whitelist as regular expression (will be monitored only)
+   
+   default = `` ``
+   
+.. option:: filter_log_con      
+
+   log messages to console (all, info, warning, error, fatal, debug1, debug2, debug3, debug4)
+   
+   default = ``error, fatal``
+   
+.. option:: filter_log_file               
+
+   log messages to log file
+   
+   default = ``error, fatal``
+   
+.. option:: filter_log_udp      
+
+   log messages to udp bus
+   
+   default = ``info, warning, error, fatal``
+
+[sys]
+-----
+
+.. option:: filter_excl      
+
+   Apps blacklist to be excluded when importing tasks from cloud.

@@ -1,6 +1,6 @@
 /* ========================= eCAL LICENSE =================================
  *
- * Copyright (C) 2016 - 2024 Continental Corporation
+ * Copyright (C) 2016 - 2019 Continental Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +22,35 @@
 **/
 
 #include "ecal_clientgate.h"
+#include "ecal_descgate.h"
 #include "service/ecal_service_client_impl.h"
-
 #include <atomic>
 #include <mutex>
 #include <shared_mutex>
 #include <string>
 #include <vector>
+
+namespace
+{
+  // TODO: remove me with new CDescGate
+  bool ApplyServiceDescription(const std::string& service_name_, const std::string& method_name_,
+    const eCAL::SDataTypeInformation& request_type_information_,
+    const eCAL::SDataTypeInformation& response_type_information_)
+  {
+    if (eCAL::g_descgate() != nullptr)
+    {
+      // calculate the quality of the current info
+      eCAL::CDescGate::QualityFlags quality = eCAL::CDescGate::QualityFlags::NO_QUALITY;
+      if (!(request_type_information_.name.empty() && response_type_information_.name.empty()))
+        quality |= eCAL::CDescGate::QualityFlags::TYPE_AVAILABLE;
+      if (!(request_type_information_.descriptor.empty() && response_type_information_.descriptor.empty()))
+        quality |= eCAL::CDescGate::QualityFlags::DESCRIPTION_AVAILABLE;
+
+      return eCAL::g_descgate()->ApplyServiceDescription(service_name_, method_name_, request_type_information_, response_type_information_, quality);
+    }
+    return false;
+  }
+}
 
 namespace eCAL
 {
@@ -40,16 +62,16 @@ namespace eCAL
 
   CClientGate::~CClientGate()
   {
-    Stop();
+    Destroy();
   }
 
-  void CClientGate::Start()
+  void CClientGate::Create()
   {
     if (m_created) return;
     m_created = true;
   }
 
-  void CClientGate::Stop()
+  void CClientGate::Destroy()
   {
     if (!m_created) return;
 
@@ -57,7 +79,7 @@ namespace eCAL
     const std::shared_lock<std::shared_timed_mutex> lock(m_client_set_sync);
     for (const auto& client : m_client_set)
     {
-      client->Stop();
+      client->Destroy();
     }
 
     m_created = false;
@@ -101,18 +123,31 @@ namespace eCAL
   {
     SServiceAttr service;
     const auto& ecal_sample_service = ecal_sample_.service;
-    const auto& ecal_sample_identifier = ecal_sample_.identifier;
-    service.hname = ecal_sample_identifier.host_name;
+    service.hname = ecal_sample_service.hname;
     service.pname = ecal_sample_service.pname;
     service.uname = ecal_sample_service.uname;
     service.sname = ecal_sample_service.sname;
-    service.sid   = ecal_sample_identifier.entity_id;
-    service.pid   = static_cast<int>(ecal_sample_identifier.process_id);
+    service.sid   = ecal_sample_service.sid;
+    service.pid   = static_cast<int>(ecal_sample_service.pid);
 
     // internal protocol specifics
     service.version     = static_cast<unsigned int>(ecal_sample_service.version);
     service.tcp_port_v0 = static_cast<unsigned short>(ecal_sample_service.tcp_port_v0);
     service.tcp_port_v1 = static_cast<unsigned short>(ecal_sample_service.tcp_port_v1);
+
+    // store description
+    for (const auto& method : ecal_sample_service.methods)
+    {
+      SDataTypeInformation request_type;
+      request_type.name       = method.req_type;
+      request_type.descriptor = method.req_desc;
+
+      SDataTypeInformation response_type{};
+      response_type.name       = method.resp_type;
+      response_type.descriptor = method.resp_desc;
+
+      ApplyServiceDescription(ecal_sample_service.sname, method.mname, request_type, response_type);
+    }
 
     // create service key
     service.key = service.sname + ":" + service.sid + "@" + std::to_string(service.pid) + "@" + service.hname;
@@ -125,7 +160,7 @@ namespace eCAL
       m_service_register_map[service.key] = service;
 
       // remove timeouted services
-      m_service_register_map.erase_expired();
+      m_service_register_map.remove_deprecated();
     }
 
     // inform matching clients
@@ -157,15 +192,15 @@ namespace eCAL
     return(ret_vec);
   }
 
-  void CClientGate::GetRegistrations(Registration::SampleList& reg_sample_list_)
+  void CClientGate::RefreshRegistrations()
   {
     if (!m_created) return;
 
-    // read service registrations
-    std::shared_lock<std::shared_timed_mutex> const lock(m_client_set_sync);
-    for (const auto& service_client_impl : m_client_set)
+    // refresh service registrations
+    const std::shared_lock<std::shared_timed_mutex> lock(m_client_set_sync);
+    for (auto *iter : m_client_set)
     {
-      reg_sample_list_.samples.emplace_back(service_client_impl->GetRegistration());
+      iter->RefreshRegistration();
     }
   }
 }
