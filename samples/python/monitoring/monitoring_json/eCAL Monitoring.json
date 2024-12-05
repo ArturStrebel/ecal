@@ -1,77 +1,4 @@
 {
-  "__inputs": [
-    {
-      "name": "DS_ECAL_MONITORING",
-      "label": "ecal_monitoring",
-      "description": "",
-      "type": "datasource",
-      "pluginId": "frser-sqlite-datasource",
-      "pluginName": "SQLite"
-    }
-  ],
-  "__elements": {},
-  "__requires": [
-    {
-      "type": "panel",
-      "id": "barchart",
-      "name": "Bar chart",
-      "version": ""
-    },
-    {
-      "type": "panel",
-      "id": "bargauge",
-      "name": "Bar gauge",
-      "version": ""
-    },
-    {
-      "type": "datasource",
-      "id": "frser-sqlite-datasource",
-      "name": "SQLite",
-      "version": "3.5.0"
-    },
-    {
-      "type": "panel",
-      "id": "gauge",
-      "name": "Gauge",
-      "version": ""
-    },
-    {
-      "type": "grafana",
-      "id": "grafana",
-      "name": "Grafana",
-      "version": "11.1.3"
-    },
-    {
-      "type": "panel",
-      "id": "nodeGraph",
-      "name": "Node Graph",
-      "version": ""
-    },
-    {
-      "type": "panel",
-      "id": "piechart",
-      "name": "Pie chart",
-      "version": ""
-    },
-    {
-      "type": "panel",
-      "id": "stat",
-      "name": "Stat",
-      "version": ""
-    },
-    {
-      "type": "panel",
-      "id": "table",
-      "name": "Table",
-      "version": ""
-    },
-    {
-      "type": "panel",
-      "id": "timeseries",
-      "name": "Time series",
-      "version": ""
-    }
-  ],
   "annotations": {
     "list": [
       {
@@ -91,13 +18,235 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": null,
+  "id": 2,
   "links": [],
   "panels": [
     {
       "datasource": {
         "type": "frser-sqlite-datasource",
-        "uid": "${DS_ECAL_MONITORING}"
+        "uid": "ae57ukfdysxs0e"
+      },
+      "description": "Show the Publishers/Subscribers that have non-zero message_drops.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 33,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "11.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "ae57ukfdysxs0e"
+          },
+          "queryText": "SELECT hname, pid, pname, uname, direction, tname from current_topics\nWHERE message_drops != 0",
+          "queryType": "table",
+          "rawQueryText": "SELECT hname, pid, pname, uname, direction, tname from current_topics\nWHERE message_drops != 0",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Message Drops",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "ae57ukfdysxs0e"
+      },
+      "description": "List subscribers that don't have an connection according to connections_loc and connections_ext. Seems odd, that the tsize != 0, another idea would be using directly tsize -> talk to Conti.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 32,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "11.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "ae57ukfdysxs0e"
+          },
+          "queryText": "SELECT hname, tsize, pid, pname, uname, direction, tname from current_topics\nWHERE connections_ext = 0 AND connections_loc=0 AND direction = 'subscriber'",
+          "queryType": "table",
+          "rawQueryText": "SELECT hname, tsize, pid, pname, uname, direction, tname from current_topics\nWHERE connections_ext = 0 AND connections_loc=0 AND direction = 'subscriber'",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Subscriber not receiving data",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "ae57ukfdysxs0e"
+      },
+      "description": "List publishers that don't have a subscriber connected, either on the same host or on an external host.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 14
+      },
+      "id": 31,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "11.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "ae57ukfdysxs0e"
+          },
+          "queryText": "SELECT hname, pid, pname, uname, direction, tname from current_topics\nWHERE connections_ext = 0 AND connections_loc=0 AND direction = 'publisher'\n\n\n\n",
+          "queryType": "table",
+          "rawQueryText": "SELECT hname, pid, pname, uname, direction, tname from current_topics\nWHERE connections_ext = 0 AND connections_loc=0 AND direction = 'publisher'\n\n\n\n",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Publisher without Subscriber",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "ae57ukfdysxs0e"
       },
       "description": "Shows the process severity of the 5 most severe processes",
       "fieldConfig": {
@@ -151,7 +300,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 0
+        "y": 22
       },
       "id": 25,
       "options": {
@@ -175,12 +324,12 @@
         "xTickLabelRotation": 0,
         "xTickLabelSpacing": 0
       },
-      "pluginVersion": "11.1.3",
+      "pluginVersion": "11.3.1",
       "targets": [
         {
           "datasource": {
             "type": "frser-sqlite-datasource",
-            "uid": "${DS_ECAL_MONITORING}"
+            "uid": "ae57ukfdysxs0e"
           },
           "queryText": "SELECT uname, state_severity AS \"State Severity\", state_severity_level AS \"State Severity Level\" FROM current_processes\r\nORDER BY state_severity DESC, state_severity_level DESC",
           "queryType": "table",
@@ -196,20 +345,22 @@
       "type": "barchart"
     },
     {
+      "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 8
+        "y": 30
       },
       "id": 24,
+      "panels": [],
       "title": "Ideas for future panels ",
       "type": "row"
     },
     {
       "datasource": {
         "type": "frser-sqlite-datasource",
-        "uid": "${DS_ECAL_MONITORING}"
+        "uid": "ae57ukfdysxs0e"
       },
       "description": "Displays how much data is transported via the different layers (TCP, UDP,...). Maybe even split for topics and/or hosts (separate panels)",
       "fieldConfig": {
@@ -232,7 +383,7 @@
         "h": 2,
         "w": 7,
         "x": 0,
-        "y": 9
+        "y": 31
       },
       "id": 23,
       "options": {
@@ -254,13 +405,19 @@
           "sort": "none"
         }
       },
+      "pluginVersion": "11.3.1",
+      "targets": [
+        {
+          "refId": "A"
+        }
+      ],
       "title": "Transportation Layer breakdown",
       "type": "piechart"
     },
     {
       "datasource": {
         "type": "frser-sqlite-datasource",
-        "uid": "${DS_ECAL_MONITORING}"
+        "uid": "ae57ukfdysxs0e"
       },
       "description": "For each host show how much RAM is used (new monitoring param needed, or use internal BW)",
       "fieldConfig": {
@@ -275,10 +432,6 @@
               {
                 "color": "green",
                 "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
               }
             ]
           }
@@ -289,7 +442,7 @@
         "h": 5,
         "w": 4,
         "x": 0,
-        "y": 11
+        "y": 33
       },
       "id": 22,
       "options": {
@@ -307,7 +460,19 @@
         "showThresholdMarkers": true,
         "sizing": "auto"
       },
-      "pluginVersion": "11.1.3",
+      "pluginVersion": "11.3.1",
+      "targets": [
+        {
+          "queryText": "\n",
+          "queryType": "table",
+          "rawQueryText": "\n",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
       "title": "RAM usage",
       "transparent": true,
       "type": "gauge"
@@ -315,25 +480,23 @@
     {
       "datasource": {
         "type": "frser-sqlite-datasource",
-        "uid": "${DS_ECAL_MONITORING}"
+        "uid": "ae57ukfdysxs0e"
       },
-      "description": "For each host show how much CPU is used (new monitoring param needed)",
+      "description": "For each host show the percentage of used disk space.",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
           "mappings": [],
+          "max": 100,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
                 "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
               }
             ]
           }
@@ -341,12 +504,13 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 5,
-        "w": 4,
-        "x": 4,
-        "y": 11
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 38
       },
-      "id": 26,
+      "id": 30,
+      "maxPerRow": 2,
       "options": {
         "minVizHeight": 75,
         "minVizWidth": 75,
@@ -362,71 +526,43 @@
         "showThresholdMarkers": true,
         "sizing": "auto"
       },
-      "pluginVersion": "11.1.3",
-      "title": "CPU usage",
+      "pluginVersion": "11.3.1",
+      "repeat": "hname",
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "ae57ukfdysxs0e"
+          },
+          "queryText": "SELECT \n  hname, \n  (capacity_disk - available_disk) * 100.0 / capacity_disk AS disk_usage_percent\nFROM \n  hosts\nWHERE \n  hname = 'P14SONB058'  \nORDER BY \n  time_stamp DESC \nLIMIT 1\n",
+          "queryType": "table",
+          "rawQueryText": "SELECT \n  hname, \n  (capacity_disk - available_disk) * 100.0 / capacity_disk AS disk_usage_percent\nFROM \n  hosts\nWHERE \n  hname = '${hname}'  \nORDER BY \n  time_stamp DESC \nLIMIT 1\n",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Disk Usage $hname",
       "transparent": true,
       "type": "gauge"
     },
     {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 16
-      },
-      "id": 12,
-      "panels": [],
-      "title": "Timelines",
-      "type": "row"
-    },
-    {
       "datasource": {
         "type": "frser-sqlite-datasource",
-        "uid": "${DS_ECAL_MONITORING}"
+        "uid": "ae57ukfdysxs0e"
       },
-      "description": "Monitors total traffic throughout the whole system in Bit/s (or Bytes/s, whatever tsize of STopicMon returns) , irrespective of transportation type.",
+      "description": "For each host show the percentage of used memory.",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "continuous-GrYlRd"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 30,
-            "gradientMode": "scheme",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "smooth",
-            "lineStyle": {
-              "fill": "solid"
-            },
-            "lineWidth": 2,
-            "pointSize": 1,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
+            "mode": "thresholds"
           },
           "mappings": [],
+          "max": 100,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -440,55 +576,471 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
+        "h": 8,
         "w": 24,
         "x": 0,
-        "y": 17
+        "y": 46
       },
-      "id": 13,
+      "id": 29,
+      "maxPerRow": 2,
       "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "hidden",
-          "placement": "right",
-          "showLegend": false
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
         },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
       },
-      "pluginVersion": "11.1.3",
+      "pluginVersion": "11.3.1",
+      "repeat": "hname",
+      "repeatDirection": "h",
       "targets": [
         {
           "datasource": {
             "type": "frser-sqlite-datasource",
-            "uid": "${DS_ECAL_MONITORING}"
+            "uid": "ae57ukfdysxs0e"
           },
-          "queryText": "SELECT time_stamp, sum(datawrite) FROM processes\r\nGROUP BY time_stamp",
+          "queryText": "SELECT \n  hname, (total_memory - available_memory) * 100.0 / total_memory AS memory_used\nFROM \n  hosts\nWHERE \n  hname = 'P14SONB058' \nORDER BY \n  time_stamp DESC \nLIMIT 1\n",
           "queryType": "table",
-          "rawQueryText": "SELECT time_stamp, sum(datawrite) FROM processes\r\nGROUP BY time_stamp",
+          "rawQueryText": "SELECT \n  hname, (total_memory - available_memory) * 100.0 / total_memory AS memory_used\nFROM \n  hosts\nWHERE \n  hname = '$hname' \nORDER BY \n  time_stamp DESC \nLIMIT 1\n",
           "refId": "A",
-          "timeColumns": []
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
         }
       ],
-      "title": "Global Data Write",
+      "title": "Memory Usage $hname",
+      "transparent": true,
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "ae57ukfdysxs0e"
+      },
+      "description": "For each host show how much CPU is used (new monitoring param needed)",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 54
+      },
+      "id": 26,
+      "maxPerRow": 2,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "11.3.1",
+      "repeat": "hname",
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "queryText": "SELECT hname, cpu_load\nFROM hosts\nWHERE hname = 'P14SONB058' \nAND time_stamp = (SELECT MAX(time_stamp) FROM hosts WHERE hname = 'P14SONB058')\n\n\n",
+          "queryType": "table",
+          "rawQueryText": "SELECT hname, cpu_load\nFROM hosts\nWHERE hname = '$hname' \nAND time_stamp = (SELECT MAX(time_stamp) FROM hosts WHERE hname = '$hname')\n\n\n",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "CPU Usage $hname",
       "transformations": [
         {
           "id": "convertFieldType",
           "options": {
-            "conversions": [
-              {
-                "destinationType": "time",
-                "targetField": "time_stamp"
-              }
-            ],
+            "conversions": [],
             "fields": {}
           }
         }
       ],
       "transparent": true,
-      "type": "timeseries"
+      "type": "gauge"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 62
+      },
+      "id": 12,
+      "panels": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "ae57ukfdysxs0e"
+          },
+          "description": "Monitors total traffic throughout the whole system in Bit/s (or Bytes/s, whatever tsize of STopicMon returns) , irrespective of transportation type.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "continuous-GrYlRd"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 30,
+                "gradientMode": "scheme",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "smooth",
+                "lineStyle": {
+                  "fill": "solid"
+                },
+                "lineWidth": 2,
+                "pointSize": 1,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 24,
+            "x": 0,
+            "y": 137
+          },
+          "id": 13,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "hidden",
+              "placement": "right",
+              "showLegend": false
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "11.3.1",
+          "targets": [
+            {
+              "datasource": {
+                "type": "frser-sqlite-datasource",
+                "uid": "ae57ukfdysxs0e"
+              },
+              "queryText": "SELECT time_stamp, sum(datawrite) FROM processes\r\nGROUP BY time_stamp",
+              "queryType": "table",
+              "rawQueryText": "SELECT time_stamp, sum(datawrite) FROM processes\r\nGROUP BY time_stamp",
+              "refId": "A",
+              "timeColumns": []
+            }
+          ],
+          "title": "Global Data Write",
+          "transformations": [
+            {
+              "id": "convertFieldType",
+              "options": {
+                "conversions": [
+                  {
+                    "destinationType": "time",
+                    "targetField": "time_stamp"
+                  }
+                ],
+                "fields": {}
+              }
+            }
+          ],
+          "transparent": true,
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "ae57ukfdysxs0e"
+          },
+          "description": "Monitors total write throughout by the system's publishers in Bit/s (or Bytes/s, whatever tsize of STopicMon returns).",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "continuous-GrYlRd"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 30,
+                "gradientMode": "scheme",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "smooth",
+                "lineWidth": 2,
+                "pointSize": 1,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "fieldMinMax": false,
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 24,
+            "x": 0,
+            "y": 143
+          },
+          "id": 27,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": false
+            },
+            "tooltip": {
+              "mode": "none",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "11.3.1",
+          "targets": [
+            {
+              "datasource": {
+                "type": "frser-sqlite-datasource",
+                "uid": "ae57ukfdysxs0e"
+              },
+              "queryText": "SELECT time_stamp, SUM(throughput) \r\nFROM topics \r\nWHERE direction = 'publisher' \r\nGROUP BY time_stamp;\r\n",
+              "queryType": "table",
+              "rawQueryText": "SELECT time_stamp, SUM(throughput) \r\nFROM topics \r\nWHERE direction = 'publisher' \r\nGROUP BY time_stamp;\r\n",
+              "refId": "A",
+              "timeColumns": [
+                "time",
+                "ts"
+              ]
+            }
+          ],
+          "title": "Global Published Data",
+          "transformations": [
+            {
+              "id": "convertFieldType",
+              "options": {
+                "conversions": [
+                  {
+                    "destinationType": "time",
+                    "targetField": "time_stamp"
+                  }
+                ],
+                "fields": {}
+              }
+            }
+          ],
+          "transparent": true,
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "ae57ukfdysxs0e"
+          },
+          "description": "Monitors total read throughout by the system's subscribers in Bit/s (or Bytes/s, whatever tsize of STopicMon returns).",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "continuous-GrYlRd"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 30,
+                "gradientMode": "scheme",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "smooth",
+                "lineWidth": 2,
+                "pointSize": 1,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 24,
+            "x": 0,
+            "y": 148
+          },
+          "id": 28,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": false
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "11.3.1",
+          "targets": [
+            {
+              "datasource": {
+                "type": "frser-sqlite-datasource",
+                "uid": "ae57ukfdysxs0e"
+              },
+              "queryText": "SELECT time_stamp, SUM(throughput) \nFROM topics \nWHERE direction = 'subscriber' \nGROUP BY time_stamp;",
+              "queryType": "table",
+              "rawQueryText": "SELECT time_stamp, SUM(throughput) \nFROM topics \nWHERE direction = 'subscriber' \nGROUP BY time_stamp;",
+              "refId": "A",
+              "timeColumns": [
+                "time",
+                "ts"
+              ]
+            }
+          ],
+          "title": "Global Read Data",
+          "transformations": [
+            {
+              "id": "convertFieldType",
+              "options": {
+                "conversions": [
+                  {
+                    "destinationType": "time",
+                    "targetField": "time_stamp"
+                  }
+                ],
+                "fields": {}
+              }
+            }
+          ],
+          "type": "timeseries"
+        }
+      ],
+      "title": "Timelines",
+      "type": "row"
     },
     {
       "collapsed": false,
@@ -496,7 +1048,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 23
+        "y": 63
       },
       "id": 7,
       "panels": [],
@@ -506,7 +1058,7 @@
     {
       "datasource": {
         "type": "frser-sqlite-datasource",
-        "uid": "${DS_ECAL_MONITORING}"
+        "uid": "ae57ukfdysxs0e"
       },
       "fieldConfig": {
         "defaults": {
@@ -529,7 +1081,7 @@
         "h": 7,
         "w": 4,
         "x": 0,
-        "y": 24
+        "y": 64
       },
       "id": 2,
       "options": {
@@ -557,12 +1109,12 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "11.1.3",
+      "pluginVersion": "11.3.1",
       "targets": [
         {
           "datasource": {
             "type": "frser-sqlite-datasource",
-            "uid": "${DS_ECAL_MONITORING}"
+            "uid": "ae57ukfdysxs0e"
           },
           "queryText": "SELECT direction, COUNT(direction) as count \nFROM current_topics \nGROUP BY direction;",
           "queryType": "table",
@@ -581,7 +1133,7 @@
     {
       "datasource": {
         "type": "frser-sqlite-datasource",
-        "uid": "${DS_ECAL_MONITORING}"
+        "uid": "ae57ukfdysxs0e"
       },
       "description": "Show the 50 processes with the highest network usage",
       "fieldConfig": {
@@ -610,11 +1162,17 @@
         "h": 7,
         "w": 9,
         "x": 4,
-        "y": 24
+        "y": 64
       },
       "id": 3,
       "options": {
         "displayMode": "lcd",
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
         "maxVizHeight": 300,
         "minVizHeight": 16,
         "minVizWidth": 8,
@@ -630,12 +1188,12 @@
         "sizing": "auto",
         "valueMode": "color"
       },
-      "pluginVersion": "11.1.3",
+      "pluginVersion": "11.3.1",
       "targets": [
         {
           "datasource": {
             "type": "frser-sqlite-datasource",
-            "uid": "${DS_ECAL_MONITORING}"
+            "uid": "ae57ukfdysxs0e"
           },
           "queryText": "SELECT tname, direction, SUM(CAST(tsize AS REAL) * dfreq  / 1000.0 ) as bandwidth\nFROM current_topics\nGROUP BY pid, direction\nORDER BY bandwidth DESC, tname DESC;",
           "queryType": "table",
@@ -654,7 +1212,7 @@
     {
       "datasource": {
         "type": "frser-sqlite-datasource",
-        "uid": "${DS_ECAL_MONITORING}"
+        "uid": "ae57ukfdysxs0e"
       },
       "description": "Show the five processes with the highest maximum latency recently",
       "fieldConfig": {
@@ -753,13 +1311,38 @@
           },
           "unit": "ms"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "[1 - 20]"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 7,
         "w": 10,
         "x": 14,
-        "y": 24
+        "y": 64
       },
       "id": 21,
       "options": {
@@ -785,11 +1368,12 @@
         "xTickLabelRotation": 0,
         "xTickLabelSpacing": 0
       },
+      "pluginVersion": "11.3.1",
       "targets": [
         {
           "datasource": {
             "type": "frser-sqlite-datasource",
-            "uid": "${DS_ECAL_MONITORING}"
+            "uid": "ae57ukfdysxs0e"
           },
           "queryText": "SELECT uname, latency_min AS \"Min latency\", latency_avg AS \"Avg latency\", latency_max AS \"Max latency\"  \nFROM current_topics\nGROUP BY pid\nORDER BY latency_max DESC\nLIMIT 5\n",
           "queryType": "table",
@@ -805,7 +1389,7 @@
     {
       "datasource": {
         "type": "frser-sqlite-datasource",
-        "uid": "${DS_ECAL_MONITORING}"
+        "uid": "ae57ukfdysxs0e"
       },
       "description": "A list with names and timestamps when a process is shutdown irrespective whether it was graceful or not",
       "fieldConfig": {
@@ -834,7 +1418,7 @@
         "h": 4,
         "w": 24,
         "x": 0,
-        "y": 31
+        "y": 71
       },
       "id": 19,
       "options": {
@@ -855,12 +1439,12 @@
         "textMode": "value_and_name",
         "wideLayout": true
       },
-      "pluginVersion": "11.1.3",
+      "pluginVersion": "11.3.1",
       "targets": [
         {
           "datasource": {
             "type": "frser-sqlite-datasource",
-            "uid": "${DS_ECAL_MONITORING}"
+            "uid": "ae57ukfdysxs0e"
           },
           "queryText": "SELECT uname, time(time_stamp) FROM dropped_processes\nORDER BY time(time_stamp) DESC\n\n\n",
           "queryType": "table",
@@ -879,7 +1463,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 35
+        "y": 75
       },
       "id": 18,
       "panels": [],
@@ -889,14 +1473,18 @@
     {
       "datasource": {
         "type": "frser-sqlite-datasource",
-        "uid": "${DS_ECAL_MONITORING}"
+        "uid": "ae57ukfdysxs0e"
       },
       "description": "Nodegraph of all currently active hosts and their communication between each other",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
       "gridPos": {
         "h": 14,
         "w": 11,
         "x": 0,
-        "y": 36
+        "y": 76
       },
       "id": 20,
       "interval": "1m",
@@ -908,11 +1496,12 @@
           "mainStatUnit": "binBps"
         }
       },
+      "pluginVersion": "11.3.1",
       "targets": [
         {
           "datasource": {
             "type": "frser-sqlite-datasource",
-            "uid": "${DS_ECAL_MONITORING}"
+            "uid": "ae57ukfdysxs0e"
           },
           "queryText": "SELECT * FROM edges\r\n",
           "queryType": "table",
@@ -923,7 +1512,7 @@
         {
           "datasource": {
             "type": "frser-sqlite-datasource",
-            "uid": "${DS_ECAL_MONITORING}"
+            "uid": "ae57ukfdysxs0e"
           },
           "hide": false,
           "queryText": "SELECT * FROM nodes",
@@ -943,14 +1532,14 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 50
+        "y": 90
       },
       "id": 8,
       "panels": [
         {
           "datasource": {
             "type": "frser-sqlite-datasource",
-            "uid": "${DS_ECAL_MONITORING}"
+            "uid": "ae57ukfdysxs0e"
           },
           "fieldConfig": {
             "defaults": {
@@ -984,7 +1573,7 @@
             "h": 7,
             "w": 8,
             "x": 0,
-            "y": 26
+            "y": 106
           },
           "id": 9,
           "options": {
@@ -999,12 +1588,12 @@
             },
             "showHeader": true
           },
-          "pluginVersion": "11.1.3",
+          "pluginVersion": "11.3.1",
           "targets": [
             {
               "datasource": {
                 "type": "frser-sqlite-datasource",
-                "uid": "${DS_ECAL_MONITORING}"
+                "uid": "ae57ukfdysxs0e"
               },
               "queryText": "SELECT * FROM current_processes",
               "queryType": "table",
@@ -1022,7 +1611,7 @@
         {
           "datasource": {
             "type": "frser-sqlite-datasource",
-            "uid": "${DS_ECAL_MONITORING}"
+            "uid": "ae57ukfdysxs0e"
           },
           "fieldConfig": {
             "defaults": {
@@ -1056,7 +1645,7 @@
             "h": 7,
             "w": 8,
             "x": 8,
-            "y": 26
+            "y": 106
           },
           "id": 11,
           "options": {
@@ -1071,12 +1660,12 @@
             },
             "showHeader": true
           },
-          "pluginVersion": "11.1.3",
+          "pluginVersion": "11.3.1",
           "targets": [
             {
               "datasource": {
                 "type": "frser-sqlite-datasource",
-                "uid": "${DS_ECAL_MONITORING}"
+                "uid": "ae57ukfdysxs0e"
               },
               "queryText": "SELECT * FROM current_topics",
               "queryType": "table",
@@ -1094,7 +1683,7 @@
         {
           "datasource": {
             "type": "frser-sqlite-datasource",
-            "uid": "${DS_ECAL_MONITORING}"
+            "uid": "ae57ukfdysxs0e"
           },
           "fieldConfig": {
             "defaults": {
@@ -1128,7 +1717,7 @@
             "h": 7,
             "w": 8,
             "x": 16,
-            "y": 26
+            "y": 106
           },
           "id": 10,
           "options": {
@@ -1143,12 +1732,12 @@
             },
             "showHeader": true
           },
-          "pluginVersion": "11.1.3",
+          "pluginVersion": "11.3.1",
           "targets": [
             {
               "datasource": {
                 "type": "frser-sqlite-datasource",
-                "uid": "${DS_ECAL_MONITORING}"
+                "uid": "ae57ukfdysxs0e"
               },
               "queryText": "SELECT * FROM current_services",
               "queryType": "table",
@@ -1173,14 +1762,14 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 51
+        "y": 91
       },
       "id": 14,
       "panels": [
         {
           "datasource": {
             "type": "frser-sqlite-datasource",
-            "uid": "${DS_ECAL_MONITORING}"
+            "uid": "ae57ukfdysxs0e"
           },
           "fieldConfig": {
             "defaults": {
@@ -1214,7 +1803,7 @@
             "h": 7,
             "w": 8,
             "x": 0,
-            "y": 27
+            "y": 107
           },
           "id": 15,
           "options": {
@@ -1229,12 +1818,12 @@
             },
             "showHeader": true
           },
-          "pluginVersion": "11.1.3",
+          "pluginVersion": "11.3.1",
           "targets": [
             {
               "datasource": {
                 "type": "frser-sqlite-datasource",
-                "uid": "${DS_ECAL_MONITORING}"
+                "uid": "ae57ukfdysxs0e"
               },
               "queryText": "SELECT * FROM previous_processes",
               "queryType": "table",
@@ -1252,7 +1841,7 @@
         {
           "datasource": {
             "type": "frser-sqlite-datasource",
-            "uid": "${DS_ECAL_MONITORING}"
+            "uid": "ae57ukfdysxs0e"
           },
           "description": "",
           "fieldConfig": {
@@ -1287,7 +1876,7 @@
             "h": 7,
             "w": 8,
             "x": 8,
-            "y": 27
+            "y": 107
           },
           "id": 16,
           "options": {
@@ -1302,12 +1891,12 @@
             },
             "showHeader": true
           },
-          "pluginVersion": "11.1.3",
+          "pluginVersion": "11.3.1",
           "targets": [
             {
               "datasource": {
                 "type": "frser-sqlite-datasource",
-                "uid": "${DS_ECAL_MONITORING}"
+                "uid": "ae57ukfdysxs0e"
               },
               "queryText": "SELECT * FROM previous_topics",
               "queryType": "table",
@@ -1325,7 +1914,7 @@
         {
           "datasource": {
             "type": "frser-sqlite-datasource",
-            "uid": "${DS_ECAL_MONITORING}"
+            "uid": "ae57ukfdysxs0e"
           },
           "fieldConfig": {
             "defaults": {
@@ -1359,7 +1948,7 @@
             "h": 7,
             "w": 8,
             "x": 16,
-            "y": 27
+            "y": 107
           },
           "id": 17,
           "options": {
@@ -1374,12 +1963,12 @@
             },
             "showHeader": true
           },
-          "pluginVersion": "11.1.3",
+          "pluginVersion": "11.3.1",
           "targets": [
             {
               "datasource": {
                 "type": "frser-sqlite-datasource",
-                "uid": "${DS_ECAL_MONITORING}"
+                "uid": "ae57ukfdysxs0e"
               },
               "queryText": "SELECT * FROM previous_services",
               "queryType": "table",
@@ -1399,249 +1988,272 @@
       "type": "row"
     },
     {
-      "collapsed": false,
+      "collapsed": true,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 52
+        "y": 92
       },
       "id": 4,
-      "panels": [],
+      "panels": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "ae57ukfdysxs0e"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "inspect": false
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 8,
+            "x": 0,
+            "y": 108
+          },
+          "id": 1,
+          "options": {
+            "cellHeight": "sm",
+            "footer": {
+              "countRows": false,
+              "fields": "",
+              "reducer": [
+                "sum"
+              ],
+              "show": false
+            },
+            "showHeader": true
+          },
+          "pluginVersion": "11.3.1",
+          "targets": [
+            {
+              "datasource": {
+                "type": "frser-sqlite-datasource",
+                "uid": "ae57ukfdysxs0e"
+              },
+              "queryText": "SELECT * FROM processes",
+              "queryType": "table",
+              "rawQueryText": "SELECT * FROM processes",
+              "refId": "A",
+              "timeColumns": [
+                "time",
+                "ts"
+              ]
+            }
+          ],
+          "title": "Processes",
+          "type": "table"
+        },
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "ae57ukfdysxs0e"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "inspect": false
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 8,
+            "x": 8,
+            "y": 108
+          },
+          "id": 6,
+          "options": {
+            "cellHeight": "sm",
+            "footer": {
+              "countRows": false,
+              "fields": "",
+              "reducer": [
+                "sum"
+              ],
+              "show": false
+            },
+            "showHeader": true
+          },
+          "pluginVersion": "11.3.1",
+          "targets": [
+            {
+              "datasource": {
+                "type": "frser-sqlite-datasource",
+                "uid": "ae57ukfdysxs0e"
+              },
+              "queryText": "SELECT * FROM topics\n",
+              "queryType": "table",
+              "rawQueryText": "SELECT * FROM topics\n",
+              "refId": "A",
+              "timeColumns": []
+            }
+          ],
+          "title": "Topics",
+          "type": "table"
+        },
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "ae57ukfdysxs0e"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "inspect": false
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 8,
+            "x": 16,
+            "y": 108
+          },
+          "id": 5,
+          "options": {
+            "cellHeight": "sm",
+            "footer": {
+              "countRows": false,
+              "fields": "",
+              "reducer": [
+                "sum"
+              ],
+              "show": false
+            },
+            "showHeader": true
+          },
+          "pluginVersion": "11.3.1",
+          "targets": [
+            {
+              "datasource": {
+                "type": "frser-sqlite-datasource",
+                "uid": "ae57ukfdysxs0e"
+              },
+              "queryText": "SELECT * FROM services",
+              "queryType": "table",
+              "rawQueryText": "SELECT * FROM services",
+              "refId": "A",
+              "timeColumns": [
+                "time",
+                "ts"
+              ]
+            }
+          ],
+          "title": "Services",
+          "type": "table"
+        }
+      ],
       "title": "Raw Data",
       "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "frser-sqlite-datasource",
-        "uid": "${DS_ECAL_MONITORING}"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {
-            "align": "auto",
-            "cellOptions": {
-              "type": "auto"
-            },
-            "inspect": false
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 8,
-        "x": 0,
-        "y": 53
-      },
-      "id": 1,
-      "options": {
-        "cellHeight": "sm",
-        "footer": {
-          "countRows": false,
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
-        },
-        "showHeader": true
-      },
-      "pluginVersion": "11.1.3",
-      "targets": [
-        {
-          "datasource": {
-            "type": "frser-sqlite-datasource",
-            "uid": "${DS_ECAL_MONITORING}"
-          },
-          "queryText": "SELECT * FROM processes",
-          "queryType": "table",
-          "rawQueryText": "SELECT * FROM processes",
-          "refId": "A",
-          "timeColumns": [
-            "time",
-            "ts"
-          ]
-        }
-      ],
-      "title": "Processes",
-      "type": "table"
-    },
-    {
-      "datasource": {
-        "type": "frser-sqlite-datasource",
-        "uid": "${DS_ECAL_MONITORING}"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {
-            "align": "auto",
-            "cellOptions": {
-              "type": "auto"
-            },
-            "inspect": false
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 8,
-        "x": 8,
-        "y": 53
-      },
-      "id": 6,
-      "options": {
-        "cellHeight": "sm",
-        "footer": {
-          "countRows": false,
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
-        },
-        "showHeader": true
-      },
-      "pluginVersion": "11.1.3",
-      "targets": [
-        {
-          "datasource": {
-            "type": "frser-sqlite-datasource",
-            "uid": "${DS_ECAL_MONITORING}"
-          },
-          "queryText": "SELECT * FROM topics\n",
-          "queryType": "table",
-          "rawQueryText": "SELECT * FROM topics\n",
-          "refId": "A",
-          "timeColumns": []
-        }
-      ],
-      "title": "Topics",
-      "type": "table"
-    },
-    {
-      "datasource": {
-        "type": "frser-sqlite-datasource",
-        "uid": "${DS_ECAL_MONITORING}"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {
-            "align": "auto",
-            "cellOptions": {
-              "type": "auto"
-            },
-            "inspect": false
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 8,
-        "x": 16,
-        "y": 53
-      },
-      "id": 5,
-      "options": {
-        "cellHeight": "sm",
-        "footer": {
-          "countRows": false,
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
-        },
-        "showHeader": true
-      },
-      "pluginVersion": "11.1.3",
-      "targets": [
-        {
-          "datasource": {
-            "type": "frser-sqlite-datasource",
-            "uid": "${DS_ECAL_MONITORING}"
-          },
-          "queryText": "SELECT * FROM services",
-          "queryType": "table",
-          "rawQueryText": "SELECT * FROM services",
-          "refId": "A",
-          "timeColumns": [
-            "time",
-            "ts"
-          ]
-        }
-      ],
-      "title": "Services",
-      "type": "table"
     }
   ],
+  "preload": false,
   "refresh": "5s",
-  "schemaVersion": 39,
+  "schemaVersion": 40,
   "tags": [],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "current": {
+          "text": [
+            "P14SONB058"
+          ],
+          "value": [
+            "P14SONB058"
+          ]
+        },
+        "datasource": {
+          "type": "frser-sqlite-datasource",
+          "uid": "ae57ukfdysxs0e"
+        },
+        "definition": "SELECT DISTINCT hname FROM processes",
+        "description": "",
+        "multi": true,
+        "name": "hname",
+        "options": [],
+        "query": "SELECT DISTINCT hname FROM processes",
+        "refresh": 1,
+        "regex": "",
+        "type": "query"
+      }
+    ]
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-5m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "eCAL Monitoring",
   "uid": "aduwl9kn2oxz4c",
-  "version": 36,
+  "version": 37,
   "weekStart": ""
 }

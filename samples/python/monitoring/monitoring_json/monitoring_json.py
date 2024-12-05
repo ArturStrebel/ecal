@@ -5,9 +5,9 @@
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #      http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,439 +15,263 @@
 # limitations under the License.
 #
 # ========================= eCAL LICENSE =================================
-
-import base64
+import os
 import sys
 import time
-import sqlite3
-import random
 import ecal.core.core as ecal_core
 
+from DatabaseHandler import DatabaseHandler
+from callbacks import host_monitor_callback
+from helpers import convert_bytes_to_str, create_host_graph_list_from_topics
 
-def convert_bytes_to_str(d, handle_bytes='decode'):
-  """
-  Recursively converts all byte objects in a nested data structure to a string representation.
-  
-  Parameters:
-    d: The input data structure, which can be a dictionary, list, tuple, set, or other types.
-    handle_bytes (str or callable): Determines how bytes objects are handled:
-      - 'decode': Encode bytes as a base64 string (default).
-      - 'clear': Replace bytes with an empty string.
-      - A callable: Apply the provided function to bytes objects.
-  
-  Returns:
-    The input data structure with bytes objects converted according to the `handle_bytes` parameter.
-  """  
-  def handle_bytes_func(b):
-    """
-    Handles the conversion of a bytes object based on the `handle_bytes` parameter.
-    
-    Parameters:
-      b: The bytes object to be handled.
-      
-    Returns:
-      A string representation of the bytes object based on the `handle_bytes` parameter.
-    
-    Raises:
-      ValueError: If the `handle_bytes` parameter is not recognized.
-    """    
-    if handle_bytes == 'decode':
-      return base64.b64encode(b).decode('utf-8')
-    elif handle_bytes == 'clear':
-      return ''
-    elif callable(handle_bytes):
-      return handle_bytes(b)
-    else:
-      raise ValueError(f"Invalid handle_bytes value: {handle_bytes}")
+from ecal.core.subscriber import ProtoSubscriber
+import proto_messages.mma_pb2 as mma_pb2
 
-  if isinstance(d, dict):
-    return {k: convert_bytes_to_str(v, handle_bytes) for k, v in d.items()}
-  elif isinstance(d, list):
-    return [convert_bytes_to_str(i, handle_bytes) for i in d]
-  elif isinstance(d, tuple):
-    return tuple(convert_bytes_to_str(i, handle_bytes) for i in d)
-  elif isinstance(d, set):
-    return {convert_bytes_to_str(i, handle_bytes) for i in d}
-  elif isinstance(d, bytes):
-    return handle_bytes_func(d)
-  else:
-    return d
+DB_CONNECTION = os.path.dirname(os.path.abspath(__file__)) + "\\ecal_monitoring.db"
+
 
 def main():
-  # print eCAL version and date
-  print("eCAL {} ({})\n".format(ecal_core.getversion(), ecal_core.getdate()))
-  
-  # initialize eCAL API
-  ecal_core.initialize(sys.argv, "monitoring")
-  
-  # initialize eCAL monitoring API
-  ecal_core.mon_initialize()
-  time.sleep(2)
-  
-  # SQLite
-  conn = sqlite3.connect('ecal_monitoring.db')
-  cursor = conn.cursor()
-  
-  def create_process_table(table_name):
-    cursor.execute('DROP TABLE IF EXISTS ' + table_name)
-    cursor.execute('''
-      CREATE TABLE ''' + table_name + '''(
-      time_stamp TEXT,
-      pid INTEGER,
-      rclock INTEGER,
-      hname TEXT,
-      pname TEXT,
-      uname TEXT,
-      pparam TEXT,
-      pmemory INTEGER,
-      pcpu INTEGER,
-      usrptime INTEGER,
-      datawrite INTEGER,
-      state_severity INTEGER,
-      state_severity_level INTEGER,
-      state_info TEXT,
-      tsync_state INTEGER,
-      tsync_mod_name TEXT,
-      component_init_state INTEGER,
-      component_init_info TEXT)
-    ''')
-    
-  def create_service_table(table_name):
-    cursor.execute('DROP TABLE IF EXISTS ' + table_name)
-    cursor.execute('''
-      CREATE TABLE ''' + table_name + '''( 
-      time_stamp TEXT,
-      pid INTEGER,
-      rclock INTEGER,
-      hname TEXT,
-      pname TEXT,
-      uname TEXT,
-      sname TEXT)
-    ''')
-      
-  def create_topic_table(table_name):
-    cursor.execute('DROP TABLE IF EXISTS ' + table_name)
-    cursor.execute('''
-      CREATE TABLE ''' + table_name + '''(
-      time_stamp TEXT,
-      pid INTEGER,
-      rclock INTEGER,
-      hname TEXT,
-      pname TEXT,
-      uname TEXT,
-      tid INTEGER,
-      tname TEXT,
-      direction TEXT,
-      ttype TEXT,
-      tdesc TEXT,
-      tsize INTEGER,
-      dclock INTEGER,
-      dfreq INTEGER,
-      latency_min INTEGER,
-      latency_avg INTEGER,
-      latency_max INTEGER)
-    ''')
-      
-  # Create tables 
-  create_process_table('processes')
-  create_process_table('current_processes')
-  create_process_table('previous_processes')
-  create_process_table('dropped_processes')
-  
-  create_service_table('services')
-  create_service_table('current_services')
-  create_service_table('previous_services')
-  
-  create_topic_table('topics')
-  create_topic_table('current_topics')
-  create_topic_table('previous_topics')
-  
-  # host graph tables (dont change any names in these two tables!)
-  cursor.execute('DROP TABLE IF EXISTS edges')
-  cursor.execute('DROP TABLE IF EXISTS nodes')
-  cursor.execute('''
-    CREATE TABLE edges (
-    id TEXT PRIMARY KEY,
-    source TEXT,
-    target TEXT,
-    mainstat TEXT,
-    secondarystat TEXT,
-    thickness INTEGER, 
-    color TEXT)
-  ''')
-  
-  cursor.execute('''
-    CREATE TABLE nodes (
-    id TEXT PRIMARY KEY,
-    title TEXT,
-    mainstat TEXT,
-    color TEXT, 
-    icon TEXT,
-    nodeRadius INTEGER)
-  ''')
-  
-  def insert_process(process, table_name):
-    cursor.execute('''
-      INSERT INTO ''' + table_name + ''' (
-      time_stamp,
-      pid,
-      rclock,
-      hname,
-      pname,
-      uname,
-      pparam,
-      pmemory,
-      pcpu,
-      usrptime,
-      datawrite,
-      state_severity,
-      state_severity_level,
-      state_info,
-      tsync_state,
-      tsync_mod_name,
-      component_init_state,
-      component_init_info) 
-      VALUES (datetime('now', 'localtime'), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      ''', (process['pid'], process['rclock'], process['hname'], process['pname'], process['uname'], process['pparam'], 
-            process['pmemory'], process['pcpu'], process['usrptime'], process['datawrite'], process['state_severity'], process['state_severity_level'], 
-            process['state_info'], process['tsync_state'], process['tsync_mod_name'], process['component_init_state'], process['component_init_info']))
-  
-  def insert_service(service, table_name):
-    cursor.execute('''
-      INSERT INTO ''' + table_name + ''' (
-      time_stamp,
-      pid,
-      rclock,
-      hname,
-      pname,
-      uname,
-      sname)
-      VALUES (datetime('now', 'localtime'), ?, ?, ?, ?, ?, ?)
-      ''', (service['pid'], service['rclock'], service['hname'], service['pname'], service['uname'], service['sname']))
-  
-  def insert_topic(topic, table_name):
-    cursor.execute('''
-      INSERT INTO ''' + table_name + ''' (
-      time_stamp,
-      pid,
-      rclock,
-      hname,
-      pname,
-      uname,
-      tid,
-      tname,
-      direction,
-      ttype,
-      tdesc,
-      tsize,
-      dclock,
-      dfreq,
-      latency_min,
-      latency_avg,
-      latency_max)
-      VALUES (datetime('now', 'localtime'), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )
-      ''', (topic['pid'], topic['rclock'], topic['hname'], topic['pname'], topic['uname'], topic['tid'],
-            topic['tname'], topic['direction'], topic['ttype'], topic['tdesc'], topic['tsize'], 
-            topic['dclock'], topic['dfreq'], random.randint(1,20), random.randint(21,50), random.randint(51,120)))
-  
-  def insert_edge(edge, table_name) :
-    cursor.execute('''INSERT INTO ''' + table_name +'''(id, source, target, mainstat, secondarystat, thickness, color) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?)''', 
-                 (edge['id'], edge['source'], edge['target'], edge['mainstat'], 
-                 edge['secondarystat'], edge['thickness'], edge['color']))
-  
-  def insert_node(node, table_name) :
-    cursor.execute('''INSERT INTO ''' + table_name + '''(id, title, mainstat, color, icon, nodeRadius)
-                 VALUES (?, ?, ?, ?, ?, ?)''', 
-                 (node['id'], node['title'], node['mainstat'], node['color'], 
-                 node['icon'], node['nodeRadius']))
-    
-  # Test graph (comment out live updates in while loop to show this)
-  cursor.execute('''INSERT INTO edges (id, source, target, mainstat, secondarystat, thickness, color) 
-                 VALUES ('e1', 'Rear View', 'HPC Controller' , '3.14 Mbit/s', 'Camera Stream', 9, '#F07D00')''')
-  cursor.execute('''INSERT INTO edges (id, source, target, mainstat, secondarystat, thickness, color) 
-                 VALUES ('e2', 'HPC Controller', 'Info', '749 Kbit/s', 'System metrics', 5, '#F07D00')''')
-  cursor.execute('''INSERT INTO edges (id, source, target, mainstat, secondarystat, thickness, color) 
-                 VALUES ('e3', 'Radio', 'Info', '128 Kbit/s', 'Music', 2, '#F07D00')''')
-  cursor.execute('''INSERT INTO edges (id, source, target, mainstat, secondarystat, thickness, color) 
-                VALUES ('e4', 'Phone', 'Info', '1.50 Mbit/s', 'Navigation', 7, '#F07D00')''')
-  cursor.execute('''INSERT INTO edges (id, source, target, mainstat, secondarystat, thickness, color) 
-                VALUES ('e5', 'Rear View', 'Info', '3.14 Mbit/s', 'Rear view camera', 9, '#F07D00')''')
-  cursor.execute('''INSERT INTO edges (id, source, target, mainstat, secondarystat, thickness, color) 
-                VALUES ('e6', 'Sensor', 'HPC Controller', '941 Bit/s', 'Health parameters', 2, '#F07D00')''') 
-   
-  cursor.execute('''INSERT INTO nodes (id, title, mainstat, color, icon, nodeRadius) 
-                 VALUES ('Info', 'Infotainment system', '0 Bit/s', '#1E9BD7', 'home-alt', 60)''')
-  cursor.execute('''INSERT INTO nodes (id, title, mainstat, color, icon, nodeRadius) 
-                 VALUES ('Phone', 'Smartphone', '300.65 Mit/s', '#1E9BD7', 'mobile-android', 50)''')
-  cursor.execute('''INSERT INTO nodes (id, title, mainstat, color, icon, nodeRadius) 
-                 VALUES ('Radio', 'Radio', '0 Bit/s', '#1E9BD7', 'rss', 40)''')
-  cursor.execute('''INSERT INTO nodes (id, title, mainstat, color, icon, nodeRadius) 
-                 VALUES ('Rear View', 'Rear View', '42 Bit/s', '#1E9BD7', 'camera', 40)''')
-  cursor.execute('''INSERT INTO nodes (id, title, mainstat, color, icon, nodeRadius) 
-                 VALUES ('HPC Controller', 'HPC Controller','140 Mbit/s', '#1E9BD7', 'calculator-alt', 50)''')
-  cursor.execute('''INSERT INTO nodes (id, title, mainstat, color, icon, nodeRadius) 
-                 VALUES ('Sensor', 'Multiple Sensors', '0 Bit/s', '#1E9BD7', 'exclamation', 40)''')
-  
-  def create_edge(pub, sub, edge_list) :
-    edge = dict(id = pub['hname'] + '_' + sub['hname'],
-              source = pub['pid'], # unique id of pub
-              target = sub['pid'], # unique id of sub
-              mainstat = pub['tsize'], # package size of this connection
-              secondarystat = '', # free parameter, maybe show latency, once available? (or max bandwidth)
-              thickness = 1,
-              color = '#F07D00') # d-fine orange
-    edge_list.append(edge)
-    insert_edge(edge, 'edges') # add edge to database
-    
-  def create_node(process, node_list) :
-    node = dict(id = process['hname'],
-                  title = process['hname'], 
-                  mainstat = process['tsize'], # bandwidth of intrahost communication
-                  color = '#1E9BD7', # d-fine light blue
-                  icon = '', # only for "nice pictures" of nodes, otherwise show mainstat 
-                  nodeRadius = 50) # could scale with "importance" of this host
-    node_list.append(node)
-    insert_node(node, 'nodes') # add node to database
-  
-  def update_intrahost_process(pub, node_list) :
-    found_host = 0
-    for node in node_list :
-      if node['id'] == pub['hname'] : # if the host already exists update bandwidth
-        node['mainstat'] += pub['tsize']
-        found_host = 1
-    if found_host == 0 : # else create node
-      create_node(pub, node_list)
-   
-  def create_host_graph_list(edge_list, node_list):
-    ecal_mon = ecal_core.mon_monitoring()
-    topics = ecal_mon[1]['topics']
-    #insert fake topics here
-    fakepub = dict(rclock = 1, # not important for fake
-                hname = 'fakehost1',
-                pid = 12345678, # should be a unique number 
-                pname = 'a', # not important for fake
-                uname = 'b', # not important for fake
-                tid = 1, # not important for fake
-                tname = 'faketopic1',
-                direction = 'publisher', 
-                ttype = 'c', # not important for fake
-                tdesc = 'd', # not important for fake
-                tsize = 13, # used to compute bandwidth
-                dclock = 1, # not important for fake
-                dfreq = 2000) # used to compute bandwidth
-    fakesub = dict(rclock = 1, # not important for fake
-                hname = 'fakehost1',
-                pid = 2345678, # should be a unique number 
-                pname = 'aa', # not important for fake
-                uname = 'bb', # not important for fake
-                tid = 1, # not important for fake
-                tname = 'faketopic1',
-                direction = 'subscriber', 
-                ttype = 'cc', # not important for fake
-                tdesc = 'dd', # not important for fake
-                tsize = 13, # used to compute bandwidth
-                dclock = 1, # not important for fake
-                dfreq = 2000) # used to compute bandwidth
+    # print eCAL version and date
+    print("eCAL {} ({})\n".format(ecal_core.getversion(), ecal_core.getdate()))
 
-    topics.append(fakepub)
-    topics.append(fakesub)
-    
-    pub_list = [pub for pub in topics if pub['direction'] == 'publisher']
-    sub_list = [sub for sub in topics if sub['direction'] == 'subscriber']
-    for pub in pub_list:
-      for sub in sub_list:
-        
-        # check that pub and sub have same topic
-        if pub['tname'] != sub['tname'] :
-          continue
-                
-        if pub['hname'] == sub['hname'] : # if process is within one host
-          update_intrahost_process(pub, node_list)
-          continue # do not create an edge from a node to itself
-          
-        edgeID = pub['hname'] + '_' + sub['hname'] # unique name for each host edge
-        found_edge = 0
-        for edge in edge_list:
-          if edge['id'] == edgeID:
-            edge['mainstat'] += pub['tsize'] # if edge already exists, update bandwidth of this edge
-            edge['thickness'] = min( 20, edge['thickness'] + 1) # make edge thicker for each connection, but cap at 20
-            found_edge = 1
+    # initialize eCAL API
+    ecal_core.initialize(sys.argv, "monitoring")
 
-        if found_edge == 0 : # found a new edge
-          create_edge(pub, sub, edge_list)
-          
-          # either pub or sub (or both) is a new node, which needs to be added to node list          
-          found_pub = 0
-          for node in node_list :
-            if node['id'] == pub['pid'] :
-              found_pub = 1
-          if found_pub == 0 :
-            create_node(pub, node_list)
-              
-          found_sub = 0
-          for node in node_list :
-            if node['id'] == sub['pid'] :
-              found_sub = 1
-          if found_sub == 0 :
-            create_node(sub, node_list)
+    # initialize eCAL monitoring API
+    ecal_core.mon_initialize()
+    time.sleep(2)
 
-  # print eCAL entities
-  while ecal_core.ok():
-    # convert 'bytes' type elements of the the monitoring dictionary
-    monitoring_d = convert_bytes_to_str(ecal_core.mon_monitoring(), handle_bytes = 'decode')
-    monitoring = monitoring_d[1]
-    print(monitoring)
-    
-    # save previous process state
-    cursor.execute('DELETE FROM previous_processes')
-    cursor.execute('DELETE FROM previous_services')
-    cursor.execute('DELETE FROM previous_topics')
-    
-    cursor.execute('INSERT INTO previous_processes SELECT * FROM current_processes')
-    cursor.execute('INSERT INTO previous_services SELECT * FROM current_services')
-    cursor.execute('INSERT INTO previous_topics SELECT * FROM current_topics')
-    
-    # update current process state
-    cursor.execute('DELETE FROM current_processes')
-    cursor.execute('DELETE FROM current_services')
-    cursor.execute('DELETE FROM current_topics')
-    
-    for process in monitoring['processes']:
-      insert_process(process, 'processes')
-      insert_process(process, 'current_processes')
+    db_handler = DatabaseHandler(db_string=DB_CONNECTION)
 
-    for service in monitoring['services']:
-      insert_service(service, 'services')
-      insert_service(service, 'current_services')
+    host_subscribers = dict()
 
-    for topic in monitoring['topics']:
-      insert_topic(topic, 'topics')
-      insert_topic(topic, 'current_topics')
-    
-    # check for dropped processes and add them to DB  
-    cursor.execute('''INSERT INTO dropped_processes 
+    # Create tables
+    db_handler.create_process_table("processes")
+    db_handler.create_process_table("current_processes")
+    db_handler.create_process_table("previous_processes")
+    db_handler.create_process_table("dropped_processes")
+
+    db_handler.create_service_table("services")
+    db_handler.create_service_table("current_services")
+    db_handler.create_service_table("previous_services")
+
+    db_handler.create_topic_table("topics")
+    db_handler.create_topic_table("current_topics")
+    db_handler.create_topic_table("previous_topics")
+
+    db_handler.create_host_table("hosts")
+    # db_handler.create_host_table('current_hosts')
+    # db_handler.create_host_table('previous_hosts')
+
+    db_handler.create_process_performance_table("process_performance")
+
+    # host graph tables (dont change any names in these two tables!)
+    db_handler.create_edge_table("edges")
+    db_handler.create_node_table("nodes")
+
+    # Test graph (comment out live updates in while loop to show this)
+    test_edges = [
+        {
+            "id": "e1",
+            "source": "Rear View",
+            "target": "HPC Controller",
+            "mainstat": "3.14 Mbit/s",
+            "secondarystat": "Camera Stream",
+            "thickness": 9,
+            "color": "#F07D00",
+        },
+        {
+            "id": "e2",
+            "source": "HPC Controller",
+            "target": "Info",
+            "mainstat": "749 Kbit/s",
+            "secondarystat": "System metrics",
+            "thickness": 5,
+            "color": "#F07D00",
+        },
+        {
+            "id": "e3",
+            "source": "Radio",
+            "target": "Info",
+            "mainstat": "128 Kbit/s",
+            "secondarystat": "Music",
+            "thickness": 2,
+            "color": "#F07D00",
+        },
+        {
+            "id": "e4",
+            "source": "Phone",
+            "target": "Info",
+            "mainstat": "1.50 Mbit/s",
+            "secondarystat": "Navigation",
+            "thickness": 7,
+            "color": "#F07D00",
+        },
+        {
+            "id": "e5",
+            "source": "Rear View",
+            "target": "Info",
+            "mainstat": "3.14 Mbit/s",
+            "secondarystat": "Rear view camera",
+            "thickness": 9,
+            "color": "#F07D00",
+        },
+        {
+            "id": "e6",
+            "source": "Sensor",
+            "target": "HPC Controller",
+            "mainstat": "941 Bit/s",
+            "secondarystat": "Health parameters",
+            "thickness": 2,
+            "color": "#F07D00",
+        },
+    ]
+    db_handler.insert_edges(test_edges, "edges")
+
+    test_nodes = [
+        {
+            "id": "Info",
+            "title": "Infotainment system",
+            "mainstat": "0 Bit/s",
+            "color": "#1E9BD7",
+            "icon": "home-alt",
+            "nodeRadius": 60,
+        },
+        {
+            "id": "Phone",
+            "title": "Smartphone",
+            "mainstat": "300.65 Mit/s",
+            "color": "#1E9BD7",
+            "icon": "mobile-android",
+            "nodeRadius": 50,
+        },
+        {
+            "id": "Radio",
+            "title": "Radio",
+            "mainstat": "0 Bit/s",
+            "color": "#1E9BD7",
+            "icon": "rss",
+            "nodeRadius": 40,
+        },
+        {
+            "id": "Rear View",
+            "title": "Rear View",
+            "mainstat": "42 Bit/s",
+            "color": "#1E9BD7",
+            "icon": "camera",
+            "nodeRadius": 40,
+        },
+        {
+            "id": "HPC Controller",
+            "title": "HPC Controller",
+            "mainstat": "140 Mbit/s",
+            "color": "#1E9BD7",
+            "icon": "calculator-alt",
+            "nodeRadius": 50,
+        },
+        {
+            "id": "Sensor",
+            "title": "Multiple Sensors",
+            "mainstat": "0 Bit/s",
+            "color": "#1E9BD7",
+            "icon": "exclamation",
+            "nodeRadius": 40,
+        },
+    ]
+    db_handler.insert_nodes(test_nodes, "nodes")
+
+    # print eCAL entities
+    while ecal_core.ok():
+        # convert 'bytes' type elements of the the monitoring dictionary
+        monitoring_d = convert_bytes_to_str(
+            ecal_core.mon_monitoring(), handle_bytes="decode"
+        )
+        monitoring = monitoring_d[1]
+        print(monitoring)
+
+        # save previous process state
+        db_handler.execute_command("DELETE FROM previous_processes")
+        db_handler.execute_command("DELETE FROM previous_services")
+        db_handler.execute_command("DELETE FROM previous_topics")
+        db_handler.execute_command("DELETE FROM previous_hosts")
+
+        db_handler.execute_command(
+            "INSERT INTO previous_processes SELECT * FROM current_processes"
+        )
+        db_handler.execute_command(
+            "INSERT INTO previous_services SELECT * FROM current_services"
+        )
+        db_handler.execute_command(
+            "INSERT INTO previous_topics SELECT * FROM current_topics"
+        )
+        db_handler.execute_command(
+            "INSERT INTO previous_hosts SELECT * FROM current_hosts"
+        )
+
+        # update current process state
+        db_handler.execute_command("DELETE FROM current_processes")
+        db_handler.execute_command("DELETE FROM current_services")
+        db_handler.execute_command("DELETE FROM current_topics")
+        db_handler.execute_command("DELETE FROM current_hosts")
+
+        db_handler.insert_processes(monitoring["processes"], "processes")
+        db_handler.insert_processes(monitoring["processes"], "current_processes")
+
+        db_handler.insert_services(monitoring["services"], "services")
+        db_handler.insert_services(monitoring["services"], "current_services")
+
+        db_handler.insert_topics(monitoring["topics"], "topics")
+        db_handler.insert_topics(monitoring["topics"], "current_topics")
+
+        # check for dropped processes and add them to DB
+        db_handler.execute_command(
+            """INSERT INTO dropped_processes 
                   SELECT previous_processes.* FROM previous_processes 
                   LEFT JOIN current_processes ON previous_processes.pid = current_processes.pid
-                  WHERE current_processes.pid IS NULL''')
-    
-    # update host traffic table
-    cursor.execute('DELETE FROM edges')
-    cursor.execute('DELETE FROM nodes')
-    edge_list = []
-    node_list = []
-    create_host_graph_list(edge_list, node_list)
-      
-    conn.commit()
-    time.sleep(1)
-          
-  # finalize eCAL monitoring API
-  ecal_core.mon_finalize()
-  
-  # finalize eCAL API
-  ecal_core.finalize()
- 
-  conn.close()
-  
+                  WHERE current_processes.pid IS NULL"""
+        )
+
+        # update host traffic table
+        db_handler.execute_command("DELETE FROM edges")
+        db_handler.execute_command("DELETE FROM nodes")
+
+        node_list, edge_list = create_host_graph_list_from_topics(monitoring["topics"])
+        db_handler.insert_nodes(node_list, "nodes")
+        db_handler.insert_edges(edge_list, "edges")
+
+        hnames = db_handler.execute_command(
+            "SELECT DISTINCT hname from processes"
+        ).fetchall()
+        hnames = {hname[0] for hname in hnames}
+
+        removed_hosts = set(host_subscribers.keys()).difference(hnames)
+        added_hosts = hnames.difference(set(host_subscribers.keys()))
+
+        host_subscribers = {
+            k: sub for k, sub in host_subscribers.items() if k not in removed_hosts
+        }
+
+        for hname in added_hosts:
+            try:
+                host_subscribers[hname] = ProtoSubscriber(
+                    f"machine_state_{hname}", mma_pb2.State
+                )
+                host_subscribers[hname].set_callback(host_monitor_callback)
+                print(f"Added new subscriber for host: {hname}")
+            except Exception as e:
+                print(f"Error setting subscriber for {hname}: {e}")
+
+        db_handler.commit()
+        time.sleep(1)
+
+    # finalize eCAL monitoring API
+    ecal_core.mon_finalize()
+
+    # finalize eCAL API
+    ecal_core.finalize()
+
+    db_handler.close()
+
+
 if __name__ == "__main__":
-  main()  
+    main()
