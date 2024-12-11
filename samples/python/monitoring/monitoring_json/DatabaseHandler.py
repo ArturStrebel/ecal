@@ -10,7 +10,7 @@ class DatabaseHandler:
         self,
         db_string=os.path.dirname(os.path.abspath(__file__)) + "\\ecal_monitoring.db",
     ):
-        self.conn = sqlite3.connect(db_string, check_same_thread=False, timeout=5)
+        self.conn = sqlite3.connect(db_string, check_same_thread=False, timeout=3)
         self.cursor = self.conn.cursor()
         self.cursor.execute('PRAGMA journal_mode=WAL;')
 
@@ -131,8 +131,8 @@ class DatabaseHandler:
             id TEXT PRIMARY KEY,
             source TEXT,
             target TEXT,
-            mainstat TEXT,
-            secondarystat TEXT,
+            mainstat REAL,
+            secondarystat REAL,
             thickness INTEGER, 
             color TEXT)
         """
@@ -147,10 +147,10 @@ class DatabaseHandler:
             + """(
             id TEXT PRIMARY KEY,
             title TEXT,
-            mainstat TEXT,
-            secondarystat TEXT,
-            arc__used_ram TEXT,
-            arc__free_ram TEXT,
+            mainstat REAL,
+            secondarystat REAL,
+            arc__used_ram REAL,
+            arc__free_ram REAL,
             color TEXT, 
             icon TEXT,
             nodeRadius INTEGER)

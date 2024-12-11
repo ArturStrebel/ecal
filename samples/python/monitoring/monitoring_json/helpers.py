@@ -78,7 +78,7 @@ def create_node(topic_pub, host_information):
         color="#1E9BD7",  # d-fine light blue
         icon="",  # only for "nice pictures" of nodes, otherwise show mainstat
         nodeRadius=50,  # scales with "importance"(currently: #Publisher, alternative: #processes/#connections ) of host minimum of 50 + (5 for every additional publisher)
-        secondarystat=f"{host_information['disk_usage']*100} %",  # Disk Usage
+        secondarystat=host_information['disk_usage']*100,  # Disk Usage
         arc__used_ram=host_information["ram_usage"],  # RAM Usage of host in %
         arc__free_ram=round(number=(1 - host_information["ram_usage"]), ndigits=2),
     )
