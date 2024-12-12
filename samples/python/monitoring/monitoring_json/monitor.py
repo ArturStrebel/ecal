@@ -265,12 +265,3 @@ class Monitor:
     def finalize_monitor(self):
         self.session.close()
         self.engine.dispose()
-
-
-if __name__ == "__main__":
-    m1 = Monitor2()
-    log = Log(
-        message=f"[DROPPED PROCESS] dropped process with id={1234} on host={2134}",
-        level="warning",
-    )
-    print(log)
