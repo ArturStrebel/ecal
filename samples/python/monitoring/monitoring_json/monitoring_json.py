@@ -1,7 +1,7 @@
 import sys
 import time
 import ecal.core.core as ecal_core
-from data import Monitor
+from monitor import Monitor
 import argparse
 
 

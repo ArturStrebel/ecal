@@ -2,7 +2,11 @@ import sqlite3
 import random
 import os
 import json
-from helpers import create_host_graph_list_from_topics_and_hosts, create_process_graph_list_from_topics, create_pub_sub_topic_graph_list_from_topics
+from helpers import (
+    create_host_graph_list_from_topics_and_hosts,
+    create_process_graph_list_from_topics,
+    create_pub_sub_topic_graph_list_from_topics,
+)
 
 
 class DatabaseHandler:
@@ -12,7 +16,7 @@ class DatabaseHandler:
     ):
         self.conn = sqlite3.connect(db_string, check_same_thread=False, timeout=3)
         self.cursor = self.conn.cursor()
-        self.cursor.execute('PRAGMA journal_mode=WAL;')
+        self.cursor.execute("PRAGMA journal_mode=WAL;")
 
     def create_log_table(self, table_name):
         self.cursor.execute("DROP TABLE IF EXISTS " + table_name)
@@ -103,7 +107,7 @@ class DatabaseHandler:
         """
         )
 
-    def create_host_table(self, table_name): # wieso pid?
+    def create_host_table(self, table_name): 
         self.cursor.execute("DROP TABLE IF EXISTS " + table_name)
         self.cursor.execute(
             """
@@ -154,7 +158,7 @@ class DatabaseHandler:
             color TEXT,
             highlighted REAL)
         """
-        )    
+        )
 
     def create_node_table(self, table_name):
         self.cursor.execute("DROP TABLE IF EXISTS " + table_name)
@@ -520,7 +524,7 @@ class DatabaseHandler:
                 host["disks"][0]["available"],  # decide on which disk(s)
             ),
         )
-    
+
     def insert_hosts(self, hosts, table_name):
         query = (
             """INSERT INTO """
@@ -535,7 +539,6 @@ class DatabaseHandler:
             available_disk)
             VALUES (datetime('now', 'localtime'), ?, ?, ?, ?, ?, ?)
             """
-
         )
         data = [
             (
@@ -543,14 +546,13 @@ class DatabaseHandler:
                 host["cpuLoad"],
                 host["total_memory"],
                 host["available_memory"],
-                host["capacity_disk"], 
-                host["available_disk"], 
+                host["capacity_disk"],
+                host["available_disk"],
             )
-
             for host in hosts
         ]
         self.cursor.executemany(query, data)
-        
+
     def insert_edge(self, edge, table_name):
         self.cursor.execute(
             """INSERT INTO """
@@ -625,9 +627,9 @@ class DatabaseHandler:
                 node["title"],
                 node["id"],
                 node["mainstat"],
-                node['secondarystat'],
-                node['arc__used_ram'],
-                node['arc__free_ram'],
+                node["secondarystat"],
+                node["arc__used_ram"],
+                node["arc__free_ram"],
                 node["color"],
                 node["icon"],
                 node["nodeRadius"],
@@ -648,13 +650,13 @@ class DatabaseHandler:
                 node["id"],
                 node["title"],
                 node["mainstat"],
-                node['secondarystat'],
-                node['arc__used_ram'],
-                node['arc__free_ram'],
+                node["secondarystat"],
+                node["arc__used_ram"],
+                node["arc__free_ram"],
                 node["color"],
                 node["icon"],
                 node["nodeRadius"],
-                node["highlighted"]
+                node["highlighted"],
             )
             for node in nodes
         ]
@@ -674,9 +676,9 @@ class DatabaseHandler:
                 node["id"],
                 node["title"],
                 node["mainstat"],
-                node['secondarystat'],
-                node['arc__used_ram'],
-                node['arc__free_ram'],
+                node["secondarystat"],
+                node["arc__used_ram"],
+                node["arc__free_ram"],
                 node["color"],
                 node["icon"],
                 node["nodeRadius"],
@@ -684,6 +686,7 @@ class DatabaseHandler:
             for node in nodes
         ]
         self.cursor.executemany(query, data)
+
     def insert_process_performance(self, hname, process, table_name):
         memory = process["memory"]
         cpu = process["cpu"]
@@ -782,7 +785,7 @@ class DatabaseHandler:
 
     def execute_command(self, command):
         return self.cursor.execute(command)
-    
+
     def execute_command_with_args(self, command, args):
         return self.cursor.execute(command, args)
 
@@ -791,6 +794,7 @@ class DatabaseHandler:
 
     def close(self):
         self.conn.close()
+
 
 if __name__ == "__main__":
     db_handler = DatabaseHandler()
@@ -833,7 +837,7 @@ if __name__ == "__main__":
         "component_init_info": "pub|sub|log|time",
         "ecal_runtime_version": "v6.0.0-alpha0-135-ga5dc7ca9c",
     }
-    #db_handler.insert_process(process, "processes")
+    # db_handler.insert_process(process, "processes")
 
     service = {
         "rclock": 1,
@@ -848,7 +852,7 @@ if __name__ == "__main__":
         "tcp_port_v1": 51766,
         "methods": {},
     }
-    #db_handler.insert_service(service, "services")
+    # db_handler.insert_service(service, "services")
 
     topic = {
         "rclock": 4,
@@ -868,7 +872,7 @@ if __name__ == "__main__":
         "dclock": 0,
         "dfreq": 0,
     }
-    #db_handler.insert_topic(topic, "topics")
+    # db_handler.insert_topic(topic, "topics")
 
     host = {
         "cpuLoad": 4.85774430741831,
@@ -907,7 +911,7 @@ if __name__ == "__main__":
         ],
     }
     hname = "testname"
-    #db_handler.insert_host(hname, host, "hosts")
+    # db_handler.insert_host(hname, host, "hosts")
 
     edge = {
         "id": "testname" + "_" + "testname2",
@@ -918,7 +922,7 @@ if __name__ == "__main__":
         "thickness": 1,
         "color": "#F07D00",
     }
-    #db_handler.insert_edge(edge, "edges")
+    # db_handler.insert_edge(edge, "edges")
 
     node = {
         "id": "testname",
@@ -931,7 +935,7 @@ if __name__ == "__main__":
         "arc__used_ram": 0.4,
         "arc__free_ram": 0.6,
     }
-    #db_handler.insert_node(node, "nodes")
+    # db_handler.insert_node(node, "nodes")
 
     process = {
         "name": "C:\\eCAL\\bin\\ecal_mma.exe",
@@ -948,39 +952,42 @@ if __name__ == "__main__":
         },
     }
     hname = "testname"
-    #db_handler.insert_process_performance(hname, process, "process_performance")
+    # db_handler.insert_process_performance(hname, process, "process_performance")
 
-    with open('C:\\Users\\d93445\\Desktop\\ecal\\samples\\python\\monitoring\\monitoring_json\\topics_hosts_to_test_graph.json', 'r') as file:
+    with open(
+        "C:\\Users\\d93445\\Desktop\\ecal\\samples\\python\\monitoring\\monitoring_json\\topics_hosts_to_test_graph.json",
+        "r",
+    ) as file:
         data = json.load(file)
 
     # Print the data
     # print(data)
-    node_list, edge_list = create_host_graph_list_from_topics_and_hosts(data['topics'], data['hosts'])
-    #print([node['id'] for node in node_list])
-    #print([edge['id'] for edge in edge_list])
-    #print(node_list)
+    node_list, edge_list = create_host_graph_list_from_topics_and_hosts(
+        data["topics"], data["hosts"]
+    )
+    # print([node['id'] for node in node_list])
+    # print([edge['id'] for edge in edge_list])
+    # print(node_list)
 
-    #print(node_list)
-    db_handler.insert_nodes(list(node_list.values()), 'nodes')
-    db_handler.insert_edges(list(edge_list.values()), 'edges')
+    # print(node_list)
+    db_handler.insert_nodes(list(node_list.values()), "nodes")
+    db_handler.insert_edges(list(edge_list.values()), "edges")
 
     # test for the process graph
     db_handler.create_edge_table_other_dtypes("pg_edges")
     db_handler.create_node_table_other_dtypes("pg_nodes")
 
-    node_dict, edge_dict = create_process_graph_list_from_topics(data['topics'])
-    db_handler.insert_nodes_new(list(node_dict.values()), 'pg_nodes')
-    db_handler.insert_edges_new(list(edge_dict.values()), 'pg_edges')
+    node_dict, edge_dict = create_process_graph_list_from_topics(data["topics"])
+    db_handler.insert_nodes_new(list(node_dict.values()), "pg_nodes")
+    db_handler.insert_edges_new(list(edge_dict.values()), "pg_edges")
 
     # test for the pub-sub-topic graph
     db_handler.create_edge_table_other_dtypes("pstg_edges")
     db_handler.create_node_table_other_dtypes("pstg_nodes")
 
-    node_dict, edge_dict = create_pub_sub_topic_graph_list_from_topics(data['topics'])
-    db_handler.insert_nodes_new(list(node_dict.values()), 'pstg_nodes')
-    db_handler.insert_edges_new(list(edge_dict.values()), 'pstg_edges')
-
-
+    node_dict, edge_dict = create_pub_sub_topic_graph_list_from_topics(data["topics"])
+    db_handler.insert_nodes_new(list(node_dict.values()), "pstg_nodes")
+    db_handler.insert_edges_new(list(edge_dict.values()), "pstg_edges")
 
     db_handler.commit()
     db_handler.close()
