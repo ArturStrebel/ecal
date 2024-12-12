@@ -2,7 +2,7 @@ import sqlite3
 import random
 import os
 import json
-from helpers import create_host_graph_list_from_topics_and_hosts
+from helpers import create_host_graph_list_from_topics_and_hosts, create_process_graph_list_from_topics, create_pub_sub_topic_graph_list_from_topics
 
 
 class DatabaseHandler:
@@ -138,6 +138,24 @@ class DatabaseHandler:
         """
         )
 
+    def create_edge_table_other_dtypes(self, table_name):
+        self.cursor.execute("DROP TABLE IF EXISTS " + table_name)
+        self.cursor.execute(
+            """
+            CREATE TABLE """
+            + table_name
+            + """(
+            id TEXT PRIMARY KEY,
+            source TEXT,
+            target TEXT,
+            mainstat TEXT,
+            secondarystat TEXT,
+            thickness INTEGER, 
+            color TEXT,
+            highlighted REAL)
+        """
+        )    
+
     def create_node_table(self, table_name):
         self.cursor.execute("DROP TABLE IF EXISTS " + table_name)
         self.cursor.execute(
@@ -154,6 +172,26 @@ class DatabaseHandler:
             color TEXT, 
             icon TEXT,
             nodeRadius INTEGER)
+        """
+        )
+
+    def create_node_table_other_dtypes(self, table_name):
+        self.cursor.execute("DROP TABLE IF EXISTS " + table_name)
+        self.cursor.execute(
+            """
+            CREATE TABLE """
+            + table_name
+            + """(
+            id TEXT PRIMARY KEY,
+            title TEXT,
+            mainstat TEXT,
+            secondarystat TEXT,
+            arc__used_ram REAL,
+            arc__free_ram REAL,
+            color TEXT, 
+            icon TEXT,
+            nodeRadius INTEGER,
+            highlighted TEXT)
         """
         )
 
@@ -553,6 +591,30 @@ class DatabaseHandler:
         ]
         self.cursor.executemany(query, data)
 
+    def insert_edges_new(self, edges, table_name):
+        query = (
+            """
+        INSERT INTO """
+            + table_name
+            + """(id, source, target, mainstat, secondarystat, thickness, color, highlighted) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """
+        )
+        data = [
+            (
+                edge["id"],
+                edge["source"],
+                edge["target"],
+                edge["mainstat"],
+                edge["secondarystat"],
+                edge["thickness"],
+                edge["color"],
+                edge["highlighted"],
+            )
+            for edge in edges
+        ]
+        self.cursor.executemany(query, data)
+
     def insert_node(self, node, table_name):
         self.cursor.execute(
             """INSERT INTO """
@@ -571,6 +633,32 @@ class DatabaseHandler:
                 node["nodeRadius"],
             ),
         )
+
+    def insert_nodes_new(self, nodes, table_name):
+        query = (
+            """
+        INSERT INTO """
+            + table_name
+            + """(id, title, mainstat, secondarystat, arc__used_ram, arc__free_ram, color, icon, nodeRadius, highlighted) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """
+        )
+        data = [
+            (
+                node["id"],
+                node["title"],
+                node["mainstat"],
+                node['secondarystat'],
+                node['arc__used_ram'],
+                node['arc__free_ram'],
+                node["color"],
+                node["icon"],
+                node["nodeRadius"],
+                node["highlighted"]
+            )
+            for node in nodes
+        ]
+        self.cursor.executemany(query, data)
 
     def insert_nodes(self, nodes, table_name):
         query = (
@@ -596,7 +684,6 @@ class DatabaseHandler:
             for node in nodes
         ]
         self.cursor.executemany(query, data)
-
     def insert_process_performance(self, hname, process, table_name):
         memory = process["memory"]
         cpu = process["cpu"]
@@ -873,9 +960,27 @@ if __name__ == "__main__":
     #print([edge['id'] for edge in edge_list])
     #print(node_list)
 
-    print(node_list)
+    #print(node_list)
     db_handler.insert_nodes(list(node_list.values()), 'nodes')
     db_handler.insert_edges(list(edge_list.values()), 'edges')
+
+    # test for the process graph
+    db_handler.create_edge_table_other_dtypes("pg_edges")
+    db_handler.create_node_table_other_dtypes("pg_nodes")
+
+    node_dict, edge_dict = create_process_graph_list_from_topics(data['topics'])
+    db_handler.insert_nodes_new(list(node_dict.values()), 'pg_nodes')
+    db_handler.insert_edges_new(list(edge_dict.values()), 'pg_edges')
+
+    # test for the pub-sub-topic graph
+    db_handler.create_edge_table_other_dtypes("pstg_edges")
+    db_handler.create_node_table_other_dtypes("pstg_nodes")
+
+    node_dict, edge_dict = create_pub_sub_topic_graph_list_from_topics(data['topics'])
+    db_handler.insert_nodes_new(list(node_dict.values()), 'pstg_nodes')
+    db_handler.insert_edges_new(list(edge_dict.values()), 'pstg_edges')
+
+
 
     db_handler.commit()
     db_handler.close()

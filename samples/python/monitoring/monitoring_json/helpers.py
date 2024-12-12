@@ -62,8 +62,8 @@ def create_edge(topic_pub, topic_sub):
         mainstat=topic_pub["tsize"] * topic_pub["dfreq"],  # bw of this connection
         secondarystat="",  # free parameter, maybe show latency, once available? (or max bandwidth)
         thickness=1,
-        color="#F07D00",
-    )  # d-fine orange
+        color="#EFEEEB",
+    )  
     return edge
 
 
@@ -83,6 +83,7 @@ def create_node(topic_pub, host_information):
         arc__free_ram=round(number=(1 - host_information["ram_usage"]), ndigits=2),
     )
     return node
+
 
 def create_host_graph_list_from_topics_and_hosts(topics, hosts):
     edge_dict = {}
@@ -132,6 +133,7 @@ def create_host_graph_list_from_topics_and_hosts(topics, hosts):
             ] += 5  # per pub process increase size of host node
     return node_dict, edge_dict
 
+
 def create_host_graph_list_from_topics_and_hosts_new(topics, host_dict):
     edge_dict = {}
     node_dict = {}
@@ -173,6 +175,149 @@ def create_host_graph_list_from_topics_and_hosts_new(topics, host_dict):
                 "nodeRadius"
             ] += 5  # per pub process increase size of host node
     return node_dict, edge_dict
+
+def create_process_graph_list_from_topics(topics):
+    edge_dict = {}
+    node_dict = {}
+
+    pubs = []
+    subs = []
+    for t in topics:
+        if t["direction"] == "publisher":
+            pubs.append(t)
+        if t["direction"] == "subscriber":
+            subs.append(t)
+        node_id = f"{t['hname']}-{t['pid']}"
+        if node_id not in node_dict.keys():
+            node_dict[node_id] = dict(
+                id=node_id,
+                title=f"hname={t['hname']}",
+                mainstat=f"topic(s)={t['tname']}",  
+                color="#EFEEEB",  
+                icon="",  
+                nodeRadius=50,  
+                secondarystat=f"pid={t['pid']}",  
+                arc__used_ram=0,
+                arc__free_ram=1,
+                highlighted=""
+                )
+        else:
+            node_dict[node_id]["mainstat"] = node_dict[node_id]["mainstat"] + f" {t['tname']}"
+
+    for pub in pubs:
+        pub_proc_id = f"{pub['hname']}-{pub['pid']}"
+        for sub in subs:
+            # check that pub and sub have same topic
+            if pub["tname"] != sub["tname"]:
+                continue
+            sub_proc_id = f"{sub['hname']}-{sub['pid']}"
+            if pub_proc_id == sub_proc_id:
+                print('self-loop', pub_proc_id, sub_proc_id, pub["tname"], sub["tname"])
+                continue # no self loops -> do processes send messages to itself?
+
+
+            edge_id = f"{pub_proc_id }-{sub_proc_id}"
+            if edge_id in edge_dict.keys():
+                edge_dict[edge_id]["thickness"] +=1 # inc thickness per pub - sub connection
+                edge_dict[edge_id]["secondarystat"]= edge_dict[edge_id]["secondarystat"] + pub["tname"]
+            else:
+                edge_dict[edge_id] = dict(
+                id=edge_id,
+                source=pub_proc_id,
+                target=sub_proc_id,
+                mainstat=1234,
+                secondarystat=pub["tname"],
+                thickness=1,
+                color="#EFEEEB",
+                highlighted=""
+                ) 
+            
+
+
+    return node_dict, edge_dict
+
+
+def create_pub_sub_topic_graph_list_from_topics(topics):
+    # we assume: tid unique?
+    edge_dict = {}
+    node_dict = {}
+
+
+    for t in topics:
+        if t["direction"] == "publisher":
+            node_id = t["tid"]
+            node_dict[node_id] = dict(
+            id=node_id,
+            title=t["hname"],
+            mainstat=f"pid={t['pid']}",  
+            color="#EFEEEB",  
+            icon="",  
+            nodeRadius=50,  
+            secondarystat=t["tname"],  
+            arc__used_ram=0,
+            arc__free_ram=1,
+            highlighted=""
+
+            )
+
+            edge_id = f"{node_id}-{t['tname']}"
+            edge_dict[edge_id] = dict(
+            id=edge_id,
+            source=node_id,
+            target=t['tname'],
+            mainstat="message drops",
+            secondarystat=t["tname"],
+            thickness=1,
+            color="#EFEEEB",
+            highlighted=""
+
+        ) 
+        if t["direction"] == "subscriber":
+            node_id = t["tid"]
+            node_dict[node_id] = dict(
+            id=node_id,
+            title=t["hname"],
+            mainstat=t["pid"],   
+            color="#EFEEEB",  
+            icon="",  
+            nodeRadius=50,  
+            secondarystat=t["tname"],  
+            arc__used_ram=0,
+            arc__free_ram=1,
+            highlighted=""
+
+            )
+
+            edge_id = f"{t['tname']}-{node_id}"
+            edge_dict[edge_id] = dict(
+            id=edge_id,
+            source=t['tname'],
+            target=node_id,
+            mainstat="message drops",
+            secondarystat=t["tname"],
+            thickness=1,
+            color="#EFEEEB",
+            highlighted=""
+)
+
+
+        node_id = t["tname"] # for topic
+        node_dict[node_id] = dict(
+            id=node_id,
+            title=f"Topic={t['tname']}",
+            mainstat=f"mainstat",  
+            color="#EFEEEB",  
+            icon="",  
+            nodeRadius=50,  
+            secondarystat=t["tname"],  
+            arc__used_ram=0,
+            arc__free_ram=1,
+            highlighted="true"
+
+            )
+    
+    return node_dict, edge_dict
+
 
 def export_graph_structure(nodes, edges, path):
     graph = {
