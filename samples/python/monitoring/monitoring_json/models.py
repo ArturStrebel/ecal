@@ -1,12 +1,13 @@
 from sqlalchemy import Column, Integer, Float, String, DateTime, Text, func
 from sqlalchemy.orm import declarative_base
+import os
+import json
 
 Base = declarative_base()
 
 
-# todo: previous hosts, further nodes/edges for the other graphs
 class Host(Base):
-    __tablename__ = "test_host"
+    __tablename__ = "hosts"
 
     time_stamp = Column(DateTime, primary_key=True, default=func.now())
     hname = Column(String, primary_key=True)
@@ -15,6 +16,8 @@ class Host(Base):
     available_memory = Column(Integer)
     capacity_disk = Column(Integer)
     available_disk = Column(Integer)
+    os = Column(Text)
+    num_cpu_cores = Column(Integer)
 
     def __repr__(self):
         return (
@@ -110,7 +113,7 @@ class AbstractService(Base):
     hname = Column(Text)
     pname = Column(Text)
     uname = Column(Text)
-    sname = Column(Text)
+    sname = Column(Text, primary_key=True)
 
     def __repr__(self):
         return (
@@ -131,6 +134,41 @@ class CurrentService(AbstractService):
 
 class PreviousService(AbstractService):
     __tablename__ = "previous_services"
+
+
+class AbstractClient(Base):
+    __abstract__ = True
+
+    time_stamp = Column(DateTime, primary_key=True, default=func.now())
+    rclock = Column(Integer)
+    hname = Column(Text)
+    pname = Column(Text)
+    uname = Column(Text)
+    pid = Column(Integer)
+    sname = Column(Text)
+    sid = Column(Text, primary_key=True)
+    version = Column(Integer)
+
+    def __repr__(self):
+        return (
+            f"Client(rclock={self.rclock}, "
+            f"hname={self.hname}, pname={self.pname}, "
+            f"uname={self.uname}, pid={self.pid}, "
+            f"sname={self.sname}, sid={self.sid}, "
+            f"version={self.version})"
+        )
+
+
+class Client(AbstractClient):
+    __tablename__ = "clients"
+
+
+class PreviousClient(AbstractClient):
+    __tablename__ = "previous_clients"
+
+
+class CurrentClient(AbstractClient):
+    __tablename__ = "current_clients"
 
 
 class AbstractTopic(Base):
@@ -154,9 +192,6 @@ class AbstractTopic(Base):
     connections_loc = Column(Integer)
     connections_ext = Column(Integer)
     message_drops = Column(Integer)
-    latency_min = Column(Integer)
-    latency_avg = Column(Integer)
-    latency_max = Column(Integer)
 
     def __repr__(self):
         return (
@@ -199,15 +234,14 @@ class Log(Base):
         )
 
 
-class Node(Base):
-    __tablename__ = "nodes"
+class AbstractNode(Base):
+    __abstract__ = True
 
     id = Column(String, primary_key=True)
     title = Column(String)
+    subtitle = Column(String)
     mainstat = Column(Float)
     secondarystat = Column(Float)
-    arc__used_ram = Column(Float)
-    arc__free_ram = Column(Float)
     color = Column(String)
     icon = Column(String)
     nodeRadius = Column(Integer)
@@ -221,8 +255,8 @@ class Node(Base):
         )
 
 
-class Edge(Base):
-    __tablename__ = "edges"
+class AbstractEdge(Base):
+    __abstract__ = True
 
     id = Column(String, primary_key=True)
     source = Column(String)
@@ -239,3 +273,84 @@ class Edge(Base):
             f"thickness={self.thickness}, color={self.color}, "
             f"time_stamp={self.time_stamp})"
         )
+
+
+class HostNode(AbstractNode):
+    __tablename__ = "host_nodes"
+
+    arc__used_ram = Column(Float)
+    arc__free_ram = Column(Float)
+    detail__hname = Column(Text)
+    detail__hgname = Column(Text)
+
+
+class HostEdge(AbstractEdge):
+    __tablename__ = "host_edges"
+
+
+class PubSubTopicNode(AbstractNode):
+    __tablename__ = "pst_nodes"
+
+    mainstat = Column(Text)
+    secondarystat = Column(Integer)
+    subtitle = Column(Integer)
+    arc__cpu_used = Column(Float)
+    arc__cpu_unused = Column(Float)
+    detail__pname = Column(Text)
+    detail__uname = Column(Text)
+    detail__dfreq = Column(Integer)
+    detail__tsize = Column(Integer)
+
+
+
+
+class PubSubTopicEdge(AbstractEdge):
+    __tablename__ = "pst_edges"
+
+    mainstat = Column(Integer)
+    secondarystat = Column(Text)
+
+
+class ProcessNode(AbstractNode):
+    __tablename__ = "process_nodes"
+
+    mainstat = Column(Text)
+    secondarystat = Column(Text)
+    arc__cpu_used = Column(Float)
+    arc__cpu_unused = Column(Float)
+    detail__pname = Column(Text)
+    detail__uname = Column(Text)
+
+
+class ProcessEdge(AbstractEdge):
+    __tablename__ = "process_edges"
+
+    mainstat = Column(Text)
+    secondarystat = Column(Text)
+
+
+class ClientServerNode(AbstractNode):
+    __tablename__ = "cs_nodes"
+
+    mainstat = Column(Text)
+    secondarystat = Column(Text)
+    arc__cpu_used = Column(Float)
+    arc__cpu_unused = Column(Float)
+    detail__pname = Column(Text)
+    detail__uname = Column(Text)
+
+
+class ClientServerEdge(AbstractEdge):
+    __tablename__ = "cs_edges"
+
+    mainstat = Column(Text)
+    secondarystat = Column(Text)
+
+
+if __name__ == "__main__":
+    # make tests here
+    with open(
+        os.path.join(os.path.dirname(__file__), "topics_hosts_to_test_graph.json"),
+        "r",
+    ) as file:
+        data = json.load(file)

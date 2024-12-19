@@ -1,16 +1,14 @@
-import sys
 import time
 import ecal.core.core as ecal_core
 from monitor import Monitor
 import argparse
-
 
 def main(interval, verbose):
     # print eCAL version and date
     print("eCAL {} ({})\n".format(ecal_core.getversion(), ecal_core.getdate()))
 
     # initialize eCAL API
-    ecal_core.initialize(sys.argv, "monitoring")
+    ecal_core.initialize("monitoring")
 
     # initialize eCAL monitoring API
     ecal_core.mon_initialize()
@@ -20,7 +18,6 @@ def main(interval, verbose):
 
     while ecal_core.ok():
         monitor.update_monitor(ecal_data=ecal_core.mon_monitoring())
-
         if verbose:
             print("Monitoring data updated.")
 

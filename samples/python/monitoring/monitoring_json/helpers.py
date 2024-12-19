@@ -1,5 +1,4 @@
 import base64
-from collections import defaultdict
 import json
 
 
@@ -54,47 +53,108 @@ def convert_bytes_to_str(d, handle_bytes="decode"):
         return d
 
 
-def create_edge(topic_pub, topic_sub):
-    edge = dict(
-        id=topic_pub["hname"] + "_" + topic_sub["hname"],
-        source=topic_pub["hname"],  # id of the corresponding source node of the edge
-        target=topic_sub["hname"],  # id of the corresponding target node of the edge
-        mainstat=topic_pub["tsize"] * topic_pub["dfreq"],  # bw of this connection
-        secondarystat="",  # free parameter, maybe show latency, once available? (or max bandwidth)
-        thickness=1,
-        color="#EFEEEB",
-    )  
+def create_edge(
+    id,
+    source,
+    target,
+    mainstat,
+    secondarystat,
+    details={},
+    thickness=1,
+    highlighted=False,
+    color="#EFEEEB",
+    stroke_dasharray="",
+):
+    edge = {
+        "id": id,
+        "source": source,
+        "target": target,
+        "mainstat": mainstat,
+        "secondarystat": secondarystat,
+        "thickness": thickness,
+        "highlighted": highlighted,
+        "color": color,
+        "strokeDasharray": stroke_dasharray,
+    }
+
+    for detail_key, detail_value in details.items():
+        edge[detail_key] = detail_value
+
     return edge
 
 
-def create_node(topic_pub, host_information):
-    node = dict(
-        id=topic_pub["hname"],
-        title=topic_pub["hname"],
-        mainstat=topic_pub["tsize"]
-        * topic_pub[
-            "dfreq"
-        ],  # bandwidth of intrahost communication as sum over all publishers' write troughputs in  Byte/s (?)
-        color="#1E9BD7",  # d-fine light blue
-        icon="",  # only for "nice pictures" of nodes, otherwise show mainstat
-        nodeRadius=50,  # scales with "importance"(currently: #Publisher, alternative: #processes/#connections ) of host minimum of 50 + (5 for every additional publisher)
-        secondarystat=host_information['disk_usage']*100,  # Disk Usage
-        arc__used_ram=host_information["ram_usage"],  # RAM Usage of host in %
-        arc__free_ram=round(number=(1 - host_information["ram_usage"]), ndigits=2),
-    )
+def create_node(
+    id,
+    title,
+    subtitle,
+    mainstat,
+    secondarystat,
+    arcs={},
+    details={},
+    color="#EFEEEB",
+    icon="",
+    node_radius=60,
+    highlighted="",
+):
+    node = {
+        "id": id,
+        "title": title,
+        "subtitle": subtitle,
+        "mainstat": mainstat,
+        "secondarystat": secondarystat,
+        "color": color,
+        "icon": icon,
+        "nodeRadius": node_radius,
+        "highlighted": highlighted,
+    }
+
+    for arc_key, arc_value in arcs.items():
+        node[arc_key] = arc_value
+
+    for detail_key, detail_value in details.items():
+        node[detail_key] = detail_value
+
     return node
 
 
-def create_host_graph_list_from_topics_and_hosts(topics, hosts):
+def get_arc_cpu(process_performances, hname, pid):
+    if process_performances:
+        cpu_load = process_performances[hname][pid]["cpu_load"]
+        if cpu_load == -1:
+            return {}
+        else:
+            cpu_load = round(number=cpu_load / 100, ndigits=5)
+        arcs = {"arc__cpu_used": cpu_load, "arc__cpu_unused": (1 - cpu_load)}
+    else:
+        arcs = {"arc__cpu_used": None, "arc__cpu_unused": None}
+    return arcs
+
+
+def create_host_graph(topics, host_dict):
     edge_dict = {}
     node_dict = {}
-    host_dict = defaultdict(lambda: {"disk_usage": 0, "ram_usage": 0})
-    for host in hosts:
-        host_dict[host[1]] = {
-            "disk_usage": round(number=(host[6] - host[7]) / host[6], ndigits=2),
-            "ram_usage": round(number=(host[4] - host[5]) / host[4], ndigits=2),
+
+    unique_hosts = {t["hname"]: t for t in topics}
+    for host in unique_hosts.values():
+        arcs = {
+            "arc__used_ram": host_dict[host["hname"]]["ram_usage"],
+            "arc__free_ram": round(
+                number=(1 - host_dict[host["hname"]]["ram_usage"]), ndigits=2
+            ),
         }
-
+        details = {
+            "detail__hname": host["hname"],
+            "detail__hgname": host["hgname"],
+        }
+        node_dict[host["hname"]] = create_node(
+            id=host["hname"],
+            title=host["hname"],
+            subtitle="",
+            mainstat=0,
+            secondarystat=host_dict[host["hname"]]["disk_usage"] * 100,
+            arcs=arcs,
+            details=details,
+        )
     pub_list = [pub for pub in topics if pub["direction"] == "publisher"]
     sub_list = [sub for sub in topics if sub["direction"] == "subscriber"]
     for pub in pub_list:
@@ -103,11 +163,8 @@ def create_host_graph_list_from_topics_and_hosts(topics, hosts):
             if pub["tname"] != sub["tname"]:
                 continue
             if pub["hname"] == sub["hname"]:  # if process is within one host
-                if pub["hname"] in node_dict.keys():
-                    node = node_dict[pub["hname"]]
-                    node["mainstat"] += pub["tsize"] * pub["dfreq"]
-                else:
-                    node_dict[pub["hname"]] = create_node(pub, host_dict[pub["hname"]])
+                node = node_dict[pub["hname"]]
+                node["mainstat"] += pub["tsize"] * pub["dfreq"]
                 continue  # do not create an edge from a node to itself
 
             edgeID = pub["hname"] + "_" + sub["hname"]  # unique name for each host edge
@@ -121,88 +178,54 @@ def create_host_graph_list_from_topics_and_hosts(topics, hosts):
                     20, edge["thickness"] + 1
                 )  # make edge thicker for each connection, but cap at 20
             else:
-                edge_dict[edgeID] = create_edge(pub, sub)
-                if pub["hname"] not in node_dict.keys():
-                    node_dict[pub["hname"]] = create_node(pub, host_dict[pub["hname"]])
+                edge_dict[edgeID] = create_edge(
+                    id=edgeID,
+                    source=pub["hname"],
+                    target=sub["hname"],
+                    mainstat=pub["tsize"] * pub["dfreq"],
+                    secondarystat="",
+                    thickness=1,
+                    color="#EFEEEB",
+                )
 
-                if sub["hname"] not in node_dict.keys():
-                    node_dict[sub["hname"]] = create_node(sub, host_dict[sub["hname"]])
-        if pub["hname"] in node_dict.keys(): # for intial delay in the testsetup
-            node_dict[pub["hname"]][
-                "nodeRadius"
-            ] += 5  # per pub process increase size of host node
+        node_dict[pub["hname"]][
+            "nodeRadius"
+        ] += 5  # per pub process increase size of host node
+
     return node_dict, edge_dict
 
 
-def create_host_graph_list_from_topics_and_hosts_new(topics, host_dict):
-    edge_dict = {}
-    node_dict = {}
-
-    pub_list = [pub for pub in topics if pub["direction"] == "publisher"]
-    sub_list = [sub for sub in topics if sub["direction"] == "subscriber"]
-    for pub in pub_list:
-        for sub in sub_list:
-            # check that pub and sub have same topic
-            if pub["tname"] != sub["tname"]:
-                continue
-            if pub["hname"] == sub["hname"]:  # if process is within one host
-                if pub["hname"] in node_dict.keys():
-                    node = node_dict[pub["hname"]]
-                    node["mainstat"] += pub["tsize"] * pub["dfreq"]
-                else:
-                    node_dict[pub["hname"]] = create_node(pub, host_dict[pub["hname"]])
-                continue  # do not create an edge from a node to itself
-
-            edgeID = pub["hname"] + "_" + sub["hname"]  # unique name for each host edge
-            if edgeID in edge_dict.keys():
-                edge = edge_dict[edgeID]
-
-                edge["mainstat"] += (
-                    pub["tsize"] * pub["dfreq"]
-                )  # if edge already exists, update bandwidth of this edge
-                edge["thickness"] = min(
-                    20, edge["thickness"] + 1
-                )  # make edge thicker for each connection, but cap at 20
-            else:
-                edge_dict[edgeID] = create_edge(pub, sub)
-                if pub["hname"] not in node_dict.keys():
-                    node_dict[pub["hname"]] = create_node(pub, host_dict[pub["hname"]])
-
-                if sub["hname"] not in node_dict.keys():
-                    node_dict[sub["hname"]] = create_node(sub, host_dict[sub["hname"]])
-        if pub["hname"] in node_dict.keys(): # for intial delay in the testsetup
-            node_dict[pub["hname"]][
-                "nodeRadius"
-            ] += 5  # per pub process increase size of host node
-    return node_dict, edge_dict
-
-def create_process_graph_list_from_topics(topics):
+def create_process_graph(topics, process_performances):
     edge_dict = {}
     node_dict = {}
 
     pubs = []
     subs = []
     for t in topics:
+        details = {
+                "detail__pname": t["pname"],
+                "detail__uname": t["uname"],
+            }
         if t["direction"] == "publisher":
             pubs.append(t)
         if t["direction"] == "subscriber":
             subs.append(t)
         node_id = f"{t['hname']}-{t['pid']}"
         if node_id not in node_dict.keys():
-            node_dict[node_id] = dict(
+            arcs = get_arc_cpu(process_performances=process_performances, hname=t["hname"], pid=t["pid"])
+            node_dict[node_id] = create_node(
                 id=node_id,
-                title=f"hname={t['hname']}",
-                mainstat=f"topic(s)={t['tname']}",  
-                color="#EFEEEB",  
-                icon="",  
-                nodeRadius=50,  
-                secondarystat=f"pid={t['pid']}",  
-                arc__used_ram=0,
-                arc__free_ram=1,
-                highlighted=""
-                )
+                title=t["hname"],
+                subtitle="",
+                mainstat=t["pid"],
+                secondarystat=t["tname"],
+                arcs=arcs,
+                details=details
+            )
         else:
-            node_dict[node_id]["mainstat"] = node_dict[node_id]["mainstat"] + f" {t['tname']}"
+            node_dict[node_id]["mainstat"] = (
+                node_dict[node_id]["mainstat"] + f" {t['tname']}"
+            )
 
     for pub in pubs:
         pub_proc_id = f"{pub['hname']}-{pub['pid']}"
@@ -212,110 +235,143 @@ def create_process_graph_list_from_topics(topics):
                 continue
             sub_proc_id = f"{sub['hname']}-{sub['pid']}"
             if pub_proc_id == sub_proc_id:
-                print('self-loop', pub_proc_id, sub_proc_id, pub["tname"], sub["tname"])
-                continue # no self loops -> do processes send messages to itself?
-
+                continue  
 
             edge_id = f"{pub_proc_id }-{sub_proc_id}"
             if edge_id in edge_dict.keys():
-                edge_dict[edge_id]["thickness"] +=1 # inc thickness per pub - sub connection
-                edge_dict[edge_id]["secondarystat"]= edge_dict[edge_id]["secondarystat"] + pub["tname"]
+                edge_dict[edge_id][
+                    "thickness"
+                ] += 1  # inc thickness per pub - sub connection
+                edge_dict[edge_id]["secondarystat"] = (
+                    edge_dict[edge_id]["secondarystat"] + pub["tname"]
+                )
             else:
-                edge_dict[edge_id] = dict(
-                id=edge_id,
-                source=pub_proc_id,
-                target=sub_proc_id,
-                mainstat=1234,
-                secondarystat=pub["tname"],
-                thickness=1,
-                color="#EFEEEB",
-                highlighted=""
-                ) 
-            
-
+                edge_dict[edge_id] = create_edge(
+                    id=edge_id,
+                    source=pub_proc_id,
+                    target=sub_proc_id,
+                    mainstat="",
+                    secondarystat=pub["tname"],
+                )
 
     return node_dict, edge_dict
 
 
-def create_pub_sub_topic_graph_list_from_topics(topics):
-    # we assume: tid unique?
+def create_pub_sub_topic_graph(topics, process_performances):
     edge_dict = {}
     node_dict = {}
 
-
     for t in topics:
+        details = {
+                "detail__pname": t["pname"],
+                "detail__uname": t["uname"],
+                "detail__dfreq": t["dfreq"],
+                "detail__tsize": t["tsize"],
+            }
         if t["direction"] == "publisher":
+            arcs = get_arc_cpu(process_performances=process_performances, hname=t["hname"], pid=t["pid"])
             node_id = t["tid"]
-            node_dict[node_id] = dict(
-            id=node_id,
-            title=t["hname"],
-            mainstat=f"pid={t['pid']}",  
-            color="#EFEEEB",  
-            icon="",  
-            nodeRadius=50,  
-            secondarystat=t["tname"],  
-            arc__used_ram=0,
-            arc__free_ram=1,
-            highlighted=""
-
+            node_dict[node_id] = create_node(
+                id=node_id,
+                title=t["hname"],
+                subtitle="",
+                mainstat=t["pid"],
+                secondarystat=t["tname"],
+                arcs=arcs,
+                details=details
             )
 
             edge_id = f"{node_id}-{t['tname']}"
-            edge_dict[edge_id] = dict(
-            id=edge_id,
-            source=node_id,
-            target=t['tname'],
-            mainstat="message drops",
-            secondarystat=t["tname"],
-            thickness=1,
-            color="#EFEEEB",
-            highlighted=""
-
-        ) 
+            edge_dict[edge_id] = create_edge(
+                id=edge_id,
+                source=node_id,
+                target=t["tname"],
+                mainstat=t["message_drops"],
+                secondarystat="",
+            )
         if t["direction"] == "subscriber":
+            arcs = get_arc_cpu(process_performances=process_performances, hname=t["hname"], pid=t["pid"])
             node_id = t["tid"]
-            node_dict[node_id] = dict(
-            id=node_id,
-            title=t["hname"],
-            mainstat=t["pid"],   
-            color="#EFEEEB",  
-            icon="",  
-            nodeRadius=50,  
-            secondarystat=t["tname"],  
-            arc__used_ram=0,
-            arc__free_ram=1,
-            highlighted=""
-
+            node_dict[node_id] = create_node(
+                id=node_id,
+                title=t["hname"],
+                subtitle="",
+                mainstat=t["pid"],
+                secondarystat=t["tname"],
+                arcs=arcs,
+                details=details
             )
-
             edge_id = f"{t['tname']}-{node_id}"
-            edge_dict[edge_id] = dict(
-            id=edge_id,
-            source=t['tname'],
-            target=node_id,
-            mainstat="message drops",
-            secondarystat=t["tname"],
-            thickness=1,
-            color="#EFEEEB",
-            highlighted=""
-)
-
-
-        node_id = t["tname"] # for topic
-        node_dict[node_id] = dict(
-            id=node_id,
-            title=f"Topic={t['tname']}",
-            mainstat=f"mainstat",  
-            color="#EFEEEB",  
-            icon="",  
-            nodeRadius=50,  
-            secondarystat=t["tname"],  
-            arc__used_ram=0,
-            arc__free_ram=1,
-            highlighted="true"
-
+            edge_dict[edge_id] = create_edge(
+                id=edge_id,
+                source=t["tname"],
+                target=node_id,
+                mainstat=t["message_drops"],
+                secondarystat="",
             )
-    
+
+        node_id = t["tname"]  # for topic
+        node_dict[node_id] = create_node(
+            id=node_id,
+            title=t["tname"],
+            subtitle="",
+            mainstat=None,
+            secondarystat=t["tname"],
+            highlighted="true",
+            icon="comment-alt",
+        )
+
+    return node_dict, edge_dict
+
+
+def create_client_server_graph(clients, services, process_performances):
+    edge_dict = {}
+    node_dict = {}
+    for client in clients:
+        client_id = client["sid"]
+        details = {
+                "detail__pname": client["pname"],
+                "detail__uname": client["uname"],
+            }
+        arcs = get_arc_cpu(process_performances=process_performances, hname=client["hname"], pid=client["pid"])
+        node_dict[client_id] = create_node(
+            id=client_id,
+            title=client["hname"],
+            subtitle="",
+            mainstat=client["pid"],
+            secondarystat=client["sname"],
+            arcs=arcs,
+            details=details
+        )
+    for service in services:
+        details = {
+                "detail__pname": service["pname"],
+                "detail__uname": service["uname"],
+            }
+        service_id = service["sid"]
+        arcs = get_arc_cpu(process_performances=process_performances, hname=service["hname"], pid=service["pid"])
+        node_dict[service_id] = create_node(
+            id=service_id,
+            title=service["hname"],
+            subtitle="",
+            mainstat=service["pid"],
+            secondarystat=service["sname"],
+            arcs=arcs,
+            details=details
+        )
+
+    for client in clients:
+        for service in services:
+            if client["sname"] != service["sname"]:
+                continue
+            edge_id = client["sid"] + "_" + service["sid"]
+            edge_dict[edge_id] = create_edge(
+                id=edge_id,
+                source=client["sid"],
+                target=service["sid"],
+                mainstat="",
+                secondarystat=service["sname"],
+            )
     return node_dict, edge_dict
 
 
