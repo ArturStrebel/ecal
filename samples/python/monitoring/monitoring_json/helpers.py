@@ -1,6 +1,7 @@
 import base64
 import json
 
+THRESHOLD = 0.8
 
 def convert_bytes_to_str(d, handle_bytes="decode"):
     """
@@ -136,11 +137,19 @@ def create_host_graph(topics, host_dict):
 
     unique_hosts = {t["hname"]: t for t in topics}
     for host in unique_hosts.values():
+        print("host    ", host_dict)
+        host_data = host_dict[host["hname"]]
         arcs = {
-            "arc__used_ram": host_dict[host["hname"]]["ram_usage"],
-            "arc__free_ram": round(
-                number=(1 - host_dict[host["hname"]]["ram_usage"]), ndigits=2
-            ),
+            #"arc__used_ram": host_dict[host["hname"]]["ram_usage"],
+            #"arc__free_ram": round(
+            #    number=(1 - host_dict[host["hname"]]["ram_usage"]), ndigits=2
+            #),
+            "arc__ram_ok": 0.33 if host_data["ram_usage"] <= THRESHOLD else 0,
+            "arc__ram_not_ok": 0.33 if host_data["ram_usage"] > THRESHOLD else 0,
+            "arc__disk_ok": 0.33 if host_data["disk_usage"] <= THRESHOLD else 0,
+            "arc__disk_not_ok": 0.33 if host_data["disk_usage"] > THRESHOLD else 0,
+            "arc__cpu_ok": 0.34 if host_data["cpu_load"] <= THRESHOLD else 0,
+            "arc__cpu_not_ok": 0.34 if host_data["cpu_load"] > THRESHOLD else 0,
         }
         details = {
             "detail__hname": host["hname"],

@@ -18,13 +18,13 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 5,
+  "id": 4,
   "links": [],
   "panels": [
     {
       "datasource": {
         "type": "frser-sqlite-datasource",
-        "uid": "ae57ukfdysxs0e"
+        "uid": "be8svxliwgjr4b"
       },
       "fieldConfig": {
         "defaults": {
@@ -74,7 +74,7 @@
         },
         "showHeader": true
       },
-      "pluginVersion": "11.3.1",
+      "pluginVersion": "11.4.0",
       "targets": [
         {
           "datasource": {
@@ -91,13 +91,13 @@
           ]
         }
       ],
-      "title": "Current Publishers",
+      "title": "Publishers for Topic \"$topic\"",
       "type": "table"
     },
     {
       "datasource": {
         "type": "frser-sqlite-datasource",
-        "uid": "ae57ukfdysxs0e"
+        "uid": "be8svxliwgjr4b"
       },
       "fieldConfig": {
         "defaults": {
@@ -147,7 +147,7 @@
         },
         "showHeader": true
       },
-      "pluginVersion": "11.3.1",
+      "pluginVersion": "11.4.0",
       "targets": [
         {
           "datasource": {
@@ -164,15 +164,15 @@
           ]
         }
       ],
-      "title": "Current Subscribers",
+      "title": "Subscribers for Topic \"$topic\"",
       "type": "table"
     },
     {
       "datasource": {
         "type": "frser-sqlite-datasource",
-        "uid": "ae57ukfdysxs0e"
+        "uid": "be8svxliwgjr4b"
       },
-      "description": "",
+      "description": "Show the number of subscribers to a topic over the time, grouped by local/external host.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -272,14 +272,14 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "11.3.1",
+      "pluginVersion": "11.4.0",
       "targets": [
         {
           "datasource": {
             "type": "frser-sqlite-datasource",
             "uid": "ae57ukfdysxs0e"
           },
-          "queryText": "SELECT time_stamp, \n       connections_loc,\n       connections_ext\nFROM topics\nWHERE tname = 'machine_state_P14SONB058' \n  AND direction = 'publisher'\nGROUP BY time_stamp\n",
+          "queryText": "SELECT time_stamp, \n       connections_loc,\n       connections_ext\nFROM topics\nWHERE tname = '$topic' \n  AND direction = 'publisher'\nGROUP BY time_stamp\n",
           "queryType": "table",
           "rawQueryText": "SELECT time_stamp, \n       connections_loc,\n       connections_ext\nFROM topics\nWHERE tname = '$topic' \n  AND direction = 'publisher'\nGROUP BY time_stamp\n",
           "refId": "A",
@@ -289,7 +289,7 @@
           ]
         }
       ],
-      "title": "# Subscribers",
+      "title": "# Subscribers to Topic \"$topic\"",
       "transformations": [
         {
           "id": "convertFieldType",
@@ -309,8 +309,9 @@
     {
       "datasource": {
         "type": "frser-sqlite-datasource",
-        "uid": "ae57ukfdysxs0e"
+        "uid": "be8svxliwgjr4b"
       },
+      "description": "Sum of the message drops across all subscribers of a selected topic.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -385,7 +386,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "11.3.1",
+      "pluginVersion": "11.4.0",
       "targets": [
         {
           "datasource": {
@@ -422,9 +423,9 @@
     {
       "datasource": {
         "type": "frser-sqlite-datasource",
-        "uid": "ae57ukfdysxs0e"
+        "uid": "be8svxliwgjr4b"
       },
-      "description": "todo",
+      "description": "Show the published data from all publishers of the selected topic over time.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -524,16 +525,16 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "11.3.1",
+      "pluginVersion": "11.4.0",
       "targets": [
         {
           "datasource": {
             "type": "frser-sqlite-datasource",
             "uid": "ae57ukfdysxs0e"
           },
-          "queryText": "SELECT time_stamp, \n       dfreq,\n       tsize\nFROM topics\nWHERE tname = 'machine_state_P14SONB058' \n  AND direction = 'publisher'\nGROUP BY time_stamp\n",
+          "queryText": "SELECT time_stamp, \n       SUM(dfreq * tsize) AS total_write\nFROM topics\nWHERE tname = '$topic' \n  AND direction = 'publisher'\nGROUP BY time_stamp;\n\n",
           "queryType": "table",
-          "rawQueryText": "SELECT time_stamp, \n       dfreq,\n       tsize\nFROM topics\nWHERE tname = '$topic' \n  AND direction = 'publisher'\nGROUP BY time_stamp\n",
+          "rawQueryText": "SELECT time_stamp, \n       SUM(dfreq * tsize) AS total_write\nFROM topics\nWHERE tname = '$topic' \n  AND direction = 'publisher'\nGROUP BY time_stamp;\n\n",
           "refId": "A",
           "timeColumns": [
             "time",
@@ -541,7 +542,7 @@
           ]
         }
       ],
-      "title": "Topic Write",
+      "title": "Published Data for Topic \"$topic\"",
       "transformations": [
         {
           "id": "convertFieldType",
@@ -561,9 +562,9 @@
     {
       "datasource": {
         "type": "frser-sqlite-datasource",
-        "uid": "ae57ukfdysxs0e"
+        "uid": "be8svxliwgjr4b"
       },
-      "description": "todo",
+      "description": "Show the received data across all subscribers of the selected topic over time.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -663,16 +664,16 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "11.3.1",
+      "pluginVersion": "11.4.0",
       "targets": [
         {
           "datasource": {
             "type": "frser-sqlite-datasource",
             "uid": "ae57ukfdysxs0e"
           },
-          "queryText": "SELECT time_stamp, \n       dfreq,\n       tsize\nFROM topics\nWHERE tname = 'machine_state_P14SONB058' \n  AND direction = 'publisher'\nGROUP BY time_stamp\n",
+          "queryText": "SELECT time_stamp, \n       SUM(dfreq * tsize) AS total_read\nFROM topics\nWHERE tname = '$topic' \n  AND direction = 'subscriber'  \nGROUP BY time_stamp;\n",
           "queryType": "table",
-          "rawQueryText": "SELECT time_stamp, \n       dfreq,\n       tsize\nFROM topics\nWHERE tname = '$topic' \n  AND direction = 'publisher'\nGROUP BY time_stamp\n",
+          "rawQueryText": "SELECT time_stamp, \n       SUM(dfreq * tsize) AS total_read\nFROM topics\nWHERE tname = '$topic' \n  AND direction = 'subscriber'  \nGROUP BY time_stamp;\n",
           "refId": "A",
           "timeColumns": [
             "time",
@@ -680,7 +681,7 @@
           ]
         }
       ],
-      "title": "Topic Read",
+      "title": "Received Data for Topic \"$topic\"",
       "transformations": [
         {
           "id": "convertFieldType",
@@ -710,13 +711,13 @@
         },
         "datasource": {
           "type": "frser-sqlite-datasource",
-          "uid": "ae57ukfdysxs0e"
+          "uid": "be8svxliwgjr4b"
         },
-        "definition": "SELECT DISTINCT tname FROM current_topics",
+        "definition": "SELECT DISTINCT tname FROM topics",
         "includeAll": false,
         "name": "topic",
         "options": [],
-        "query": "SELECT DISTINCT tname FROM current_topics",
+        "query": "SELECT DISTINCT tname FROM topics",
         "refresh": 1,
         "regex": "",
         "type": "query"
@@ -731,6 +732,6 @@
   "timezone": "browser",
   "title": "Topic Overview",
   "uid": "fe779jusbqz9ca",
-  "version": 19,
+  "version": 13,
   "weekStart": ""
 }

@@ -278,8 +278,15 @@ class AbstractEdge(Base):
 class HostNode(AbstractNode):
     __tablename__ = "host_nodes"
 
-    arc__used_ram = Column(Float)
-    arc__free_ram = Column(Float)
+    #arc__used_ram = Column(Float)
+    #arc__free_ram = Column(Float)
+    # more general health indicator: 1/3 of circle each RAM, CPU, DISK; green if ok, red otherwise, e.g., when > treshold for ex 80 %  
+    arc__ram_ok = Column(Float)
+    arc__ram_not_ok = Column(Float)
+    arc__disk_ok = Column(Float)
+    arc__disk_not_ok = Column(Float)
+    arc__cpu_ok = Column(Float)
+    arc__cpu_not_ok = Column(Float)
     detail__hname = Column(Text)
     detail__hgname = Column(Text)
 
