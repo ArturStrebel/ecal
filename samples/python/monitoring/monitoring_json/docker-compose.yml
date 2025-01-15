@@ -3,7 +3,7 @@ services:
     image: grafana/grafana:latest
     container_name: grafana
     ports:
-      - "4000:3000"
+      - "3000:3000"
     restart: always
     environment:
       - GF_INSTALL_PLUGINS=frser-sqlite-datasource

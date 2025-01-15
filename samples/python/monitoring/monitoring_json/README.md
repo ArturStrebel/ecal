@@ -36,3 +36,6 @@ pip install -r requirements.txt
 python monitoring_json.py --interval 1
 ``` 
 The `--interval` flag specifies the polling interval; in this case, the Monitoring API is polled every second. Appending `--verbose` will provide verbose output from the script. The monitoring script creates a database named `ecal_monitoring.db` in the `\db` directory, which is then accessed by the Grafana server.
+
+6. Access the Grafana dashboard in your browser via ```localhost:3000```. To login use the default user ```admin``` with the default password ```admin```.
+
