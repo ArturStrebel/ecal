@@ -18,13 +18,13 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 4,
+  "id": 3,
   "links": [],
   "panels": [
     {
       "datasource": {
-        "type": "frser-sqlite-datasource",
-        "uid": "be8svxliwgjr4b"
+        "name": "Ecal Monitoring",
+        "type": "sqlite"
       },
       "fieldConfig": {
         "defaults": {
@@ -96,8 +96,8 @@
     },
     {
       "datasource": {
-        "type": "frser-sqlite-datasource",
-        "uid": "be8svxliwgjr4b"
+        "name": "Ecal Monitoring",
+        "type": "sqlite"
       },
       "fieldConfig": {
         "defaults": {
@@ -169,8 +169,8 @@
     },
     {
       "datasource": {
-        "type": "frser-sqlite-datasource",
-        "uid": "be8svxliwgjr4b"
+        "name": "Ecal Monitoring",
+        "type": "sqlite"
       },
       "description": "Show the number of subscribers to a topic over the time, grouped by local/external host.",
       "fieldConfig": {
@@ -308,8 +308,8 @@
     },
     {
       "datasource": {
-        "type": "frser-sqlite-datasource",
-        "uid": "be8svxliwgjr4b"
+        "name": "Ecal Monitoring",
+        "type": "sqlite"
       },
       "description": "Sum of the message drops across all subscribers of a selected topic.",
       "fieldConfig": {
@@ -422,8 +422,8 @@
     },
     {
       "datasource": {
-        "type": "frser-sqlite-datasource",
-        "uid": "be8svxliwgjr4b"
+        "name": "Ecal Monitoring",
+        "type": "sqlite"
       },
       "description": "Show the published data from all publishers of the selected topic over time.",
       "fieldConfig": {
@@ -561,8 +561,8 @@
     },
     {
       "datasource": {
-        "type": "frser-sqlite-datasource",
-        "uid": "be8svxliwgjr4b"
+        "name": "Ecal Monitoring",
+        "type": "sqlite"
       },
       "description": "Show the received data across all subscribers of the selected topic over time.",
       "fieldConfig": {
@@ -710,8 +710,8 @@
           "value": "machine_state_P14SONB058"
         },
         "datasource": {
-          "type": "frser-sqlite-datasource",
-          "uid": "be8svxliwgjr4b"
+          "name": "Ecal Monitoring",
+          "type": "sqlite"
         },
         "definition": "SELECT DISTINCT tname FROM topics",
         "includeAll": false,
@@ -732,6 +732,6 @@
   "timezone": "browser",
   "title": "Topic Overview",
   "uid": "fe779jusbqz9ca",
-  "version": 13,
+  "version": 1,
   "weekStart": ""
 }

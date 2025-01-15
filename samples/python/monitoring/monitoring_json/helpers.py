@@ -137,7 +137,7 @@ def create_host_graph(topics, host_dict):
 
     unique_hosts = {t["hname"]: t for t in topics}
     for host in unique_hosts.values():
-        print("host    ", host_dict)
+        #print("host    ", host_dict)
         host_data = host_dict[host["hname"]]
         arcs = {
             #"arc__used_ram": host_dict[host["hname"]]["ram_usage"],

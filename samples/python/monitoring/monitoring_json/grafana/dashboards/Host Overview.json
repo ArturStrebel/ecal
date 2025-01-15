@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 2,
+  "id": 1,
   "links": [],
   "panels": [
     {
@@ -36,8 +36,8 @@
     },
     {
       "datasource": {
-        "type": "frser-sqlite-datasource",
-        "uid": "be8svxliwgjr4b"
+        "name": "Ecal Monitoring",
+        "type": "sqlite"
       },
       "description": "For each host show the percentage of used disk space.",
       "fieldConfig": {
@@ -104,8 +104,8 @@
     },
     {
       "datasource": {
-        "type": "frser-sqlite-datasource",
-        "uid": "be8svxliwgjr4b"
+        "name": "Ecal Monitoring",
+        "type": "sqlite"
       },
       "description": "For each host show the percentage of used memory.",
       "fieldConfig": {
@@ -172,8 +172,8 @@
     },
     {
       "datasource": {
-        "type": "frser-sqlite-datasource",
-        "uid": "be8svxliwgjr4b"
+        "name": "Ecal Monitoring",
+        "type": "sqlite"
       },
       "description": "For each host show how much CPU is used (new monitoring param needed)",
       "fieldConfig": {
@@ -244,7 +244,7 @@
       "type": "gauge"
     },
     {
-      "collapsed": false,
+      "collapsed": true,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -252,371 +252,372 @@
         "y": 12
       },
       "id": 8,
-      "panels": [],
+      "panels": [
+        {
+          "datasource": {
+            "name": "Ecal Monitoring",
+            "type": "sqlite"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "continuous-GrYlRd"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 20,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineStyle": {
+                  "fill": "solid"
+                },
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "max": 100,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "percent"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 11,
+            "w": 8,
+            "x": 0,
+            "y": 13
+          },
+          "id": 12,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "11.4.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "frser-sqlite-datasource",
+                "uid": "ae57ukfdysxs0e"
+              },
+              "queryText": "SELECT \n  time_stamp, \n  (capacity_disk - available_disk) * 100.0 / capacity_disk AS disk_usage_percent\nFROM \n  hosts\nWHERE \n  hname = 'P14SONB058'",
+              "queryType": "table",
+              "rawQueryText": "SELECT \n  time_stamp, \n  (capacity_disk - available_disk) * 100.0 / capacity_disk AS disk_usage_percent\nFROM \n  hosts\nWHERE \n  hname = '${hname}'",
+              "refId": "A",
+              "timeColumns": [
+                "time",
+                "ts"
+              ]
+            }
+          ],
+          "title": "Disk Usage over Time",
+          "transformations": [
+            {
+              "id": "convertFieldType",
+              "options": {
+                "conversions": [
+                  {
+                    "destinationType": "time",
+                    "targetField": "time_stamp"
+                  }
+                ],
+                "fields": {}
+              }
+            },
+            {
+              "id": "renameByRegex",
+              "options": {
+                "regex": "disk_usage_percent",
+                "renamePattern": "Disk Usage"
+              }
+            }
+          ],
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "name": "Ecal Monitoring",
+            "type": "sqlite"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "continuous-GrYlRd"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "displayName": "Memory Usage",
+              "mappings": [],
+              "max": 100,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "percent"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 11,
+            "w": 8,
+            "x": 8,
+            "y": 13
+          },
+          "id": 11,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "11.4.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "frser-sqlite-datasource",
+                "uid": "ae57ukfdysxs0e"
+              },
+              "queryText": "SELECT \n  time_stamp, (total_memory - available_memory) * 100.0 / total_memory AS memory_used\nFROM \n  hosts\nWHERE \n  hname = 'P14SONB058'",
+              "queryType": "table",
+              "rawQueryText": "SELECT \n  time_stamp, (total_memory - available_memory) * 100.0 / total_memory AS memory_used\nFROM \n  hosts\nWHERE \n  hname = '$hname'",
+              "refId": "A",
+              "timeColumns": [
+                "time",
+                "ts"
+              ]
+            }
+          ],
+          "title": "RAM Usage over Time",
+          "transformations": [
+            {
+              "id": "convertFieldType",
+              "options": {
+                "conversions": [
+                  {
+                    "destinationType": "time",
+                    "targetField": "time_stamp"
+                  }
+                ],
+                "fields": {}
+              }
+            }
+          ],
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "name": "Ecal Monitoring",
+            "type": "sqlite"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "continuous-GrYlRd",
+                "seriesBy": "last"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "displayName": "CPU Load",
+              "fieldMinMax": false,
+              "mappings": [],
+              "max": 100,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "percent"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 11,
+            "w": 8,
+            "x": 16,
+            "y": 13
+          },
+          "id": 9,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "11.4.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "frser-sqlite-datasource",
+                "uid": "ae57ukfdysxs0e"
+              },
+              "queryText": "SELECT cpu_load, time_stamp from hosts where hname = '$hname'",
+              "queryType": "table",
+              "rawQueryText": "SELECT cpu_load, time_stamp from hosts where hname = '$hname'",
+              "refId": "A",
+              "timeColumns": [
+                "time",
+                "ts"
+              ]
+            }
+          ],
+          "title": "CPU Usage over Time",
+          "transformations": [
+            {
+              "id": "convertFieldType",
+              "options": {
+                "conversions": [
+                  {
+                    "destinationType": "time",
+                    "targetField": "time_stamp"
+                  }
+                ],
+                "fields": {}
+              }
+            }
+          ],
+          "type": "timeseries"
+        }
+      ],
       "title": "Host over Time",
       "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "frser-sqlite-datasource",
-        "uid": "be8svxliwgjr4b"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "continuous-GrYlRd"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 20,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineStyle": {
-              "fill": "solid"
-            },
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "max": 100,
-          "min": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "percent"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 11,
-        "w": 8,
-        "x": 0,
-        "y": 13
-      },
-      "id": 12,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "11.4.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "frser-sqlite-datasource",
-            "uid": "ae57ukfdysxs0e"
-          },
-          "queryText": "SELECT \n  time_stamp, \n  (capacity_disk - available_disk) * 100.0 / capacity_disk AS disk_usage_percent\nFROM \n  hosts\nWHERE \n  hname = 'P14SONB058'",
-          "queryType": "table",
-          "rawQueryText": "SELECT \n  time_stamp, \n  (capacity_disk - available_disk) * 100.0 / capacity_disk AS disk_usage_percent\nFROM \n  hosts\nWHERE \n  hname = '${hname}'",
-          "refId": "A",
-          "timeColumns": [
-            "time",
-            "ts"
-          ]
-        }
-      ],
-      "title": "Disk Usage over Time",
-      "transformations": [
-        {
-          "id": "convertFieldType",
-          "options": {
-            "conversions": [
-              {
-                "destinationType": "time",
-                "targetField": "time_stamp"
-              }
-            ],
-            "fields": {}
-          }
-        },
-        {
-          "id": "renameByRegex",
-          "options": {
-            "regex": "disk_usage_percent",
-            "renamePattern": "Disk Usage"
-          }
-        }
-      ],
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "frser-sqlite-datasource",
-        "uid": "be8svxliwgjr4b"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "continuous-GrYlRd"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "displayName": "Memory Usage",
-          "mappings": [],
-          "max": 100,
-          "min": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "percent"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 11,
-        "w": 8,
-        "x": 8,
-        "y": 13
-      },
-      "id": 11,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "11.4.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "frser-sqlite-datasource",
-            "uid": "ae57ukfdysxs0e"
-          },
-          "queryText": "SELECT \n  time_stamp, (total_memory - available_memory) * 100.0 / total_memory AS memory_used\nFROM \n  hosts\nWHERE \n  hname = 'P14SONB058'",
-          "queryType": "table",
-          "rawQueryText": "SELECT \n  time_stamp, (total_memory - available_memory) * 100.0 / total_memory AS memory_used\nFROM \n  hosts\nWHERE \n  hname = '$hname'",
-          "refId": "A",
-          "timeColumns": [
-            "time",
-            "ts"
-          ]
-        }
-      ],
-      "title": "RAM Usage over Time",
-      "transformations": [
-        {
-          "id": "convertFieldType",
-          "options": {
-            "conversions": [
-              {
-                "destinationType": "time",
-                "targetField": "time_stamp"
-              }
-            ],
-            "fields": {}
-          }
-        }
-      ],
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "frser-sqlite-datasource",
-        "uid": "be8svxliwgjr4b"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "continuous-GrYlRd",
-            "seriesBy": "last"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "displayName": "CPU Load",
-          "fieldMinMax": false,
-          "mappings": [],
-          "max": 100,
-          "min": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "percent"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 11,
-        "w": 8,
-        "x": 16,
-        "y": 13
-      },
-      "id": 9,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "11.4.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "frser-sqlite-datasource",
-            "uid": "ae57ukfdysxs0e"
-          },
-          "queryText": "SELECT cpu_load, time_stamp from hosts where hname = '$hname'",
-          "queryType": "table",
-          "rawQueryText": "SELECT cpu_load, time_stamp from hosts where hname = '$hname'",
-          "refId": "A",
-          "timeColumns": [
-            "time",
-            "ts"
-          ]
-        }
-      ],
-      "title": "CPU Usage over Time",
-      "transformations": [
-        {
-          "id": "convertFieldType",
-          "options": {
-            "conversions": [
-              {
-                "destinationType": "time",
-                "targetField": "time_stamp"
-              }
-            ],
-            "fields": {}
-          }
-        }
-      ],
-      "type": "timeseries"
     },
     {
       "collapsed": true,
@@ -624,14 +625,14 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 24
+        "y": 13
       },
       "id": 7,
       "panels": [
         {
           "datasource": {
-            "type": "frser-sqlite-datasource",
-            "uid": "be8svxliwgjr4b"
+            "name": "Ecal Monitoring",
+            "type": "sqlite"
           },
           "fieldConfig": {
             "defaults": {
@@ -665,7 +666,7 @@
             "h": 8,
             "w": 24,
             "x": 0,
-            "y": 25
+            "y": 36
           },
           "id": 5,
           "options": {
@@ -710,14 +711,14 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 25
+        "y": 14
       },
       "id": 13,
       "panels": [
         {
           "datasource": {
-            "type": "frser-sqlite-datasource",
-            "uid": "be8svxliwgjr4b"
+            "name": "Ecal Monitoring",
+            "type": "sqlite"
           },
           "fieldConfig": {
             "defaults": {
@@ -777,7 +778,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 26
+            "y": 37
           },
           "id": 14,
           "options": {
@@ -828,8 +829,8 @@
         },
         {
           "datasource": {
-            "type": "frser-sqlite-datasource",
-            "uid": "be8svxliwgjr4b"
+            "name": "Ecal Monitoring",
+            "type": "sqlite"
           },
           "fieldConfig": {
             "defaults": {
@@ -889,7 +890,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 26
+            "y": 37
           },
           "id": 16,
           "options": {
@@ -940,8 +941,8 @@
         },
         {
           "datasource": {
-            "type": "frser-sqlite-datasource",
-            "uid": "be8svxliwgjr4b"
+            "name": "Ecal Monitoring",
+            "type": "sqlite"
           },
           "fieldConfig": {
             "defaults": {
@@ -1001,7 +1002,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 26
+            "y": 37
           },
           "id": 15,
           "options": {
@@ -1066,8 +1067,8 @@
           "value": "P14SONB058"
         },
         "datasource": {
-          "type": "frser-sqlite-datasource",
-          "uid": "be8svxliwgjr4b"
+          "name": "Ecal Monitoring",
+          "type": "sqlite"
         },
         "definition": "SELECT DISTINCT hname FROM processes",
         "description": "",
@@ -1081,12 +1082,12 @@
       },
       {
         "current": {
-          "text": "15944",
-          "value": "15944"
+          "text": "24856",
+          "value": "24856"
         },
         "datasource": {
-          "type": "frser-sqlite-datasource",
-          "uid": "be8svxliwgjr4b"
+          "name": "Ecal Monitoring",
+          "type": "sqlite"
         },
         "definition": "SELECT DISTINCT pid FROM current_processes WHERE hname='$hname' ",
         "description": "",
@@ -1108,6 +1109,6 @@
   "timezone": "browser",
   "title": "Host Overview",
   "uid": "ae76bancz2vpcc",
-  "version": 9,
+  "version": 1,
   "weekStart": ""
 }

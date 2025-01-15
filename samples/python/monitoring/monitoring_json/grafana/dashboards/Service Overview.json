@@ -18,13 +18,13 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 3,
+  "id": 2,
   "links": [],
   "panels": [
     {
       "datasource": {
-        "type": "frser-sqlite-datasource",
-        "uid": "be8svxliwgjr4b"
+        "name": "Ecal Monitoring",
+        "type": "sqlite"
       },
       "description": "List the current services.",
       "fieldConfig": {
@@ -79,8 +79,8 @@
       "targets": [
         {
           "datasource": {
-            "type": "frser-sqlite-datasource",
-            "uid": "ae57ukfdysxs0e"
+            "name": "Ecal Monitoring",
+            "type": "sqlite"
           },
           "queryText": "SELECT * FROM current_services",
           "queryType": "table",
@@ -97,8 +97,8 @@
     },
     {
       "datasource": {
-        "type": "frser-sqlite-datasource",
-        "uid": "be8svxliwgjr4b"
+        "name": "Ecal Monitoring",
+        "type": "sqlite"
       },
       "description": "List the clients of the selected service.",
       "fieldConfig": {
@@ -153,8 +153,8 @@
       "targets": [
         {
           "datasource": {
-            "type": "frser-sqlite-datasource",
-            "uid": "ae57ukfdysxs0e"
+            "name": "Ecal Monitoring",
+            "type": "sqlite"
           },
           "queryText": "SELECT * FROM current_clients\r\nWHERE sname='$service'",
           "queryType": "table",
@@ -181,8 +181,8 @@
           "value": ""
         },
         "datasource": {
-          "type": "frser-sqlite-datasource",
-          "uid": "be8svxliwgjr4b"
+          "name": "Ecal Monitoring",
+          "type": "sqlite"
         },
         "definition": "SELECT DISTINCT sname FROM current_services",
         "name": "service",
@@ -202,6 +202,6 @@
   "timezone": "browser",
   "title": "Service Overview",
   "uid": "de7ar1qisc6ioe",
-  "version": 4,
+  "version": 1,
   "weekStart": ""
 }

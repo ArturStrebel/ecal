@@ -21,6 +21,9 @@ def host_monitor_callback_no_db(topic_name, msg, time):
 
     hname = topic_name.split("_")[2]
     host = MessageToDict(message=msg)
+    #print(host.keys())
+    #print(host['disks'])
+    #print(host['networks'])
     monitor.update_host(hname, host)
 
     ecal_pids = {pid for pid, p in monitor.processes.items() if p["hname"] == hname}
@@ -41,7 +44,7 @@ def singleton(cls):
 
 @singleton
 class Monitor:
-    def __init__(self):
+    def __init__(self, relative_db_path="db/ecal_monitoring.db"):
         self.processes = {}  # "current"
         self.prvious_processes = {}
         self.dropped_processes = {}
@@ -66,7 +69,7 @@ class Monitor:
         self.logs = []
 
         db_path = os.path.abspath(
-            os.path.join(os.path.dirname(__file__), "ecal_monitoring.db")
+            os.path.join(os.path.dirname(__file__), relative_db_path)
         )
         db_uri = f"sqlite:///{db_path}"
 
@@ -167,8 +170,12 @@ class Monitor:
                 )
 
     def update_host(self, hname, host):
+        # extend for multiple disks and networks
         disks = host.get("disks", [])
         disk = disks[0] if disks else None
+
+        networks = host.get("networks", [])
+        network = networks[0] if networks else None
 
         memory = host.get("memory", {})
         self.hosts[hname] = {
@@ -178,6 +185,8 @@ class Monitor:
             "available_memory": int(memory.get("available", -1)),
             "capacity_disk": int(disk["capacity"]) if disk else -1,
             "available_disk": int(disk["available"]) if disk else -1,
+            "network_send": int(network.get("send", -1)) if network else -1,
+            "network_receive": int(network.get("receive", -1)) if network else -1,
             "os": host["operatingSystem"],
             "num_cpu_cores": host["numberOfCpuCores"],
         }
@@ -203,7 +212,7 @@ class Monitor:
             self.process_performances[hname][process["id"]] = process_information
 
     def update_host_graph(self):
-        hosts = defaultdict(lambda: {"disk_usage": 0, "ram_usage": 0})
+        hosts = defaultdict(lambda: {"disk_usage": 0, "ram_usage": 0, "cpu_load": 0})
         for hname, host_dict in self.hosts.items():
             hosts[hname] = {
                 "disk_usage": round(
@@ -216,6 +225,7 @@ class Monitor:
                     / host_dict["total_memory"],
                     ndigits=2,
                 ),
+                "cpu_load": round(number=host_dict["cpu_load"]/100, ndigits=2)
             }
         self.host_nodes, self.host_edges = create_host_graph(
             list(self.topics.values()), hosts
@@ -350,6 +360,12 @@ class Monitor:
     def update_monitor(self, ecal_data):
         monitoring_d = convert_bytes_to_str(ecal_data, handle_bytes="decode")
         monitoring = monitoring_d[1]
+
+        #print(monitoring.keys())
+        #print("proc  ", monitoring["processes"][0].keys())
+        #print("topics  ", monitoring["topics"][0].keys())
+        #print(monitoring["services"][0].keys())
+        #print(monitoring["clients"][0].keys())
 
         self.update_processes(monitoring["processes"])
         self.update_topics(monitoring["topics"])

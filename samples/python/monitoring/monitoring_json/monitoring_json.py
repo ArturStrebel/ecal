@@ -3,7 +3,8 @@ import ecal.core.core as ecal_core
 from monitor import Monitor
 import argparse
 
-def main(interval, verbose):
+
+def main(interval, verbose, db_path):
     # print eCAL version and date
     print("eCAL {} ({})\n".format(ecal_core.getversion(), ecal_core.getdate()))
 
@@ -14,7 +15,7 @@ def main(interval, verbose):
     ecal_core.mon_initialize()
     time.sleep(2)
 
-    monitor = Monitor()
+    monitor = Monitor(relative_db_path=db_path)
 
     while ecal_core.ok():
         monitor.update_monitor(ecal_data=ecal_core.mon_monitoring())
@@ -41,13 +42,21 @@ if __name__ == "__main__":
         "--interval",
         type=int,
         default=1,
-        help="Monitoring interval in seconds (default: 1)",
+        help="Monitoring interval in seconds (default: 1).",
     )
 
     parser.add_argument(
-        "-v", "--verbose", action="store_true", help="Enable verbose output"
+        "-v", "--verbose", action="store_true", help="Enable verbose output (default: false)."
+    )
+
+    parser.add_argument(
+        "-d",
+        "--db-path",
+        type=str,
+        default="db/ecal_monitoring.db",
+        help="Path (relative) to the database file (default: db/ecal_monitoring.db).",
     )
 
     args = parser.parse_args()
 
-    main(interval=args.interval, verbose=args.verbose)
+    main(interval=args.interval, verbose=args.verbose, db_path=args.db_path)
