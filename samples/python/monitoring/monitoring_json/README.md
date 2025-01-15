@@ -1,24 +1,38 @@
 # eCAL Dashboard
 
-The eCAL Dashboard provides functionality to monitor the state of the eCAL middleware. The dashboard gives insights on:
-- The state of the system's hosts, such as their RAM, Disk, and CPU.
-- The topology of the communication present in the system, with regards to the communication:
-    - between the publishers and subscribers of the topics,
-    - the clients and the services,
-    - summarized on a process level,
-    - and aggregated on a host level.
-- Information on the publisher and subscriber performance, such as write& read performance, and message drops. 
+The eCAL Dashboard provides functionality for monitoring the state of the eCAL middleware. The dashboard offers insights into:
 
+- The status of the system's hosts, including their RAM, Disk, and CPU.
+- The communication topology present in the system, including:
+  - Interactions between publishers and subscribers of the topics,
+  - Connections between clients and services,
+  - Summary data at the process level,
+  - Aggregated information at the host level.
+- Performance metrics for both publishers and subscribers, such as write and read performance, as well as message drops.
 
 ## Architecture
 
-The application consists of a Python script. The script polls eCAL's Monitoring API in predifined intervals and provides subscribers to the "machine_state_[HOSTNAME]"-named topics to which eCAL's Machine Monitoring Agents (MMAs) publish the information regarding the individual hosts (CPU, RAM, Disk, ...). Next, the collected data is inserted into a SQLite database, which then serves as the data source for the Grafana dashboards. 
+The application consists of a Python script that polls eCAL's Monitoring API at predefined intervals. It subscribes to the "machine_state_[HOSTNAME]"-named topics, to which eCAL's Machine Monitoring Agents (MMAs) publish information regarding individual hosts (CPU, RAM, Disk, etc.). The collected data is then inserted into a SQLite database, which serves as the data source for the Grafana dashboards.
 
 ## Usage
 
-The following steps have to be done to be able to montior the eCAL middleware using the eCAL Dashboard:
-- Set up a Grafana server instance and import the Grafana dashboards that are provided as JSON files in the "grafana_dashboards" folder onto this server.
-- Configure the SQLite data source for the Grafana dashboards. The monitoring script creates a database ```ecal_monitoring.db``` in the same folder as the script.
-- Start the MMAs on the systems hosts, via the script ```ecal_mma.exe``` (Windows), which can be found in the ```\bin``` folder of a hosts eCAL folder.
-- Before starting the script, ensure that the requirements are installed, which can be found in the ```requirements.txt``` file. In addition, install a Python Wheel for eCAL6, which can be obtained from the [eCAL repository](https://github.com/eclipse-ecal/ecal).
-- Execute the script via the following command ```python monitoring_json.py --interval 1```. With the interval flag, the polling interval can be specified. In this case, every second the Monitoring API is polled. Furthermore, appending ```--verbose``` allows for verbose outputs of the script.
+To monitor the eCAL middleware using the eCAL Dashboard, follow these steps:
+
+1. Start the Grafana server instance using the `docker-compose.yaml` file by executing the command (in detached mode): 
+
+```bash 
+docker-compose up -d
+```
+
+2. Start the MMAs on the system's hosts using the script ecal_mma.exe (Windows), which can be found in the `\bin` folder of a host's eCAL directory.
+3. Before starting the script, ensure that the required packages are installed. These can be found in the requirements.txt file. You can install the requirements using the command:
+```bash 
+pip install -r requirements.txt
+```
+
+4. Additionally, install a Python Wheel for eCAL6, available from the [eCAL repository](https://github.com/eclipse-ecal/ecal). To facilitate the usage of the script prior to an official eCAL6 release, the wheel used for development is provided and can be installed using pip.
+5. Execute the script with the following command:
+```python 
+python monitoring_json.py --interval 1
+``` 
+The `--interval` flag specifies the polling interval; in this case, the Monitoring API is polled every second. Appending `--verbose` will provide verbose output from the script. The monitoring script creates a database named `ecal_monitoring.db` in the `\db` directory, which is then accessed by the Grafana server.
