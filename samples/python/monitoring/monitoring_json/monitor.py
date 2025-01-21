@@ -16,33 +16,6 @@ import os
 from models import *
 
 
-def host_monitor_callback_no_db(topic_name, msg, time):
-    monitor = Monitor()
-
-    hname = topic_name.split("_")[2]
-    host = MessageToDict(message=msg)
-    #print(host.keys())
-    #print(host['disks'])
-    #print(host['networks'])
-    monitor.update_host(hname, host)
-
-    ecal_pids = {pid for pid, p in monitor.processes.items() if p["hname"] == hname}
-    ecal_processes = [p for p in host["process"] if p["id"] in ecal_pids]
-    monitor.update_processes_information(hname, ecal_processes)
-
-
-def singleton(cls):
-    instances = {}
-
-    def get_instance(*args, **kwargs):
-        if cls not in instances:
-            instances[cls] = cls(*args, **kwargs)
-        return instances[cls]
-
-    return get_instance
-
-
-@singleton
 class Monitor:
     def __init__(self, relative_db_path="db/ecal_monitoring.db"):
         self.processes = {}  # "current"
@@ -250,6 +223,19 @@ class Monitor:
             self.process_performances,
         )
 
+    def host_monitor_callback_no_db(self, topic_name, msg, time):
+        hname = topic_name.split("_")[2]
+        host = MessageToDict(message=msg)
+        #print(host.keys())
+        #print(host['disks'])
+        #print(host['networks'])
+        self.update_host(hname, host)
+
+        ecal_pids = {pid for pid, p in self.processes.items() if p["hname"] == hname}
+        ecal_processes = [p for p in host["process"] if p["id"] in ecal_pids]
+        self.update_processes_information(hname, ecal_processes)
+
+
     def update_mma_subscribers(self):
         hnames = {process["hname"] for process in self.processes.values()}
         removed_hosts = set(self.mma_subscribers.keys()).difference(hnames)
@@ -264,7 +250,7 @@ class Monitor:
                 self.mma_subscribers[hname] = ProtoSubscriber(
                     f"machine_state_{hname}", mma_pb2.State
                 )
-                self.mma_subscribers[hname].set_callback(host_monitor_callback_no_db)
+                self.mma_subscribers[hname].set_callback(self.host_monitor_callback_no_db)
                 self.logs.append(
                     {
                         "message": f"[NEW HOST] start monitoring host {hname}",
