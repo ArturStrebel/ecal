@@ -183,6 +183,7 @@ class AbstractTopic(Base):
     tid = Column(Integer, primary_key=True)
     tname = Column(Text)
     direction = Column(Text)
+    layer = Column(Text)
     # ttype = Column(Text)
     # tdesc = Column(Text)
     tsize = Column(Integer)
@@ -201,9 +202,7 @@ class AbstractTopic(Base):
             f"direction={self.direction}"
             f"tsize={self.tsize}, dclock={self.dclock}, dfreq={self.dfreq}, "
             f"throughput={self.throughput}, connections_loc={self.connections_loc}, "
-            f"connections_ext={self.connections_ext}, message_drops={self.message_drops}, "
-            f"latency_min={self.latency_min}, latency_avg={self.latency_avg}, "
-            f"latency_max={self.latency_max})"
+            f"connections_ext={self.connections_ext}, message_drops={self.message_drops})"
         )
 
 
@@ -281,14 +280,20 @@ class HostNode(AbstractNode):
     #arc__used_ram = Column(Float)
     #arc__free_ram = Column(Float)
     # more general health indicator: 1/3 of circle each RAM, CPU, DISK; green if ok, red otherwise, e.g., when > treshold for ex 80 %  
-    arc__ram_ok = Column(Float)
-    arc__ram_not_ok = Column(Float)
-    arc__disk_ok = Column(Float)
-    arc__disk_not_ok = Column(Float)
-    arc__cpu_ok = Column(Float)
-    arc__cpu_not_ok = Column(Float)
+    #arc__ram_ok = Column(Float)
+    #arc__ram_not_ok = Column(Float)
+    #arc__disk_ok = Column(Float)
+    #arc__disk_not_ok = Column(Float)
+    #arc__cpu_ok = Column(Float)
+    #arc__cpu_not_ok = Column(Float)
+    arc__ok = Column(Float)    
+    arc__nok = Column(Float)
     detail__hname = Column(Text)
     detail__hgname = Column(Text)
+    detail__cpu = Column(Float)
+    detail__ram = Column(Float)
+    detail__disk = Column(Float)
+
 
 
 class HostEdge(AbstractEdge):
@@ -307,8 +312,6 @@ class PubSubTopicNode(AbstractNode):
     detail__uname = Column(Text)
     detail__dfreq = Column(Integer)
     detail__tsize = Column(Integer)
-
-
 
 
 class PubSubTopicEdge(AbstractEdge):

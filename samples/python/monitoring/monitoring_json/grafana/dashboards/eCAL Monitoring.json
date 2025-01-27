@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 4,
+  "id": 3,
   "links": [],
   "panels": [
     {
@@ -90,36 +90,20 @@
       "maxDataPoints": 10000,
       "options": {
         "edges": {
-          "mainStatUnit": "Bps"
+          "mainStatUnit": "KBs"
         },
         "nodes": {
           "arcs": [
             {
               "color": "#73BF69",
-              "field": "arc__ram_ok"
+              "field": "arc__ok"
             },
             {
               "color": "#F2495C",
-              "field": "arc__ram_not_ok"
-            },
-            {
-              "color": "#73BF69",
-              "field": "arc__disk_ok"
-            },
-            {
-              "color": "#F2495C",
-              "field": "arc__disk_not_ok"
-            },
-            {
-              "color": "#73BF69",
-              "field": "arc__cpu_ok"
-            },
-            {
-              "color": "#F2495C",
-              "field": "arc__cpu_not_ok"
+              "field": "arc__nok"
             }
           ],
-          "mainStatUnit": "Bps",
+          "mainStatUnit": "KBs",
           "secondaryStatUnit": "percent"
         }
       },
@@ -130,9 +114,9 @@
             "name": "Ecal Monitoring",
             "type": "sqlite"
           },
-          "queryText": "SELECT \r\n    arc__ram_ok,\r\n    arc__ram_not_ok,\r\n    arc__disk_ok,\r\n    arc__disk_not_ok,\r\n    arc__cpu_ok,\r\n    arc__cpu_not_ok,\r\n    detail__hname,\r\n    detail__hgname,\r\n    id,\r\n    title,\r\n    subtitle,\r\n    mainstat,\r\n    secondarystat,\r\n    color,\r\n    icon,\r\n    nodeRadius\r\nFROM \r\n    host_nodes;",
+          "queryText": "SELECT \r\n    arc__ok,\r\n    arc__nok,\r\n    detail__hname,\r\n    detail__hgname,\r\n    detail__ram,\r\n    detail__disk,\r\n    detail__cpu,\r\n    id,\r\n    title,\r\n    subtitle,\r\n    mainstat,\r\n    secondarystat,\r\n    color,\r\n    icon,\r\n    nodeRadius\r\nFROM \r\n    host_nodes;",
           "queryType": "table",
-          "rawQueryText": "SELECT \r\n    arc__ram_ok,\r\n    arc__ram_not_ok,\r\n    arc__disk_ok,\r\n    arc__disk_not_ok,\r\n    arc__cpu_ok,\r\n    arc__cpu_not_ok,\r\n    detail__hname,\r\n    detail__hgname,\r\n    id,\r\n    title,\r\n    subtitle,\r\n    mainstat,\r\n    secondarystat,\r\n    color,\r\n    icon,\r\n    nodeRadius\r\nFROM \r\n    host_nodes;",
+          "rawQueryText": "SELECT \r\n    arc__ok,\r\n    arc__nok,\r\n    detail__hname,\r\n    detail__hgname,\r\n    detail__ram,\r\n    detail__disk,\r\n    detail__cpu,\r\n    id,\r\n    title,\r\n    subtitle,\r\n    mainstat,\r\n    secondarystat,\r\n    color,\r\n    icon,\r\n    nodeRadius\r\nFROM \r\n    host_nodes;",
           "refId": "Node",
           "timeColumns": []
         },
@@ -149,7 +133,7 @@
           "timeColumns": []
         }
       ],
-      "title": "Interhost traffic",
+      "title": "Interhost Traffic",
       "transformations": [
         {
           "filter": {
@@ -158,20 +142,8 @@
           },
           "id": "renameByRegex",
           "options": {
-            "regex": "arc__free_ram",
-            "renamePattern": "Free Ram"
-          },
-          "topic": "series"
-        },
-        {
-          "filter": {
-            "id": "byRefId",
-            "options": "Node"
-          },
-          "id": "renameByRegex",
-          "options": {
-            "regex": "arc__used_ram",
-            "renamePattern": "Used Ram"
+            "regex": "title",
+            "renamePattern": "Host"
           },
           "topic": "series"
         },
@@ -188,64 +160,60 @@
           "topic": "series"
         },
         {
-          "filter": {
-            "id": "byRefId",
-            "options": "Node"
-          },
           "id": "renameByRegex",
           "options": {
             "regex": "secondarystat",
-            "renamePattern": "Disk Usage "
-          },
-          "topic": "series"
+            "renamePattern": "Disk Usage"
+          }
         },
         {
-          "filter": {
-            "id": "byRefId",
-            "options": "Node"
-          },
-          "id": "renameByRegex",
-          "options": {
-            "regex": "title",
-            "renamePattern": "Host Name"
-          },
-          "topic": "series"
-        },
-        {
-          "filter": {
-            "id": "byRefId",
-            "options": "Node"
-          },
           "id": "renameByRegex",
           "options": {
             "regex": "detail__hname",
-            "renamePattern": "Host Name"
-          },
-          "topic": "series"
+            "renamePattern": "Hname"
+          }
         },
         {
-          "filter": {
-            "id": "byRefId",
-            "options": "Node"
-          },
           "id": "renameByRegex",
           "options": {
             "regex": "detail__hgname",
-            "renamePattern": "Host Group Name"
-          },
-          "topic": "series"
+            "renamePattern": "Hostgroup Name"
+          }
         },
         {
-          "filter": {
-            "id": "byRefId",
-            "options": "Edge"
-          },
           "id": "renameByRegex",
           "options": {
-            "regex": "mainstat",
-            "renamePattern": "Interhost Bandwidth"
-          },
-          "topic": "series"
+            "regex": "detail__ram",
+            "renamePattern": "RAM Usage"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "detail__disk",
+            "renamePattern": "Disk Usage"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "detail__cpu",
+            "renamePattern": "CPU Usage"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "arc__ok",
+            "renamePattern": "Thresholds ok"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "arc__nok",
+            "renamePattern": "Thresholds not ok"
+          }
         }
       ],
       "transparent": true,
@@ -440,81 +408,7 @@
         "name": "Ecal Monitoring",
         "type": "sqlite"
       },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "fixedColor": "blue",
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            }
-          },
-          "mappings": []
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 5,
-        "x": 0,
-        "y": 15
-      },
-      "id": 2,
-      "options": {
-        "displayLabels": [
-          "percent",
-          "name"
-        ],
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": false,
-          "values": []
-        },
-        "pieType": "donut",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "11.4.0",
-      "targets": [
-        {
-          "datasource": {
-            "name": "Ecal Monitoring",
-            "type": "sqlite"
-          },
-          "queryText": "SELECT direction, COUNT(direction) as count \nFROM current_topics \nGROUP BY direction;",
-          "queryType": "table",
-          "rawQueryText": "SELECT direction, COUNT(direction) as count \nFROM current_topics \nGROUP BY direction;",
-          "refId": "A",
-          "timeColumns": [
-            "time",
-            "ts"
-          ]
-        }
-      ],
-      "title": "Pub Sub Distribution",
-      "type": "piechart"
-    },
-    {
-      "datasource": {
-        "name": "Ecal Monitoring",
-        "type": "sqlite"
-      },
-      "description": "Show the 50 processes with the highest network usage",
+      "description": "Show the 50 processes with the highest network usage in kBps.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -539,8 +433,8 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 9,
-        "x": 5,
+        "w": 12,
+        "x": 0,
         "y": 15
       },
       "id": 3,
@@ -574,9 +468,9 @@
             "name": "Ecal Monitoring",
             "type": "sqlite"
           },
-          "queryText": "SELECT tname, direction, SUM(CAST(tsize AS REAL) * dfreq  / 1000.0 ) as bandwidth\nFROM current_topics\nGROUP BY pid, direction\nORDER BY bandwidth DESC, tname DESC;",
+          "queryText": "SELECT tname, direction, SUM(throughput)\nFROM current_topics\nGROUP BY pid, direction\nORDER BY throughput DESC, tname DESC;",
           "queryType": "table",
-          "rawQueryText": "SELECT tname, direction, SUM(CAST(tsize AS REAL) * dfreq  / 1000.0 ) as bandwidth\nFROM current_topics\nGROUP BY pid, direction\nORDER BY bandwidth DESC, tname DESC;",
+          "rawQueryText": "SELECT tname, direction, SUM(throughput)\nFROM current_topics\nGROUP BY pid, direction\nORDER BY throughput DESC, tname DESC;",
           "refId": "A",
           "timeColumns": [
             "time",
@@ -584,7 +478,7 @@
           ]
         }
       ],
-      "title": "Bandwidth heatmap",
+      "title": "Bandwidth Heatmap",
       "transparent": true,
       "type": "bargauge"
     },
@@ -643,8 +537,8 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 10,
-        "x": 14,
+        "w": 12,
+        "x": 12,
         "y": 15
       },
       "id": 25,
@@ -691,545 +585,692 @@
       "type": "barchart"
     },
     {
-      "collapsed": true,
+      "datasource": {
+        "name": "Ecal Monitoring",
+        "type": "sqlite"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 23
+      },
+      "id": 2,
+      "options": {
+        "displayLabels": [
+          "percent",
+          "name"
+        ],
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false,
+          "values": []
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "name": "Ecal Monitoring",
+            "type": "sqlite"
+          },
+          "queryText": "SELECT direction, COUNT(direction) as count \nFROM current_topics \nGROUP BY direction;",
+          "queryType": "table",
+          "rawQueryText": "SELECT direction, COUNT(direction) as count \nFROM current_topics \nGROUP BY direction;",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Pub Sub Distribution",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "name": "Ecal Monitoring",
+        "type": "sqlite"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 23
+      },
+      "id": 54,
+      "options": {
+        "displayLabels": [
+          "percent",
+          "name"
+        ],
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false,
+          "values": []
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "name": "Ecal Monitoring",
+            "type": "sqlite"
+          },
+          "queryText": "SELECT layer, COUNT(layer) as count \nFROM current_topics \nGROUP BY layer;",
+          "queryType": "table",
+          "rawQueryText": "SELECT layer, COUNT(layer) as count \nFROM current_topics \nGROUP BY layer;",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Communication Layer Distribution",
+      "type": "piechart"
+    },
+    {
+      "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 23
+        "y": 31
       },
       "id": 48,
-      "panels": [
-        {
-          "datasource": {
-            "name": "Ecal Monitoring",
-            "type": "sqlite"
-          },
-          "fieldConfig": {
-            "defaults": {},
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 10,
-            "w": 24,
-            "x": 0,
-            "y": 122
-          },
-          "id": 47,
-          "links": [
-            {
-              "title": "Topic Details",
-              "url": "http://localhost:3000/d/fe779jusbqz9ca/topic-overview?orgId=1&timezone=browser&${topic:queryparam}"
-            }
-          ],
-          "maxPerRow": 3,
-          "options": {
-            "edges": {
-              "mainStatUnit": "",
-              "secondaryStatUnit": "areaMI2"
-            },
-            "nodes": {
-              "arcs": [
-                {
-                  "color": "#F2495C",
-                  "field": "arc__cpu_used"
-                },
-                {
-                  "color": "#73BF69",
-                  "field": "arc__cpu_unused"
-                }
-              ]
-            }
-          },
-          "pluginVersion": "11.4.0",
-          "repeat": "topic",
-          "repeatDirection": "h",
-          "targets": [
-            {
-              "datasource": {
-                "name": "Ecal Monitoring",
-                "type": "sqlite"
-              },
-              "queryText": "SELECT * FROM pst_nodes\r\nWHERE secondarystat = 'machine_state_P14SONB058' \r\n",
-              "queryType": "table",
-              "rawQueryText": "SELECT * FROM pst_nodes\r\nWHERE secondarystat = '${topic}' \r\n",
-              "refId": "Nodes",
-              "timeColumns": [
-                "time",
-                "ts"
-              ]
-            },
-            {
-              "datasource": {
-                "name": "Ecal Monitoring",
-                "type": "sqlite"
-              },
-              "hide": false,
-              "queryText": "SELECT * FROM pst_edges\r\nWHERE target = 'machine_state_P14SONB058' or source = 'machine_state_P14SONB058'   ",
-              "queryType": "table",
-              "rawQueryText": "SELECT * FROM pst_edges\r\nWHERE target = '${topic}' or source = '${topic}'   ",
-              "refId": "Edges",
-              "timeColumns": [
-                "time",
-                "ts"
-              ]
-            }
-          ],
-          "title": "Pub-Sub Graph for Topic ${topic}",
-          "transformations": [
-            {
-              "filter": {
-                "id": "byRefId",
-                "options": "Nodes"
-              },
-              "id": "renameByRegex",
-              "options": {
-                "regex": "title",
-                "renamePattern": "Host/Topic"
-              },
-              "topic": "series"
-            },
-            {
-              "filter": {
-                "id": "byRefId",
-                "options": "Nodes"
-              },
-              "id": "renameByRegex",
-              "options": {
-                "regex": "mainstat",
-                "renamePattern": "PID"
-              },
-              "topic": "series"
-            },
-            {
-              "disabled": true,
-              "filter": {
-                "id": "byRefId",
-                "options": "Edges"
-              },
-              "id": "renameByRegex",
-              "options": {
-                "regex": "mainstat",
-                "renamePattern": "Message Drops"
-              },
-              "topic": "series"
-            },
-            {
-              "filter": {
-                "id": "byRefId",
-                "options": "Nodes"
-              },
-              "id": "renameByRegex",
-              "options": {
-                "regex": "arc__cpu_unused",
-                "renamePattern": "Process CPU Free"
-              },
-              "topic": "series"
-            },
-            {
-              "filter": {
-                "id": "byRefId",
-                "options": "Nodes"
-              },
-              "id": "renameByRegex",
-              "options": {
-                "regex": "arc__cpu_used",
-                "renamePattern": "Process CPU Used"
-              },
-              "topic": "series"
-            },
-            {
-              "filter": {
-                "id": "byRefId",
-                "options": "Nodes"
-              },
-              "id": "renameByRegex",
-              "options": {
-                "regex": "detail__pname",
-                "renamePattern": "pname"
-              },
-              "topic": "series"
-            },
-            {
-              "filter": {
-                "id": "byRefId",
-                "options": "Nodes"
-              },
-              "id": "renameByRegex",
-              "options": {
-                "regex": "detail__uname",
-                "renamePattern": "uname"
-              },
-              "topic": "series"
-            },
-            {
-              "id": "renameByRegex",
-              "options": {
-                "regex": "detail__dfreq",
-                "renamePattern": "dfreq"
-              }
-            },
-            {
-              "id": "renameByRegex",
-              "options": {
-                "regex": "detail__tsize",
-                "renamePattern": "tsize"
-              }
-            }
-          ],
-          "type": "nodeGraph"
-        },
-        {
-          "datasource": {
-            "name": "Ecal Monitoring",
-            "type": "sqlite"
-          },
-          "description": "Nodegraph of a selected service and its clients.",
-          "fieldConfig": {
-            "defaults": {
-              "links": []
-            },
-            "overrides": [
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "title"
-                },
-                "properties": [
-                  {
-                    "id": "links",
-                    "value": [
-                      {
-                        "targetBlank": true,
-                        "title": "Host Information",
-                        "url": "http://localhost:3000/d/ae76bancz2vpcc/host-overview?orgId=1&timezone=browser&var-hname=${__data.fields[\"title\"]}&var-pid="
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "mainstat"
-                },
-                "properties": [
-                  {
-                    "id": "links",
-                    "value": [
-                      {
-                        "targetBlank": true,
-                        "title": "Process Information",
-                        "url": "http://localhost:3000/d/ae76bancz2vpcc/host-overview?orgId=1&timezone=browser&var-hname=${__data.fields[\"title\"]}&var-pid=${__data.fields[\"PID\"]}"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
-          "gridPos": {
-            "h": 9,
-            "w": 12,
-            "x": 0,
-            "y": 211
-          },
-          "id": 51,
-          "interval": "1m",
-          "links": [
-            {
-              "title": "Service Details",
-              "url": "http://localhost:3000/d/de7ar1qisc6ioe/service-overview?orgId=1"
-            }
-          ],
-          "maxDataPoints": 10000,
-          "options": {
-            "edges": {
-              "mainStatUnit": ""
-            },
-            "nodes": {
-              "arcs": [
-                {
-                  "color": "#F2495C",
-                  "field": "arc__cpu_used"
-                },
-                {
-                  "color": "#73BF69",
-                  "field": "arc__cpu_unused"
-                }
-              ],
-              "mainStatUnit": "",
-              "secondaryStatUnit": ""
-            }
-          },
-          "pluginVersion": "11.4.0",
-          "targets": [
-            {
-              "datasource": {
-                "name": "Ecal Monitoring",
-                "type": "sqlite"
-              },
-              "queryText": "SELECT * FROM cs_nodes\r\nWHERE secondarystat ='DemoService'\r\n",
-              "queryType": "table",
-              "rawQueryText": "SELECT * FROM cs_nodes\r\nWHERE secondarystat ='$service'\r\n",
-              "refId": "Nodes",
-              "timeColumns": []
-            },
-            {
-              "datasource": {
-                "name": "Ecal Monitoring",
-                "type": "sqlite"
-              },
-              "hide": false,
-              "queryText": "SELECT * From cs_edges\r\nWHERE secondarystat ='DemoService'",
-              "queryType": "table",
-              "rawQueryText": "SELECT * From cs_edges\r\nWHERE secondarystat ='$service'",
-              "refId": "Edges",
-              "timeColumns": []
-            }
-          ],
-          "title": "Client Server",
-          "transformations": [
-            {
-              "filter": {
-                "id": "byRefId",
-                "options": "Nodes"
-              },
-              "id": "renameByRegex",
-              "options": {
-                "regex": "mainstat",
-                "renamePattern": "PID"
-              },
-              "topic": "series"
-            },
-            {
-              "filter": {
-                "id": "byRefId",
-                "options": "Nodes"
-              },
-              "id": "renameByRegex",
-              "options": {
-                "regex": "title",
-                "renamePattern": "Host"
-              },
-              "topic": "series"
-            },
-            {
-              "filter": {
-                "id": "byRefId",
-                "options": "Nodes"
-              },
-              "id": "renameByRegex",
-              "options": {
-                "regex": "arc__cpu_used",
-                "renamePattern": "Process CPU Used"
-              },
-              "topic": "series"
-            },
-            {
-              "id": "renameByRegex",
-              "options": {
-                "regex": "arc__cpu_unused",
-                "renamePattern": "Process CPU Free"
-              }
-            },
-            {
-              "id": "renameByRegex",
-              "options": {
-                "regex": "secondarystat",
-                "renamePattern": "Service"
-              }
-            }
-          ],
-          "type": "nodeGraph"
-        },
-        {
-          "datasource": {
-            "name": "Ecal Monitoring",
-            "type": "sqlite"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "links": []
-            },
-            "overrides": [
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "PID"
-                },
-                "properties": [
-                  {
-                    "id": "links",
-                    "value": [
-                      {
-                        "title": "Prosess Information",
-                        "url": "http://localhost:3000/d/ae76bancz2vpcc/host-overview?orgId=1&timezone=browser&var-hname=${__data.fields[\"title\"]}&var-pid=${__data.fields[\"PID\"]}"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "title"
-                },
-                "properties": [
-                  {
-                    "id": "links",
-                    "value": [
-                      {
-                        "title": "Host Information",
-                        "url": "http://localhost:3000/d/ae76bancz2vpcc/host-overview?orgId=1&timezone=browser&var-hname=${__data.fields[\"title\"]}&var-pid="
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
-          "gridPos": {
-            "h": 9,
-            "w": 12,
-            "x": 12,
-            "y": 211
-          },
-          "id": 50,
-          "options": {
-            "edges": {},
-            "nodes": {
-              "arcs": [
-                {
-                  "color": "#F2495C",
-                  "field": "arc__cpu_used"
-                },
-                {
-                  "color": "#73BF69",
-                  "field": "arc__cpu_unused"
-                }
-              ]
-            }
-          },
-          "pluginVersion": "11.4.0",
-          "targets": [
-            {
-              "datasource": {
-                "name": "Ecal Monitoring",
-                "type": "sqlite"
-              },
-              "queryText": "SELECT * FROM process_nodes\n",
-              "queryType": "table",
-              "rawQueryText": "SELECT * FROM process_nodes\n",
-              "refId": "Nodes",
-              "timeColumns": [
-                "time",
-                "ts"
-              ]
-            },
-            {
-              "datasource": {
-                "name": "Ecal Monitoring",
-                "type": "sqlite"
-              },
-              "hide": false,
-              "queryText": "SELECT * FROM process_edges\n\n",
-              "queryType": "table",
-              "rawQueryText": "SELECT * FROM process_edges\n\n",
-              "refId": "Edges",
-              "timeColumns": [
-                "time",
-                "ts"
-              ]
-            }
-          ],
-          "title": "Process Graph",
-          "transformations": [
-            {
-              "filter": {
-                "id": "byRefId",
-                "options": "Nodes"
-              },
-              "id": "renameByRegex",
-              "options": {
-                "regex": "title",
-                "renamePattern": "Host"
-              },
-              "topic": "series"
-            },
-            {
-              "filter": {
-                "id": "byRefId",
-                "options": "Nodes"
-              },
-              "id": "renameByRegex",
-              "options": {
-                "regex": "secondarystat",
-                "renamePattern": "Topic"
-              },
-              "topic": "series"
-            },
-            {
-              "filter": {
-                "id": "byRefId",
-                "options": "Nodes"
-              },
-              "id": "renameByRegex",
-              "options": {
-                "regex": "mainstat",
-                "renamePattern": "PID"
-              },
-              "topic": "series"
-            },
-            {
-              "filter": {
-                "id": "byRefId",
-                "options": "Nodes"
-              },
-              "id": "renameByRegex",
-              "options": {
-                "regex": "arc__cpu_used",
-                "renamePattern": "Process CPU Used"
-              },
-              "topic": "series"
-            },
-            {
-              "filter": {
-                "id": "byRefId",
-                "options": "Nodes"
-              },
-              "id": "renameByRegex",
-              "options": {
-                "regex": "arc__cpu_unused",
-                "renamePattern": "Process CPU Unused"
-              },
-              "topic": "series"
-            },
-            {
-              "filter": {
-                "id": "byRefId",
-                "options": "Nodes"
-              },
-              "id": "renameByRegex",
-              "options": {
-                "regex": "detail__pname",
-                "renamePattern": "pname"
-              },
-              "topic": "series"
-            },
-            {
-              "id": "renameByRegex",
-              "options": {
-                "regex": "detail__uname",
-                "renamePattern": "uname"
-              }
-            }
-          ],
-          "type": "nodeGraph"
-        }
-      ],
+      "panels": [],
       "title": "Further Visualizations",
       "type": "row"
+    },
+    {
+      "datasource": {
+        "name": "Ecal Monitoring",
+        "type": "sqlite"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 32
+      },
+      "id": 47,
+      "links": [
+        {
+          "title": "Topic Details",
+          "url": "http://localhost:3000/d/fe779jusbqz9ca/topic-overview?orgId=1&timezone=browser&${topic:queryparam}"
+        }
+      ],
+      "maxPerRow": 3,
+      "options": {
+        "edges": {
+          "mainStatUnit": "",
+          "secondaryStatUnit": "areaMI2"
+        },
+        "nodes": {
+          "arcs": [
+            {
+              "color": "#F2495C",
+              "field": "arc__cpu_used"
+            },
+            {
+              "color": "#73BF69",
+              "field": "arc__cpu_unused"
+            }
+          ]
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "repeat": "topic",
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "name": "Ecal Monitoring",
+            "type": "sqlite"
+          },
+          "queryText": "SELECT * FROM pst_nodes\r\nWHERE secondarystat = 'machine_state_P14SONB058' \r\n",
+          "queryType": "table",
+          "rawQueryText": "SELECT * FROM pst_nodes\r\nWHERE secondarystat = '${topic}' \r\n",
+          "refId": "Nodes",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        },
+        {
+          "datasource": {
+            "name": "Ecal Monitoring",
+            "type": "sqlite"
+          },
+          "hide": false,
+          "queryText": "SELECT * FROM pst_edges\r\nWHERE target = 'machine_state_P14SONB058' or source = 'machine_state_P14SONB058'   ",
+          "queryType": "table",
+          "rawQueryText": "SELECT * FROM pst_edges\r\nWHERE target = '${topic}' or source = '${topic}'   ",
+          "refId": "Edges",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Pub-Sub Graph for Topic ${topic}",
+      "transformations": [
+        {
+          "filter": {
+            "id": "byRefId",
+            "options": "Nodes"
+          },
+          "id": "renameByRegex",
+          "options": {
+            "regex": "title",
+            "renamePattern": "Host/Topic"
+          },
+          "topic": "series"
+        },
+        {
+          "filter": {
+            "id": "byRefId",
+            "options": "Nodes"
+          },
+          "id": "renameByRegex",
+          "options": {
+            "regex": "mainstat",
+            "renamePattern": "PID"
+          },
+          "topic": "series"
+        },
+        {
+          "disabled": true,
+          "filter": {
+            "id": "byRefId",
+            "options": "Edges"
+          },
+          "id": "renameByRegex",
+          "options": {
+            "regex": "mainstat",
+            "renamePattern": "Message Drops"
+          },
+          "topic": "series"
+        },
+        {
+          "filter": {
+            "id": "byRefId",
+            "options": "Nodes"
+          },
+          "id": "renameByRegex",
+          "options": {
+            "regex": "arc__cpu_unused",
+            "renamePattern": "Process CPU Free"
+          },
+          "topic": "series"
+        },
+        {
+          "filter": {
+            "id": "byRefId",
+            "options": "Nodes"
+          },
+          "id": "renameByRegex",
+          "options": {
+            "regex": "arc__cpu_used",
+            "renamePattern": "Process CPU Used"
+          },
+          "topic": "series"
+        },
+        {
+          "filter": {
+            "id": "byRefId",
+            "options": "Nodes"
+          },
+          "id": "renameByRegex",
+          "options": {
+            "regex": "detail__pname",
+            "renamePattern": "pname"
+          },
+          "topic": "series"
+        },
+        {
+          "filter": {
+            "id": "byRefId",
+            "options": "Nodes"
+          },
+          "id": "renameByRegex",
+          "options": {
+            "regex": "detail__uname",
+            "renamePattern": "uname"
+          },
+          "topic": "series"
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "detail__dfreq",
+            "renamePattern": "dfreq"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "detail__tsize",
+            "renamePattern": "tsize"
+          }
+        }
+      ],
+      "type": "nodeGraph"
+    },
+    {
+      "datasource": {
+        "name": "Ecal Monitoring",
+        "type": "sqlite"
+      },
+      "description": "Nodegraph of a selected service and its clients.",
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "title"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "targetBlank": true,
+                    "title": "Host Information",
+                    "url": "http://localhost:3000/d/ae76bancz2vpcc/host-overview?orgId=1&timezone=browser&var-hname=${__data.fields[\"title\"]}&var-pid="
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mainstat"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "targetBlank": true,
+                    "title": "Process Information",
+                    "url": "http://localhost:3000/d/ae76bancz2vpcc/host-overview?orgId=1&timezone=browser&var-hname=${__data.fields[\"title\"]}&var-pid=${__data.fields[\"PID\"]}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 42
+      },
+      "id": 51,
+      "interval": "1m",
+      "links": [
+        {
+          "title": "Service Details",
+          "url": "http://localhost:3000/d/de7ar1qisc6ioe/service-overview?orgId=1"
+        }
+      ],
+      "maxDataPoints": 10000,
+      "options": {
+        "edges": {
+          "mainStatUnit": ""
+        },
+        "nodes": {
+          "arcs": [
+            {
+              "color": "#F2495C",
+              "field": "arc__cpu_used"
+            },
+            {
+              "color": "#73BF69",
+              "field": "arc__cpu_unused"
+            }
+          ],
+          "mainStatUnit": "",
+          "secondaryStatUnit": ""
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "name": "Ecal Monitoring",
+            "type": "sqlite"
+          },
+          "queryText": "SELECT * FROM cs_nodes\r\nWHERE secondarystat ='DemoService'\r\n",
+          "queryType": "table",
+          "rawQueryText": "SELECT * FROM cs_nodes\r\nWHERE secondarystat ='$service'\r\n",
+          "refId": "Nodes",
+          "timeColumns": []
+        },
+        {
+          "datasource": {
+            "name": "Ecal Monitoring",
+            "type": "sqlite"
+          },
+          "hide": false,
+          "queryText": "SELECT * From cs_edges\r\nWHERE secondarystat ='DemoService'",
+          "queryType": "table",
+          "rawQueryText": "SELECT * From cs_edges\r\nWHERE secondarystat ='$service'",
+          "refId": "Edges",
+          "timeColumns": []
+        }
+      ],
+      "title": "Client Server",
+      "transformations": [
+        {
+          "filter": {
+            "id": "byRefId",
+            "options": "Nodes"
+          },
+          "id": "renameByRegex",
+          "options": {
+            "regex": "mainstat",
+            "renamePattern": "PID"
+          },
+          "topic": "series"
+        },
+        {
+          "filter": {
+            "id": "byRefId",
+            "options": "Nodes"
+          },
+          "id": "renameByRegex",
+          "options": {
+            "regex": "title",
+            "renamePattern": "Host"
+          },
+          "topic": "series"
+        },
+        {
+          "filter": {
+            "id": "byRefId",
+            "options": "Nodes"
+          },
+          "id": "renameByRegex",
+          "options": {
+            "regex": "arc__cpu_used",
+            "renamePattern": "Process CPU Used"
+          },
+          "topic": "series"
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "arc__cpu_unused",
+            "renamePattern": "Process CPU Free"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "secondarystat",
+            "renamePattern": "Service"
+          }
+        }
+      ],
+      "type": "nodeGraph"
+    },
+    {
+      "datasource": {
+        "name": "Ecal Monitoring",
+        "type": "sqlite"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "PID"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Prosess Information",
+                    "url": "http://localhost:3000/d/ae76bancz2vpcc/host-overview?orgId=1&timezone=browser&var-hname=${__data.fields[\"title\"]}&var-pid=${__data.fields[\"PID\"]}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "title"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Host Information",
+                    "url": "http://localhost:3000/d/ae76bancz2vpcc/host-overview?orgId=1&timezone=browser&var-hname=${__data.fields[\"title\"]}&var-pid="
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 42
+      },
+      "id": 50,
+      "options": {
+        "edges": {},
+        "nodes": {
+          "arcs": [
+            {
+              "color": "#F2495C",
+              "field": "arc__cpu_used"
+            },
+            {
+              "color": "#73BF69",
+              "field": "arc__cpu_unused"
+            }
+          ]
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "name": "Ecal Monitoring",
+            "type": "sqlite"
+          },
+          "queryText": "SELECT * FROM process_nodes\n",
+          "queryType": "table",
+          "rawQueryText": "SELECT * FROM process_nodes\n",
+          "refId": "Nodes",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        },
+        {
+          "datasource": {
+            "name": "Ecal Monitoring",
+            "type": "sqlite"
+          },
+          "hide": false,
+          "queryText": "SELECT * FROM process_edges\n\n",
+          "queryType": "table",
+          "rawQueryText": "SELECT * FROM process_edges\n\n",
+          "refId": "Edges",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Process Graph",
+      "transformations": [
+        {
+          "filter": {
+            "id": "byRefId",
+            "options": "Nodes"
+          },
+          "id": "renameByRegex",
+          "options": {
+            "regex": "title",
+            "renamePattern": "Host"
+          },
+          "topic": "series"
+        },
+        {
+          "filter": {
+            "id": "byRefId",
+            "options": "Nodes"
+          },
+          "id": "renameByRegex",
+          "options": {
+            "regex": "secondarystat",
+            "renamePattern": "Topic"
+          },
+          "topic": "series"
+        },
+        {
+          "filter": {
+            "id": "byRefId",
+            "options": "Nodes"
+          },
+          "id": "renameByRegex",
+          "options": {
+            "regex": "mainstat",
+            "renamePattern": "PID"
+          },
+          "topic": "series"
+        },
+        {
+          "filter": {
+            "id": "byRefId",
+            "options": "Nodes"
+          },
+          "id": "renameByRegex",
+          "options": {
+            "regex": "arc__cpu_used",
+            "renamePattern": "Process CPU Used"
+          },
+          "topic": "series"
+        },
+        {
+          "filter": {
+            "id": "byRefId",
+            "options": "Nodes"
+          },
+          "id": "renameByRegex",
+          "options": {
+            "regex": "arc__cpu_unused",
+            "renamePattern": "Process CPU Unused"
+          },
+          "topic": "series"
+        },
+        {
+          "filter": {
+            "id": "byRefId",
+            "options": "Nodes"
+          },
+          "id": "renameByRegex",
+          "options": {
+            "regex": "detail__pname",
+            "renamePattern": "pname"
+          },
+          "topic": "series"
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "detail__uname",
+            "renamePattern": "uname"
+          }
+        }
+      ],
+      "type": "nodeGraph"
     },
     {
       "collapsed": true,
@@ -1237,7 +1278,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 24
+        "y": 51
       },
       "id": 24,
       "panels": [
@@ -1259,8 +1300,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               }
@@ -1271,7 +1311,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 433
+            "y": 572
           },
           "id": 30,
           "maxPerRow": 2,
@@ -1329,8 +1369,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               }
@@ -1341,7 +1380,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 433
+            "y": 572
           },
           "id": 52,
           "options": {
@@ -1403,8 +1442,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               }
@@ -1415,7 +1453,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 433
+            "y": 572
           },
           "id": 53,
           "options": {
@@ -1483,7 +1521,7 @@
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 533
+            "y": 672
           },
           "id": 26,
           "maxPerRow": 2,
@@ -1559,7 +1597,7 @@
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 534
+            "y": 673
           },
           "id": 29,
           "maxPerRow": 2,
@@ -1612,7 +1650,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 25
+        "y": 52
       },
       "id": 38,
       "panels": [
@@ -1638,8 +1676,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -1654,7 +1691,7 @@
             "h": 7,
             "w": 8,
             "x": 0,
-            "y": 434
+            "y": 2131
           },
           "id": 39,
           "options": {
@@ -1711,8 +1748,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -1727,7 +1763,7 @@
             "h": 7,
             "w": 8,
             "x": 8,
-            "y": 434
+            "y": 2131
           },
           "id": 40,
           "options": {
@@ -1785,8 +1821,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -1801,7 +1836,7 @@
             "h": 7,
             "w": 8,
             "x": 16,
-            "y": 434
+            "y": 2131
           },
           "id": 33,
           "options": {
@@ -1859,8 +1894,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -1875,7 +1909,7 @@
             "h": 6,
             "w": 8,
             "x": 0,
-            "y": 533
+            "y": 2230
           },
           "id": 34,
           "options": {
@@ -1933,8 +1967,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -1949,7 +1982,7 @@
             "h": 6,
             "w": 8,
             "x": 8,
-            "y": 533
+            "y": 2230
           },
           "id": 31,
           "options": {
@@ -2007,8 +2040,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -2023,7 +2055,7 @@
             "h": 6,
             "w": 8,
             "x": 16,
-            "y": 533
+            "y": 2230
           },
           "id": 32,
           "options": {
@@ -2068,7 +2100,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 26
+        "y": 53
       },
       "id": 12,
       "panels": [
@@ -2122,8 +2154,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               }
@@ -2134,7 +2165,7 @@
             "h": 5,
             "w": 24,
             "x": 0,
-            "y": 435
+            "y": 2132
           },
           "id": 27,
           "options": {
@@ -2232,8 +2263,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               }
@@ -2244,7 +2274,7 @@
             "h": 5,
             "w": 24,
             "x": 0,
-            "y": 532
+            "y": 2229
           },
           "id": 28,
           "options": {
@@ -2303,7 +2333,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 27
+        "y": 54
       },
       "id": 8,
       "panels": [
@@ -2329,8 +2359,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -2345,7 +2374,7 @@
             "h": 7,
             "w": 8,
             "x": 0,
-            "y": 436
+            "y": 2133
           },
           "id": 9,
           "options": {
@@ -2402,8 +2431,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -2418,7 +2446,7 @@
             "h": 7,
             "w": 8,
             "x": 8,
-            "y": 436
+            "y": 2133
           },
           "id": 11,
           "options": {
@@ -2475,8 +2503,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -2491,7 +2518,7 @@
             "h": 7,
             "w": 8,
             "x": 16,
-            "y": 436
+            "y": 2133
           },
           "id": 10,
           "options": {
@@ -2536,7 +2563,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 28
+        "y": 55
       },
       "id": 14,
       "panels": [
@@ -2562,8 +2589,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -2578,7 +2604,7 @@
             "h": 7,
             "w": 8,
             "x": 0,
-            "y": 437
+            "y": 2134
           },
           "id": 15,
           "options": {
@@ -2642,8 +2668,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -2658,7 +2683,7 @@
             "h": 7,
             "w": 8,
             "x": 8,
-            "y": 437
+            "y": 2134
           },
           "id": 16,
           "options": {
@@ -2715,8 +2740,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -2731,7 +2755,7 @@
             "h": 7,
             "w": 8,
             "x": 16,
-            "y": 437
+            "y": 2134
           },
           "id": 17,
           "options": {
@@ -2776,7 +2800,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 29
+        "y": 56
       },
       "id": 4,
       "panels": [
@@ -2802,8 +2826,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -2818,7 +2841,7 @@
             "h": 7,
             "w": 8,
             "x": 0,
-            "y": 438
+            "y": 2135
           },
           "id": 1,
           "options": {
@@ -2875,8 +2898,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -2891,7 +2913,7 @@
             "h": 7,
             "w": 8,
             "x": 8,
-            "y": 438
+            "y": 2135
           },
           "id": 6,
           "options": {
@@ -2945,8 +2967,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -2961,7 +2982,7 @@
             "h": 7,
             "w": 8,
             "x": 16,
-            "y": 438
+            "y": 2135
           },
           "id": 5,
           "options": {
@@ -3006,7 +3027,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 30
+        "y": 57
       },
       "id": 37,
       "panels": [
@@ -3026,8 +3047,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -3042,7 +3062,7 @@
             "h": 4,
             "w": 24,
             "x": 0,
-            "y": 129
+            "y": 1826
           },
           "id": 19,
           "options": {
@@ -3161,6 +3181,6 @@
   "timezone": "browser",
   "title": "eCAL Monitoring",
   "uid": "aduwl9kn2oxz4c",
-  "version": 2,
+  "version": 14,
   "weekStart": ""
 }

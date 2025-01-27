@@ -3,6 +3,7 @@ import json
 
 THRESHOLD = 0.8
 
+
 def convert_bytes_to_str(d, handle_bytes="decode"):
     """
     Recursively converts all byte objects in a nested data structure to a string representation.
@@ -137,23 +138,32 @@ def create_host_graph(topics, host_dict):
 
     unique_hosts = {t["hname"]: t for t in topics}
     for host in unique_hosts.values():
-        #print("host    ", host_dict)
         host_data = host_dict[host["hname"]]
+        ok = 0
+        ok = ok + (0.33 if host_data["ram_usage"] <= THRESHOLD else 0)
+        ok = ok + (0.33 if host_data["disk_usage"] <= THRESHOLD else 0)
+        ok = ok + (0.34 if host_data["cpu_load"] <= THRESHOLD else 0)
+        nok = 1 - ok
         arcs = {
-            #"arc__used_ram": host_dict[host["hname"]]["ram_usage"],
-            #"arc__free_ram": round(
+            # "arc__used_ram": host_dict[host["hname"]]["ram_usage"],
+            # "arc__free_ram": round(
             #    number=(1 - host_dict[host["hname"]]["ram_usage"]), ndigits=2
-            #),
-            "arc__ram_ok": 0.33 if host_data["ram_usage"] <= THRESHOLD else 0,
-            "arc__ram_not_ok": 0.33 if host_data["ram_usage"] > THRESHOLD else 0,
-            "arc__disk_ok": 0.33 if host_data["disk_usage"] <= THRESHOLD else 0,
-            "arc__disk_not_ok": 0.33 if host_data["disk_usage"] > THRESHOLD else 0,
-            "arc__cpu_ok": 0.34 if host_data["cpu_load"] <= THRESHOLD else 0,
-            "arc__cpu_not_ok": 0.34 if host_data["cpu_load"] > THRESHOLD else 0,
+            # ),
+            # "arc__ram_ok": 0.33 if host_data["ram_usage"] <= THRESHOLD else 0,
+            # "arc__ram_not_ok": 0.33 if host_data["ram_usage"] > THRESHOLD else 0,
+            # "arc__disk_ok": 0.33 if host_data["disk_usage"] <= THRESHOLD else 0,
+            # "arc__disk_not_ok": 0.33 if host_data["disk_usage"] > THRESHOLD else 0,
+            # "arc__cpu_ok": 0.34 if host_data["cpu_load"] <= THRESHOLD else 0,
+            # "arc__cpu_not_ok": 0.34 if host_data["cpu_load"] > THRESHOLD else 0,
+            "arc__ok": ok,
+            "arc__nok": nok,
         }
         details = {
             "detail__hname": host["hname"],
             "detail__hgname": host["hgname"],
+            "detail__cpu": host_data["cpu_load"],
+            "detail__ram": host_data["ram_usage"],
+            "detail__disk": host_data["disk_usage"],
         }
         node_dict[host["hname"]] = create_node(
             id=host["hname"],
@@ -173,16 +183,16 @@ def create_host_graph(topics, host_dict):
                 continue
             if pub["hname"] == sub["hname"]:  # if process is within one host
                 node = node_dict[pub["hname"]]
-                node["mainstat"] += pub["tsize"] * pub["dfreq"]
+                node["mainstat"] += pub["throughput"]
                 continue  # do not create an edge from a node to itself
 
             edgeID = pub["hname"] + "_" + sub["hname"]  # unique name for each host edge
             if edgeID in edge_dict.keys():
                 edge = edge_dict[edgeID]
 
-                edge["mainstat"] += (
-                    pub["tsize"] * pub["dfreq"]
-                )  # if edge already exists, update bandwidth of this edge
+                edge["mainstat"] += pub[
+                    "throughput"
+                ]  # if edge already exists, update bandwidth of this edge
                 edge["thickness"] = min(
                     20, edge["thickness"] + 1
                 )  # make edge thicker for each connection, but cap at 20
@@ -191,7 +201,7 @@ def create_host_graph(topics, host_dict):
                     id=edgeID,
                     source=pub["hname"],
                     target=sub["hname"],
-                    mainstat=pub["tsize"] * pub["dfreq"],
+                    mainstat=pub["throughput"],
                     secondarystat="",
                     thickness=1,
                     color="#EFEEEB",
@@ -212,16 +222,20 @@ def create_process_graph(topics, process_performances):
     subs = []
     for t in topics:
         details = {
-                "detail__pname": t["pname"],
-                "detail__uname": t["uname"],
-            }
+            "detail__pname": t["pname"],
+            "detail__uname": t["uname"],
+        }
         if t["direction"] == "publisher":
             pubs.append(t)
         if t["direction"] == "subscriber":
             subs.append(t)
         node_id = f"{t['hname']}-{t['pid']}"
         if node_id not in node_dict.keys():
-            arcs = get_arc_cpu(process_performances=process_performances, hname=t["hname"], pid=t["pid"])
+            arcs = get_arc_cpu(
+                process_performances=process_performances,
+                hname=t["hname"],
+                pid=t["pid"],
+            )
             node_dict[node_id] = create_node(
                 id=node_id,
                 title=t["hname"],
@@ -229,7 +243,7 @@ def create_process_graph(topics, process_performances):
                 mainstat=t["pid"],
                 secondarystat=t["tname"],
                 arcs=arcs,
-                details=details
+                details=details,
             )
         else:
             node_dict[node_id]["mainstat"] = (
@@ -244,7 +258,7 @@ def create_process_graph(topics, process_performances):
                 continue
             sub_proc_id = f"{sub['hname']}-{sub['pid']}"
             if pub_proc_id == sub_proc_id:
-                continue  
+                continue
 
             edge_id = f"{pub_proc_id }-{sub_proc_id}"
             if edge_id in edge_dict.keys():
@@ -272,13 +286,17 @@ def create_pub_sub_topic_graph(topics, process_performances):
 
     for t in topics:
         details = {
-                "detail__pname": t["pname"],
-                "detail__uname": t["uname"],
-                "detail__dfreq": t["dfreq"],
-                "detail__tsize": t["tsize"],
-            }
+            "detail__pname": t["pname"],
+            "detail__uname": t["uname"],
+            "detail__dfreq": t["dfreq"],
+            "detail__tsize": t["tsize"],
+        }
         if t["direction"] == "publisher":
-            arcs = get_arc_cpu(process_performances=process_performances, hname=t["hname"], pid=t["pid"])
+            arcs = get_arc_cpu(
+                process_performances=process_performances,
+                hname=t["hname"],
+                pid=t["pid"],
+            )
             node_id = t["tid"]
             node_dict[node_id] = create_node(
                 id=node_id,
@@ -287,7 +305,7 @@ def create_pub_sub_topic_graph(topics, process_performances):
                 mainstat=t["pid"],
                 secondarystat=t["tname"],
                 arcs=arcs,
-                details=details
+                details=details,
             )
 
             edge_id = f"{node_id}-{t['tname']}"
@@ -299,7 +317,11 @@ def create_pub_sub_topic_graph(topics, process_performances):
                 secondarystat="",
             )
         if t["direction"] == "subscriber":
-            arcs = get_arc_cpu(process_performances=process_performances, hname=t["hname"], pid=t["pid"])
+            arcs = get_arc_cpu(
+                process_performances=process_performances,
+                hname=t["hname"],
+                pid=t["pid"],
+            )
             node_id = t["tid"]
             node_dict[node_id] = create_node(
                 id=node_id,
@@ -308,7 +330,7 @@ def create_pub_sub_topic_graph(topics, process_performances):
                 mainstat=t["pid"],
                 secondarystat=t["tname"],
                 arcs=arcs,
-                details=details
+                details=details,
             )
             edge_id = f"{t['tname']}-{node_id}"
             edge_dict[edge_id] = create_edge(
@@ -339,10 +361,14 @@ def create_client_server_graph(clients, services, process_performances):
     for client in clients:
         client_id = client["sid"]
         details = {
-                "detail__pname": client["pname"],
-                "detail__uname": client["uname"],
-            }
-        arcs = get_arc_cpu(process_performances=process_performances, hname=client["hname"], pid=client["pid"])
+            "detail__pname": client["pname"],
+            "detail__uname": client["uname"],
+        }
+        arcs = get_arc_cpu(
+            process_performances=process_performances,
+            hname=client["hname"],
+            pid=client["pid"],
+        )
         node_dict[client_id] = create_node(
             id=client_id,
             title=client["hname"],
@@ -350,15 +376,19 @@ def create_client_server_graph(clients, services, process_performances):
             mainstat=client["pid"],
             secondarystat=client["sname"],
             arcs=arcs,
-            details=details
+            details=details,
         )
     for service in services:
         details = {
-                "detail__pname": service["pname"],
-                "detail__uname": service["uname"],
-            }
+            "detail__pname": service["pname"],
+            "detail__uname": service["uname"],
+        }
         service_id = service["sid"]
-        arcs = get_arc_cpu(process_performances=process_performances, hname=service["hname"], pid=service["pid"])
+        arcs = get_arc_cpu(
+            process_performances=process_performances,
+            hname=service["hname"],
+            pid=service["pid"],
+        )
         node_dict[service_id] = create_node(
             id=service_id,
             title=service["hname"],
@@ -366,7 +396,7 @@ def create_client_server_graph(clients, services, process_performances):
             mainstat=service["pid"],
             secondarystat=service["sname"],
             arcs=arcs,
-            details=details
+            details=details,
         )
 
     for client in clients:

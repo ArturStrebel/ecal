@@ -121,7 +121,8 @@ class Monitor:
     def update_topics(self, topics):
         self.previous_topics = self.topics
         for topic in topics:
-            topic["throughput"] = topic["dfreq"] / 1000 * topic["tsize"]
+            topic["layer"] = next((item['type'] for item in topic['layer'] if item['active']), None) # it should be exactly 1 layer true per topic, currently verifying
+            topic["throughput"] = int((topic["dfreq"] / 1000 * topic["tsize"])/1000) # should be kBps
         self.topics = {topic["tid"]: topic for topic in topics}
 
         for tid, topic in self.topics.items():
@@ -234,7 +235,6 @@ class Monitor:
         ecal_pids = {pid for pid, p in self.processes.items() if p["hname"] == hname}
         ecal_processes = [p for p in host["process"] if p["id"] in ecal_pids]
         self.update_processes_information(hname, ecal_processes)
-
 
     def update_mma_subscribers(self):
         hnames = {process["hname"] for process in self.processes.values()}
